@@ -1,4 +1,5 @@
 module.exports = {
   title: 'ShiTieShou',
-  description: 'just play'
+  description: 'just play',
+  base: '/c-blog'
 }
