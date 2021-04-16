@@ -1,15 +1,14 @@
 {
-  "name": "static-blog",
+  "name": "viteblog",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "https://github.com/ShiTieShou/static-blog.git",
-  "author": "qiyao-web <36325188+qiyao-web@users.noreply.github.com>",
   "scripts": {
-    "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "serve": "vitepress serve docs --port 1314"
   },
   "license": "MIT",
   "devDependencies": {
-    "vuepress": "^1.8.2"
+    "vitepress": "^0.13.0"
   }
 }
