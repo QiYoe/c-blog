@@ -4,6 +4,6 @@ node_js: stable
 script: bash ./deploy.sh
 branches:
   only:
-  - master
+  - main
 notifications:
   email: false
