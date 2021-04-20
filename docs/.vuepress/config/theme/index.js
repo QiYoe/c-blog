@@ -22,5 +22,6 @@ module.exports = Object.assign({}, themeReco, {
     // repo: 'NAME_OF_REPO',
     // clientId: 'YOUR_CLIENT_ID',
     // clientSecret: 'YOUR_CLIENT_SECRET',
-  }
+  },
+  // huawei: true
 })
