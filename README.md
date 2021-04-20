@@ -15,6 +15,6 @@ npm install
 npm run dev
 ```
 
-open http://localhost:3000/c-blog/
+open <http://localhost:8080/c-blog/>
 
 > Generator by [vuepress](https://vupress.vuejs.org/)
