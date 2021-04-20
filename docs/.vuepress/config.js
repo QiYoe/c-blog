@@ -1,7 +1,7 @@
 const themeConfig = require('./config/theme/')
 
 module.exports = {
-  title: '平光眼镜',
+  title: '问缘客栈',
   description: "Don't forget, a person's greatest emotional need is to feel appreciated.",
   dest: 'public',
   base: '/c-blog/',
