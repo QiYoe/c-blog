@@ -17,4 +17,4 @@ npm run dev
 
 open http://localhost:3000/c-blog/
 
-> Generator by [vitepress](https://vitepress.vuejs.org/)
+> Generator by [vuepress](https://vupress.vuejs.org/)
