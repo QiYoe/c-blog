@@ -5,7 +5,7 @@ module.exports = [
     icon: 'reco-message',
     items: [
      // { text: 'NPM', link: 'https://www.npmjs.com/~reco_luan', icon: 'reco-npm' },
-     { text: 'GitHub', link: 'https://github.com/recoluan', icon: 'reco-github' },
+     { text: 'GitHub', link: 'https://github.com/qiyoe', icon: 'reco-github' },
      // { text: '简书', link: 'https://www.jianshu.com/u/cd674a19515e', icon: 'reco-jianshu' },
      { text: 'CSDN', link: 'https://blog.csdn.net/qq_15272881', icon: 'reco-csdn' },
      // { text: '博客圆', link: 'https://www.cnblogs.com/luanhewei/', icon: 'reco-bokeyuan' },
