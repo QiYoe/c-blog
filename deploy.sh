@@ -10,7 +10,7 @@ npm run build
 cd docs/.vitepress/dist
 
 # if you are deploying to a custom domain
-# echo 'www.example.com' > CNAME
+echo 'qiyoe.cn' > CNAME
 
 #创建.nojekyll 防止Github Pages build错误
 touch .nojekyll
