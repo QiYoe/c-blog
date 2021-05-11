@@ -14,5 +14,9 @@ module.exports = {
   markdown: {
     lineNumbers: true
   },
+  url: 'https://qiyoe.cn',
+  root: '/',
+  permalink: ':title.html',
+  permalink_defaults: '',
   plugins: ['@vuepress/medium-zoom', 'flowchart']
 }
