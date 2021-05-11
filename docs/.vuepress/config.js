@@ -1,7 +1,7 @@
 const themeConfig = require('./config/theme/')
 
 module.exports = {
-  title: '问缘客栈',
+  title: '南上康青山',
   description: "Don't forget, a person's greatest emotional need is to feel appreciated.",
   dest: 'public',
 //   base: '/c-blog/',
