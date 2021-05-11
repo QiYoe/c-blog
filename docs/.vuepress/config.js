@@ -7,7 +7,7 @@ module.exports = {
 //   base: '/c-blog/',
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
-    ['meta', { name: 'viewport', content: 'width=device-width,initial-scale=1,user-scalable=no' }],
+    ['meta', { name: 'viewport', content: 'width=device-width,initial-scale=1,user-scalable=no' }]
 //     ['script', {}, `
 //       var _hmt = _hmt || [];
 //       (function() {
@@ -38,11 +38,11 @@ module.exports = {
   },
   url: 'https://qiyoe.cn',
   root: '/',
-  permalink: ':title.html',
-  permalink_defaults: '',
+//   permalink: ':title.html',
+//   permalink_defaults: '',
   plugins: [
     '@vuepress/medium-zoom',
-    'flowchart',
+    'flowchart'
 //     [
 //       '@vuepress/google-analytics',
 //       {
