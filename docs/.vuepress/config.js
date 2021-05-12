@@ -7,6 +7,7 @@ module.exports = {
 //   base: '/c-blog/',
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
+    ['meta', { name: 'baidu-site-verification', content: 'code-GwygrEuKwm'}],
     ['meta', { name: 'keywords', content: 'vuepress'}],
     ['meta', { name: 'keywords', content: 'blog'}],
     ['meta', { name: 'keywords', content: '博客'}],
