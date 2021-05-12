@@ -2,7 +2,7 @@ const themeConfig = require('./config/theme/')
 
 module.exports = {
   title: '南上康青山',
-  description: "Don't forget, a person's greatest emotional need is to feel appreciated.",
+  description: "一个记录个人学习、分享经验和生活的狗窝",
   dest: 'public',
 //   base: '/c-blog/',
   head: [
