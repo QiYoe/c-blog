@@ -16,7 +16,7 @@ module.exports = {
   // 作者
   author: 'QiYoe',
   // 备案号
-  // record: '京ICP备17067634号-1',
+  record: '京ICP备2021014403号-1',
   // 项目开始时间
   startYear: '2021'
 }
