@@ -51,12 +51,12 @@ module.exports = {
 //   permalink_defaults: '',
   plugins: [
     '@vuepress/medium-zoom',
-    'flowchart'
-//     [
-//       '@vuepress/google-analytics',
-//       {
-//         'ga': 'UA-149666038-1' // UA-00000000-0
-//       }
-//     ]
+    'flowchart',
+    [
+      '@vuepress/google-analytics',
+      {
+        'ga': 'G-SBNLNM3Q41' // UA-00000000-0
+      }
+    ]
   ]
 }
