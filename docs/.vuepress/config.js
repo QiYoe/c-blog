@@ -7,6 +7,11 @@ module.exports = {
 //   base: '/c-blog/',
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
+    ['meta', { name: 'keywords', content: 'vuepress'}],
+    ['meta', { name: 'keywords', content: 'blog'}],
+    ['meta', { name: 'keywords', content: '博客'}],
+    ['meta', { name: 'keywords', content: '南上康青山'}],
+    ['meta', { name: 'keywords', content: '狗窝'}],
     ['meta', { name: 'viewport', content: 'width=device-width,initial-scale=1,user-scalable=no' }],
     ['meta', { name: 'baidu_union_verify', content: 'acd0eb90461e19817cabd1140c8ffd54' }],
     [
@@ -17,6 +22,7 @@ module.exports = {
         src: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
       }
     ],
+
 //     ['script', {}, `
 //       var _hmt = _hmt || [];
 //       (function() {
