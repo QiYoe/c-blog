@@ -5,6 +5,21 @@ tags:
 date: 2021-04-20
 isComment: false
 sidebar: false
+feed:
+  enable: true
+  title: 心经
+  description: 心经
+  # image: /public/image.png
+  author:
+    -
+      name: 唐玄奘
+      # email: author@doamin.tld
+      # link: http://doamin.tld
+  # contributor:
+  #   -
+  #     name: Contributor
+  #     email: contributor@doamin.tld
+  #     link: http://doamin.tld
 ---
 
 #### 我做过的事
