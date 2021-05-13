@@ -30,7 +30,7 @@ module.exports = {
       var _hmt = _hmt || [];
       (function() {
         var hm = document.createElement("script");
-        hm.src = "https://hm.baidu.com/hm.js?8dbec0e055b85f45ae350a0bfcb52202";
+        hm.src = "https://hm.baidu.com/hm.js?1801e4a45f1eecdfe603fc0637120c56";
         var s = document.getElementsByTagName("script")[0]; 
         s.parentNode.insertBefore(hm, s);
 
