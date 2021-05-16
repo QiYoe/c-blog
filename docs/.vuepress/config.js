@@ -76,6 +76,10 @@ module.exports = {
       }
     ],
     ['feed', { canonical_base: 'https://qiyoe.cn' }],
-    'vuepress-plugin-baidu-autopush'
+    'vuepress-plugin-baidu-autopush',
+    ['@vuepress/pwa', {
+      serviceWorker: true,
+      updatePopup: true
+    }]
   ]
 }
