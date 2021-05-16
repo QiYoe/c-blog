@@ -13,6 +13,7 @@ module.exports = {
 //   base: '/c-blog/',
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
+    ['link', { rel: 'manifest', href: '/manifest.json' }],
     ['meta', { name: 'baidu-site-verification', content: 'code-5BMDhSDgSq'}],
     ['meta', { name: 'keywords', content: '南上康青山, vuepress, blog, 博客, 狗窝'}],
     ['meta', { 'http-equiv': 'X-UA-Compatible', content: 'IE=edge' }],
