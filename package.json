@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "vuepress-blog",
   "main": "index.js",
-  "repository": "git@github.com:QiYoe/c-blog.git",
+  "repository": "git@github.com:qiyoe/c-blog.git",
   "author": "QiYoe",
   "license": "MIT",
   "scripts": {
