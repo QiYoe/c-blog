@@ -27,7 +27,7 @@ self.addEventListener('message', (event) => {
 self.__precacheManifest = [
   {
     "url": "404.html",
-    "revision": "d185d6b21767120cb5d4aad322530d05"
+    "revision": "38d13c5060f14f56b908f044c6a7a2f6"
   },
   {
     "url": "assets/css/0.styles.733879bf.css",
@@ -114,8 +114,8 @@ self.__precacheManifest = [
     "revision": "f041377fa42d9c0b405236594ac6d5c7"
   },
   {
-    "url": "assets/js/app.ad0678a7.js",
-    "revision": "f3c4a94304e9fd5d0f942eae2fe70217"
+    "url": "assets/js/app.bc5af7c8.js",
+    "revision": "22bd59d494fbc719cc2d9ca71a4f1a0e"
   },
   {
     "url": "assets/js/vendors~flowchart.66c41f64.js",
@@ -123,23 +123,23 @@ self.__precacheManifest = [
   },
   {
     "url": "category/article.html",
-    "revision": "7603052f4bbb87aaa51f8744845f2b05"
+    "revision": "b934f3842fb315456c659cee5bc877bb"
   },
   {
     "url": "category/front-end.html",
-    "revision": "671c055aab597a38a25023b78f8973b5"
+    "revision": "5445efb34c55a687e5163333e43cd1f0"
   },
   {
     "url": "category/index.html",
-    "revision": "1c05c4ba6048af9876c4f7f314b4fa0d"
+    "revision": "a0742c0cb7e7ee4fd29437e6522133e5"
   },
   {
     "url": "category/thoughts.html",
-    "revision": "c599dd519f1cfd43db35c11810bb53e5"
+    "revision": "dc28fd2edfb06c64e506f637b782dc7f"
   },
   {
     "url": "category/tools.html",
-    "revision": "42b8f4c7f10fb36201f8f89c5f548033"
+    "revision": "94820533f676f7677b4da22e8ccbcf49"
   },
   {
     "url": "head.png",
@@ -147,63 +147,63 @@ self.__precacheManifest = [
   },
   {
     "url": "index.html",
-    "revision": "4711243afbe236cbafe07c81aac57e0e"
+    "revision": "0530a1a79d9d4c7df8c4417fea6f18fc"
   },
   {
     "url": "tag/front-end.html",
-    "revision": "b5a65ee49fd35cef73e28b90006bae5c"
+    "revision": "4c8b423cefebc898501bb29948ddbeca"
   },
   {
     "url": "tag/index.html",
-    "revision": "4e70598d91eea51cdaa399a2ea4d1944"
+    "revision": "8e308d594a0dbddb9a7f241b780f5a44"
   },
   {
     "url": "tag/tools.html",
-    "revision": "1423c322282fb4e23ed8f0a95f74ff29"
+    "revision": "52c4a2bfc37bf5f50e9a1afd2699fec0"
   },
   {
     "url": "tag/个人信息.html",
-    "revision": "b04c37aef294629fca9295718bbec573"
+    "revision": "7ca1b50bc1632018318c239b8dc90e12"
   },
   {
     "url": "tag/佛学.html",
-    "revision": "9da8f79866ed85554fecf8482d2ed867"
+    "revision": "95a4b6445d9108c969d50e4ba8955509"
   },
   {
     "url": "tag/感想.html",
-    "revision": "faf77540deebd711966c29f37520f7de"
+    "revision": "824b4ccda9cee0fd18cb6e747b1693c7"
   },
   {
     "url": "timeline/index.html",
-    "revision": "d29ac5adfb5d8ff08e7a3616a7ca1177"
+    "revision": "645077614d1e7c1e0e5dda140ac453cd"
   },
   {
     "url": "view/article/2021/042010.html",
-    "revision": "0b196b925fe88be893eb8b197ddfe36a"
+    "revision": "1223db23285100e8fa6bca21a396ac5c"
   },
   {
     "url": "view/front-end/2021/042317.html",
-    "revision": "e50d36c2876cb169c507fe04d1bb22c7"
+    "revision": "1d5b33b23c2a9ea652e1120ad65b5c5a"
   },
   {
     "url": "view/index.html",
-    "revision": "1dec4a1fb6006eab353b468e38012a23"
+    "revision": "d27b1f7d33e771849a8d716056c1d2b3"
   },
   {
     "url": "view/personalInfo/index.html",
-    "revision": "dbad676c33b96262b87b227674f0108f"
+    "revision": "03469e91c83f172ba99e29cf6d8a3faa"
   },
   {
     "url": "view/thoughts/2021/042109.html",
-    "revision": "be3509539004561ae8ddcc4dc5e6e296"
+    "revision": "1af51d3d1f79ca948398cc4415caa855"
   },
   {
     "url": "view/tools/2021/042113.html",
-    "revision": "16a40444ba9d26834ac69ff6d221d867"
+    "revision": "01a7d274c28b9eab9cde879f8e4730fa"
   },
   {
     "url": "view/tools/2021/042114.html",
-    "revision": "11fba61509915d844342ee341db0a75b"
+    "revision": "d07b2a304d21e8c7f0bcf60a9cec4124"
   }
 ].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
