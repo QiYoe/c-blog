@@ -24,13 +24,11 @@
     "vuepress-plugin-feed": "^0.1.9",
     "vuepress-plugin-flowchart": "^1.4.3",
     "vuepress-plugin-google-adsense": "^0.2.1",
-    "vuepress-plugin-meting": "^0.2.3",
-    "vuepress-plugin-sitemap": "^2.3.1"
+    "vuepress-plugin-sitemap": "^2.3.1",
+    "yarn": "^1.22.10"
   },
   "dependencies": {
-    "@vuepress/plugin-blog": "^1.9.4",
     "@vuepress/plugin-nprogress": "^1.8.2",
-    "@vuepress/plugin-search": "^1.8.2",
     "leancloud-storage": "^4.10.1",
     "screenfull": "^5.1.0",
     "valine": "^1.4.14",
