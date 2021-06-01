@@ -8,7 +8,19 @@ module.exports = {
       text: '前端',
       ariaLabel: '前端',
       items: [
-        { text: '博客搭建', link: '/front-end/blog-build' }
+        { 
+          text: '博客搭建',
+          item: [
+            {
+              text: 'vitepress构建',
+              link: '/front-end/vitepress-build'
+            },
+            {
+              text: '444',
+              link: '/front-end/vitepress-build'
+            },
+          ]
+        }
       ]
     },
     // {
