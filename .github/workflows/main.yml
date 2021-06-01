@@ -37,4 +37,4 @@ jobs:
         access-key-id: ${{ secrets.OSS_KEY_ID }}
         access-key-secret: ${{ secrets.OSS_KEY_SECRET }}
     - name: cp files to aliyun
-      run: ossutil cp -rf public oss://qiyoe-blog/
+      run: ossutil cp -rf docs/.vitepress/dist oss://qiyoe-blog/
