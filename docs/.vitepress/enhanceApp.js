@@ -1,4 +1,7 @@
-export default ({ router }) => {
+// @ts-nocheck
+export default ({ Vue, options, router, siteData, isServer }) => {
+  // app is the Vue 3 app instance from `createApp()`. router is VitePress'
+    // custom router. `siteData`` is a `ref`` of current site-level metadata.
   /**
    * 路由切换事件处理
    */
