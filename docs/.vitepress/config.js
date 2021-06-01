@@ -6,7 +6,6 @@ module.exports = {
   lang: 'zh-CN',
   title: '南上康青山',
   description: "一个记录个人学习、分享经验和生活的狗窝",
-  dest: 'public',
   logo: '/favicon.ico',
 //   base: '/c-blog/',
   head,
