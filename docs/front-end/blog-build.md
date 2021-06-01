@@ -43,8 +43,6 @@ feed:
   npx @vuepress-reco/theme-cli init
 ```
 
-![init-project](../../images/042317/init-project.png)
-
 回车! Wait a minute...
 
 下载好之后改改名字配置就可以啦 :smile:
