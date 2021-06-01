@@ -15,7 +15,7 @@ module.exports = {
     lineNumbers: true,
     externalLinks: { target: '_black', rel: 'nofollow noopener noreferrer'}
   },
-  url: 'https://blog.qiyoe.cn',
+  url: 'https://qiyoe.cn',
   root: '/',
 //   permalink: ':title.html',
 //   permalink_defaults: '',
