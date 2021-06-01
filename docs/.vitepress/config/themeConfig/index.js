@@ -1,4 +1,5 @@
 module.exports = {
+  editLinks: true,
   editLinkText: '在 GitHub 上编辑此页',
   lastUpdated: '最新更新时间',
 
