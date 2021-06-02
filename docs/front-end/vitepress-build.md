@@ -14,7 +14,7 @@ feed:
   # image: /public/image.png
   author:
     -
-      name: 唐玄奘
+      name: 唐玄
       # email: author@doamin.tld
       # link: http://doamin.tld
   # contributor:
