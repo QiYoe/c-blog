@@ -1,0 +1,20 @@
+{
+  "name": "南上康青山",
+  "short_name": "Qiyoes Blog",
+  "description": "一个记录个人学习、分享经验和生活的狗窝",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#5c92d1",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./favicon.ico",
+      "sizes": "32x32",
+      "type": "image/ico"
+    }
+  ]
+}
