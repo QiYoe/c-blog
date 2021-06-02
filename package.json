@@ -13,8 +13,9 @@
   "homepage": "https://github.com/QiYoe/c-blog",
   "keywords": [
     "vite",
-    "vue",
-    "vitepress"
+    "vue3",
+    "vitepress",
+    "blog"
   ],
   "scripts": {
     "dev": "vitepress dev docs",

@@ -2,13 +2,11 @@
 home: true
 bgImage: /banner.png
 bgText: 背景图片
-# faceImage: /head.png
-# faceText: 头像
 heroImage: /banner.png
-heroAlt: Logo image
+heroAlt: Banner image
 heroText: 狗窝狗窝，话不多说
 tagline: （づ￣3￣）づ╭❤～
-isShowTitleInHome: false
+isShowTitleInHome: true
 actionText: ▶ 开始
 actionLink: /front-end/vitepress-build
 features:

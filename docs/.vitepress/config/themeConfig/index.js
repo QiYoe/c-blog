@@ -31,6 +31,17 @@ module.exports = {
       ]
     },
     {
+      text: '算法',
+      ariaLabel: '算法',
+      items: [
+        {
+          text: 'LeetCode',
+          link: '/algorithm/leetcode',
+          activeMatch: '^/algorithm/'
+        }
+      ]
+    },
+    {
       text: '工具',
       ariaLabel: '工具',
       link: '/tools/smart-tools'
@@ -40,7 +51,8 @@ module.exports = {
   sidebar: {
     '/front-end/': getFrontEndSidebar(),
     '/books/': getBooksSidebar(),
-    '/tools/': getToolsSidebar()
+    '/tools/': getToolsSidebar(),
+    '/algorithm/': getAlgorithmSidebar()
   }
 }
 
@@ -72,6 +84,15 @@ function getToolsSidebar() {
     {
       text: '常用工具',
       children: [{ text: 'markdown', link: '/tools/smart-tools' }]
+    }
+  ]
+}
+
+function getAlgorithmSidebar() {
+  return [
+    {
+      text: '算法',
+      children: [{ text: 'markdown', link: '/algorithm/leetcode' }]
     }
   ]
 }

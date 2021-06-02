@@ -34,7 +34,7 @@
 
 2、设置主机记录www，记录类型为A，记录值是IP。同上。
 
-3、设置主机记录@，记录类型为CNAME，记录值是chumingke.github.io.。表示将`http://xxx.com`这个主域名映射`xxx.github.io`。  
+3、设置主机记录@，记录类型为CNAME，记录值是`Github-Name.github.io.`。表示将`https://xxx.com`这个主域名映射`xxx.github.io`。  
   注意在这里千万不要忘记记录值中.io后面还有一个点.！
 
 ::: warning
