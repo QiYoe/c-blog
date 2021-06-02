@@ -1,6 +1,6 @@
 # c-blog
 
-[Online](https://qiyoe.github.io/c-blog)
+[在线地址](https://qiyoe.github.io/c-blog)
 
 ## Development
 
@@ -9,12 +9,12 @@
 git clone git@github.com:QiYoe/c-blog.git
 
 # install dependency
-npm install
+yarn
 
 # develop
-npm run dev
+yarn dev
 ```
 
-open <http://localhost:8080/c-blog/>
+open <http://localhost:3000>
 
-> Generator by [vuepress](https://vupress.vuejs.org/)
+> Generator by [vitepress](https://vitepress.vuejs.org/)
