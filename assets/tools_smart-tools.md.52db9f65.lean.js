@@ -1,0 +1,1 @@
+import{o as r,c as t,d as a}from"./app.619919d0.js";const e='{"title":"smart-tools","description":"","frontmatter":{},"headers":[{"level":2,"title":"markdown-it","slug":"markdown-it"}],"relativePath":"tools/smart-tools.md","lastUpdated":1622625424950}',o={},n=a('',4);o.render=function(a,e,o,d,i,s){return r(),t("div",null,[n])};export default o;export{e as __pageData};
