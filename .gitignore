@@ -1,6 +1,5 @@
 .DS_Store
 node_modules/
-public/
 dist/
 CONTRIBUTING.md
 npm-debug.log
