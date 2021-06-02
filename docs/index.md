@@ -10,7 +10,7 @@ heroText: 狗窝狗窝，话不多说
 tagline: （づ￣3￣）づ╭❤～
 isShowTitleInHome: false
 actionText: ▶ 开始
-actionLink: /views/personalInfo/
+actionLink: /front-end/vitepress-build
 features:
 - title: 生活
   details: 苦-集-灭-道
