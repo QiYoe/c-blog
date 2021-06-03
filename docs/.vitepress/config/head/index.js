@@ -1,9 +1,8 @@
 module.exports = [
-  ['link', { rel: 'icon', href: '/favicon.ico' }],
+  ['link', { rel: 'image/x-icon', href: '/favicon.ico' }],
   ['link', { rel: 'manifest', href: '/manifest.json' }],
+  ['link', { rel: 'manifest', href: '/manifest.webmanifest' }],
   ['meta', { name: 'keywords', content: '南上康青山, vitepress, 顾青山, blog, 博客, 狗窝, 青山'}],
-  ['meta', { 'http-equiv': 'X-UA-Compatible', content: 'IE=edge' }],
-  ['meta', { name: 'viewport', content: 'width=device-width,initial-scale=1,user-scalable=no' }],
   ['meta', { name: 'baidu-site-verification', content: 'code-5BMDhSDgSq'}],
   ['meta', { name: 'baidu_union_verify', content: 'acd0eb90461e19817cabd1140c8ffd54' }],
   ['script', {}, `
