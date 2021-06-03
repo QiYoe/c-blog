@@ -14,7 +14,7 @@
     {
       "src": "./favicon.ico",
       "sizes": "32x32",
-      "type": "image/ico"
+      "type": "image/x-ico"
     }
   ]
 }
