@@ -16,4 +16,5 @@ features:
   details: 学而不思则罔，思而不学则殆
 - title: 理财
   details: 有钱男子汉，没钱汉子难
+footer: MIT Licensed | Copyright © 2021-QiYoe
 ---

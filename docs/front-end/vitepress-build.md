@@ -1,4 +1,13 @@
-# 博客搭建
+---
+title: 博客搭建
+head:
+  - - meta
+    - name: description
+      content: vitepress静态网站博客搭建详细教程
+  - - meta
+    - name: keywords
+      content: vitepress 博客 自动部署 github pages
+---
 
 ## 为什么选择vitepress？
 

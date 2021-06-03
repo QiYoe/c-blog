@@ -1,4 +1,13 @@
-# 你不知道的JavaScript
+---
+title: 你不知道的JavaScript
+head:
+  - - meta
+    - name: description
+      content: you-dont-know-JS读书笔记
+  - - meta
+    - name: keywords
+      content: 你不知道的JavaScript you-dont-know-JS 你不知道的JS 读书笔记
+---
 
 ## 作用域和闭包
 

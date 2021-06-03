@@ -1,4 +1,13 @@
-# 百度收录
+---
+title: 百度收录
+head:
+  - - meta
+    - name: description
+      content: 百度收录网站详细教程
+  - - meta
+    - name: keywords
+      content: 百度收录 普通收录
+---
 
 ## 为什么要进行百度收录？
 

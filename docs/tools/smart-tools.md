@@ -1,4 +1,13 @@
-# smart-tools
+---
+title: smart-tools
+head:
+  - - meta
+    - name: description
+      content: 开发常用工具合集
+  - - meta
+    - name: keywords
+      content: 开发常用工具 开发工具 markdown-it emoji
+---
 
 ## markdown-it
 

@@ -1,4 +1,13 @@
-# 阿里云域名
+---
+title: 阿里云域名
+head:
+  - - meta
+    - name: description
+      content: 阿里云域名购买、解析、使用详细教程
+  - - meta
+    - name: keywords
+      content: 阿里云 域名 解析 备案 CNAME
+---
 
 ## 为什么用域名？
 
