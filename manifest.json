@@ -1,15 +1,20 @@
 {
- "name": "南上康青山",
- "short_name": "青山",
- "start_url": "/",
- "display": "standalone",
- "background_color": "#fff",
- "theme_color": "#3eaf7c",
- "icons": [
-   {
-    "src": "./favicon.ico",
-    "sizes": "32x32",
-    "type": "image/ico"
-   }
- ]
+  "name": "南上康青山",
+  "short_name": "Qiyoe's Blog",
+  "description": "狗窝狗窝，话不多说",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#5c92d1",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-ico"
+    }
+  ]
 }
