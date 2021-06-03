@@ -1,3 +1,1 @@
-Sitemap: https://qiyoe.cn/sitemap.xml
-
 User-agent: *
