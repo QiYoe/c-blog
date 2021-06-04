@@ -13,10 +13,20 @@ module.exports = {
       ariaLabel: '前端',
       items: [
         { 
-          text: '博客搭建',
-          link: '/front-end/vitepress-build',
+          text: '博客相关',
+          link: '/front-end/blog-build/vitepress-build',
           activeMatch: '^/front-end/'
-        }
+        },
+        { 
+          text: 'SwaggerHub',
+          link: '/front-end/swagger-hub/',
+          activeMatch: '^/front-end/'
+        },
+        { 
+          text: 'Linux相关',
+          link: '/front-end/linux/',
+          activeMatch: '^/front-end/'
+        },
       ]
     },
     {
@@ -61,10 +71,22 @@ function getFrontEndSidebar() {
     {
       text: '博客相关',
       children: [
-        { text: '博客搭建', link: '/front-end/vitepress-build' },
-        { text: '百度收录', link: '/front-end/baidu-include' },
-        { text: 'SEO优化', link: '/front-end/seo-optimize' },
-        { text: '阿里云域名', link: '/front-end/aliyun-domin' },
+        { text: '博客搭建', link: '/front-end/blog-build/vitepress-build' },
+        { text: '百度收录', link: '/front-end/blog-build/baidu-include' },
+        { text: 'SEO优化', link: '/front-end/blog-build/seo-optimize' },
+        { text: '阿里云域名', link: '/front-end/blog-build/aliyun-domin' },
+      ]
+    },
+    {
+      text: 'SwaggerHub',
+      children: [
+        { text: 'SwaggerHub使用教程', link: '/front-end/swagger-hub/' }
+      ]
+    },
+    {
+      text: 'Linux相关',
+      children: [
+        { text: 'Linux启动Nginx服务', link: '/front-end/linux/' }
       ]
     }
   ]
