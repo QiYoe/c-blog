@@ -50,6 +50,27 @@ sudo systemctl enable nginx.service
 
 ## 配置nginx.config
 
+默认安装则配置文件一般是这个：`/etc/nginx/nginx.conf`
+
+root用户启动nginx默认监听80端口
+
+[nginx配置教程](./nginx.md)
+
 ## 传输文件
 
+xft登录然后直接鼠标拖拽即可
+
 ## 验证配置是否成功
+
+浏览器输入网址、回车即可查看是否出现页面
+
+::: tip
+
+- 查看Nginx版本：nginx -v
+- 查看Nginx启动状态：
+  - sudo service nginx status
+  - sudo systemctl status nginx.service
+- 查看Nginx位置：sudo whereis nginx
+- 重启Nginx：nginx -s reload
+- 每次修改完配置文件之后记得重启nginx
+:::

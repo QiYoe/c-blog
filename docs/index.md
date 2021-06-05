@@ -13,7 +13,7 @@ features:
 - title: 生活
   details: 苦-集-灭-道
 - title: 学习
-  details: 学而不思则罔，思而不学则殆
+  details: 学如逆水行舟，不进则退
 - title: 理财
   details: 有钱男子汉，没钱汉子难
 footer: MIT Licensed | Copyright © 2021-QiYoe

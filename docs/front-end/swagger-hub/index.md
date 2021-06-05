@@ -29,10 +29,14 @@ head:
 
 Swagger 是一个规范且完整的框架，用于生成、描述、调用和可视化 RESTful 风格的 Web 服务（可以简单理解为接口文档）。
 
-## SwaggerHub使用
+Swagger旗下两款产品swagger-ui、swggerHub
+
+## SwaggerHub
+
+[官方文档地址](https://swaggerhub.com/help/index)
 
 ::: warning
-Swagger需要Spring Boot来启动，暂停更新...
+Swagger需要后台服务来支持，暂停更新...
 :::
 
 ## swagger-ui
