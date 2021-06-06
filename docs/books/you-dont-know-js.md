@@ -143,3 +143,98 @@ baz(); // <-- baz 的调用位置
 ```
 
 ## 对象
+
+6中基本类型：string、number、boolean、null、undefined、object
+
+语言bug：typeof null === 'object'`在JS中二进制的前三位为0判为object，而null全是0，所以会返回'object'`
+
+内置对象：String、Number、Boolean、Object、Function、Array、Date、RegExp、Error
+
+键值：在引擎内部，这些值的存储方式是多种多样的，一般并不会存在对象容器内部。存储在对象容器内部的是这些属性的名称，它们就像指针（从技术角度来说就是引用）一样，指向这些值真正的存储位置
+
+- 属性访问：. `满足标识符命名规范`
+  - 属性名永远都是字符串（如果你使用 string（字面量）以外的其他值作为属性名，那它首先会被转换为一个字符串`数字也不例外`）
+- 键访问：[] `可见接受任意UTF-8/Unicode`
+
+```js
+var myObject = { };
+myObject[true] = "foo";
+myObject[3] = "bar";
+myObject[myObject] = "baz";
+myObject["true"]; // "foo"
+myObject["3"]; // "bar"
+myObject["[object Object]"]; // "baz"
+```
+
+如果你试图向数组添加一个属性，但是属性名“看起来”像一个数字，那它会变成
+一个数值下标（因此会修改数组的内容而不是添加一个属性）
+
+- 浅拷贝：复制引用地址`Object.assign()（实际是使用=操作符赋值）`
+- 深拷贝：json安全时`JSON.parse(JSON.stringify())`
+
+- 属性描述符：Object.getOwnPropertyDescriptor( myObject, "a" )
+  - value、writable、enumerable、configurable
+  - [[Get]]、 [[Put]]
+    - [[put]]:
+      1. 属性是否是访问描述符（参见 3.3.9 节）？如果是并且存在 setter 就调用 setter。
+      2. 属性的数据描述符中 writable 是否是 false ？如果是，在非严格模式下静默失败，在严格模式下抛出 TypeError 异常。
+      3. 如果都不是，将该值设置为属性的值。
+
+```js
+var myObject = {
+  a:2
+};
+Object.getOwnPropertyDescriptor( myObject, "a" );
+// {
+// value: 2,  //属性描述符
+// writable: true,  //属性描述符  可以重新赋值
+// enumerable: true,  //属性描述符  可以使用 defineProperty(..) 方法
+// configurable: true  //属性描述符
+// }
+
+var myObject1 = {
+  // 给 a 定义一个 getter
+  get a() {
+    return this._a_;
+  },
+  // 给 a 定义一个 setter
+  set a(val) {
+    this._a_ = val * 2;
+  }
+};
+myObject1.a = 2;
+myObject1.a; // 4
+```
+
+:::warning
+要注意有一个小小的例外：即便属性是 configurable:false，我们还是可以
+把 writable 的状态由 true 改为 false，但是无法由 false 改为true。除了无法修改，configurable:false 还会禁止删除这个属性（不能使用delete删除属性）
+:::
+
+1. 对象常量：结合 writable:false 和 configurable:false 就可以创建一个真正的常量属性（不可修改、重定义或者删除）
+2. 对象常量：如果你想禁止一个对象添加新属性并且保留已有属性，可以使用Object.preventExtensions(..)
+3. 密封：Object.seal(..) 会创建一个“密封”的对象，这个方法实际上会在一个现有对象上调用Object.preventExtensions(..) 并把所有现有属性标记为 configurable:false
+4. 冻结：Object.freeze(..) 会创建一个冻结对象，这个方法实际上会在一个现有对象上调用Object.seal(..) 并把所有“数据访问”属性标记为 writable:false，这样就无法修改它们的值
+
+```js
+var myObject = {
+  a:2
+};
+("a" in myObject); // true
+("b" in myObject); // false
+
+myObject.hasOwnProperty( "a" ); // true
+myObject.hasOwnProperty( "b" ); // false
+
+// in 操作符会检查属性是否在对象及其 [[Prototype]] 原型链中（参见第 5 章）。相比之下，hasOwnProperty(..) 只会检查属性是否在 myObject 对象中，不会检查 [[Prototype]] 链
+```
+
+:::warning
+Object.keys(..) 会返回一个数组，包含所有可枚举属性，Object.getOwnPropertyNames(..)会返回一个数组，包含所有属性，无论它们是否可枚举。
+
+in 和 hasOwnProperty(..) 的区别在于是否查找 [[Prototype]] 链，然而，Object.keys(..)和 Object.getOwnPropertyNames(..) 都只会查找对象直接包含的属性。
+:::
+
+for..of 循环首先会向被访问对象请求一个迭代器对象，然后通过调用迭代器（@@iterator 对象）对象的next() 方法来遍历所有返回值
+
+## 混合对象”类“
