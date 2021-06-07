@@ -98,11 +98,11 @@ head:
   - 绑定规则：
     - 默认绑定：独立函数调用——this指向全局对象
       - 严格模式：与函数调用位置无关：
-        - 严格模式下的this指向undefined
+        - 函数内严格模式下的this指向undefined
         - 严格模式运行函数，函数内this指向函数声明的上下文
-      - 正常模式：**直接使用不带任何修饰进行调用**
-    - 隐式绑定：比如obj 对象“拥有”或者“包含”函数时，函数中的this会绑定到obj上下文对象
-      - 隐式丢失：即默认绑定
+      - 正常模式：**不带任何修饰进行调用**
+    - 隐式绑定：调用位置是否有上下文对象。比如obj 对象“拥有”或者“包含”函数时，函数中的this会绑定到obj上下文对象
+      - 隐式丢失：即默认绑定（函数引用的只是地址）
     - 显示绑定：直接指定this的绑定对象
       - call、apply：如果你传入了一个原始值（字符串类型、布尔类型或者数字类型）来当作this的绑定对象，这个原始值会被转换成它的对象形式（也就是 new String(..)、new Boolean(..) 或者new Number(..)）。这通常被称为“装箱”（**无法解决隐式丢失问题**）
       - 硬绑定：函数内部执行call、apply绑定，后面执行此函数的任何绑定操作都会无效
@@ -142,7 +142,7 @@ function foo() {
 baz(); // <-- baz 的调用位置
 ```
 
-## 对象
+### 对象
 
 6中基本类型：string、number、boolean、null、undefined、object
 
@@ -176,9 +176,13 @@ myObject["[object Object]"]; // "baz"
   - value、writable、enumerable、configurable
   - [[Get]]、 [[Put]]
     - [[put]]:
-      1. 属性是否是访问描述符（参见 3.3.9 节）？如果是并且存在 setter 就调用 setter。
+      1. 属性是否是访问描述符？如果是并且存在 setter 就调用 setter。
       2. 属性的数据描述符中 writable 是否是 false ？如果是，在非严格模式下静默失败，在严格模式下抛出 TypeError 异常。
       3. 如果都不是，将该值设置为属性的值。
+  - 通过Object.defineProperty()修改属性描述符或其他特性
+
+> **把 configurable 修改成false 是单向操作，无法撤销！**
+>> 要注意有一个小小的例外：即便属性是 configurable:false，我们还是可以把 writable 的状态由 true 改为 false，但是无法由 false 改为true。除了无法修改，configurable:false 还会禁止删除这个属性（不能使用delete删除属性）
 
 ```js
 var myObject = {
@@ -206,15 +210,13 @@ myObject1.a = 2;
 myObject1.a; // 4
 ```
 
-:::warning
-要注意有一个小小的例外：即便属性是 configurable:false，我们还是可以
-把 writable 的状态由 true 改为 false，但是无法由 false 改为true。除了无法修改，configurable:false 还会禁止删除这个属性（不能使用delete删除属性）
-:::
+:::tip
 
 1. 对象常量：结合 writable:false 和 configurable:false 就可以创建一个真正的常量属性（不可修改、重定义或者删除）
-2. 对象常量：如果你想禁止一个对象添加新属性并且保留已有属性，可以使用Object.preventExtensions(..)
+2. 禁止扩展：如果你想禁止一个对象添加新属性并且保留已有属性，可以使用Object.preventExtensions(..)
 3. 密封：Object.seal(..) 会创建一个“密封”的对象，这个方法实际上会在一个现有对象上调用Object.preventExtensions(..) 并把所有现有属性标记为 configurable:false
 4. 冻结：Object.freeze(..) 会创建一个冻结对象，这个方法实际上会在一个现有对象上调用Object.seal(..) 并把所有“数据访问”属性标记为 writable:false，这样就无法修改它们的值
+:::
 
 ```js
 var myObject = {
@@ -237,4 +239,60 @@ in 和 hasOwnProperty(..) 的区别在于是否查找 [[Prototype]] 链，然而
 
 for..of 循环首先会向被访问对象请求一个迭代器对象，然后通过调用迭代器（@@iterator 对象）对象的next() 方法来遍历所有返回值
 
-## 混合对象”类“
+### 混合对象”类“
+
+面向类的`设计模式`：
+
+- 实例化：创建实例
+- 继承：父类、子类
+- 多态：父类的通用行为可以被子类用更特殊的行为重写。
+
+### 原型
+
+在于原型链上层时 myObject.foo = "bar" 会出现的三种情况:
+
+1. 如果在 [[Prototype]] 链上层存在名为 foo 的普通数据访问属性并且没有被标记为只读（writable:false），那就会直接在 myObject 中添加一个名为 foo 的新属性，它是`屏蔽属性`。
+2. 如果在 [[Prototype]] 链上层存在 foo，但是它被标记为只读（writable:false），那么无法修改已有属性或者在 myObject 上创建屏蔽属性。如果运行在严格模式下，代码会抛出一个错误。否则，这条赋值语句会被忽略。总之，不会发生屏蔽。
+3. 如果在 [[Prototype]] 链上层存在 foo 并且它是一个 setter，那就一定会调用这个 setter。foo 不会被添加到（或者说屏蔽于）myObject，也不会重新定义 foo 这个 setter。
+
+```js
+var anotherObject = {
+  a:2
+};
+var myObject = Object.create( anotherObject );
+anotherObject.a; // 2
+myObject.a; // 2146 ｜ 第 5 章
+anotherObject.hasOwnProperty( "a" ); // true
+myObject.hasOwnProperty( "a" ); // false
+myObject.a++; // 隐式屏蔽！
+anotherObject.a; // 2
+myObject.a; // 3
+myObject.hasOwnProperty( "a" ); // true
+
+function Foo() {
+  // ...
+}
+// 这时Foo是由constructor属性的
+var a = new Foo();
+Object.getPrototypeOf( a ) === Foo.prototype; // true
+Foo.prototype.constructor === Foo; // true
+a.constructor === Foo; // true
+// 内部链接 [[Prototype]] 关联的是 Foo.prototype 对象
+
+// a.__proto__ === Foo.prototype
+// a.prototype === undefined
+
+Foo.prototype = { /* .. */ }; // 创建一个新原型对象
+// 这是Foo是没有constructor属性的
+var a1 = new Foo();
+a1.constructor === Foo; // false!
+a1.constructor === Object; // true!
+```
+
+> 函数不是构造函数，但是当且仅当使用 new 时，函数调用会变成“构造函数调用”
+
+**a.constructor === Foo 为真意味着 a 确实有一个指向 Foo 的 .constructor 属性，但是事实不是这样。`实际上，.constructor 引用同样被委托给了 Foo.prototype，而Foo.prototype.constructor 默认指向 Foo`。举例来说，Foo.prototype 的 .constructor 属性只是 Foo 函数在声明时的默认属性。如果你创建了一个新对象并替换了函数默认的 .prototype 对象引用，那么新对象并不会自动获得 .constructor 属性。constructor 并不表示被构造**
+
+> instanceof 回答的问题是：在 a 的整条 [[Prototype]] 链中是否有指向 Foo.prototype 的对象？
+
+### 行为委托
