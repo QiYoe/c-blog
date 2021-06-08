@@ -249,11 +249,18 @@ for..of 循环首先会向被访问对象请求一个迭代器对象，然后通
 
 ### 原型
 
+> - Object.create(obj)：创建一个对象，并把该对象的[[Prototype]]关联到obj上
+> - 所有普通的 [[Prototype]] 链最终都会指向内置的 Object.prototype。
+
 在于原型链上层时 myObject.foo = "bar" 会出现的三种情况:
 
 1. 如果在 [[Prototype]] 链上层存在名为 foo 的普通数据访问属性并且没有被标记为只读（writable:false），那就会直接在 myObject 中添加一个名为 foo 的新属性，它是`屏蔽属性`。
 2. 如果在 [[Prototype]] 链上层存在 foo，但是它被标记为只读（writable:false），那么无法修改已有属性或者在 myObject 上创建屏蔽属性。如果运行在严格模式下，代码会抛出一个错误。否则，这条赋值语句会被忽略。总之，不会发生屏蔽。
 3. 如果在 [[Prototype]] 链上层存在 foo 并且它是一个 setter，那就一定会调用这个 setter。foo 不会被添加到（或者说屏蔽于）myObject，也不会重新定义 foo 这个 setter。
+
+> - **__proto__：读作“dunder proto”,就是[[Prototype]], 由一个对象指向一个对象`即指向他们的原型对象`——终点：null**
+> - **prototype：函数独有，由一个函数指向一个对象，是函数的原型对象，即函数所创建的实例的原型对象——终点：Object.prototype**
+> - **constructor：一个对象指向一个函数，即指向该对象的构造函数——终点：Function()**
 
 ```js
 var anotherObject = {
@@ -279,7 +286,7 @@ Foo.prototype.constructor === Foo; // true
 a.constructor === Foo; // true
 // 内部链接 [[Prototype]] 关联的是 Foo.prototype 对象
 
-// a.__proto__ === Foo.prototype
+// a.__proto__ === Foo.prototype === Object.getPrototypeOf(a)
 // a.prototype === undefined
 
 Foo.prototype = { /* .. */ }; // 创建一个新原型对象
@@ -290,9 +297,55 @@ a1.constructor === Object; // true!
 ```
 
 > 函数不是构造函数，但是当且仅当使用 new 时，函数调用会变成“构造函数调用”
+> 实例的.constructor引用被委托给了Foo.prototype，而Foo.prototype.constructor默认指向Foo（Foo声明时的默认属性）
 
 **a.constructor === Foo 为真意味着 a 确实有一个指向 Foo 的 .constructor 属性，但是事实不是这样。`实际上，.constructor 引用同样被委托给了 Foo.prototype，而Foo.prototype.constructor 默认指向 Foo`。举例来说，Foo.prototype 的 .constructor 属性只是 Foo 函数在声明时的默认属性。如果你创建了一个新对象并替换了函数默认的 .prototype 对象引用，那么新对象并不会自动获得 .constructor 属性。constructor 并不表示被构造**
 
-> instanceof 回答的问题是：在 a 的整条 [[Prototype]] 链中是否有指向 Foo.prototype 的对象？
+> a instanceof Foo：在 a 的整条 [[Prototype]] 链中是否有指向 Foo.prototype 的对象？（只能处理对象和函数关系）**使用isPrototypeOf和getPrototypeOf代替**
+> Foo.prototype.isPrototypeOf( a )：在 a 的整条 [[Prototype]] 链中是否出现过 Foo.prototype
 
 ### 行为委托
+
+```js
+// 面向对象设计模式
+function Foo(who) {
+  this.me = who;
+}
+Foo.prototype.identify = function() {
+  return "I am " + this.me;
+};
+function Bar(who) {
+  Foo.call( this, who );
+}
+Bar.prototype = Object.create( Foo.prototype );
+Bar.prototype.speak = function() {
+  alert( "Hello, " + this.identify() + "." );
+};
+var b1 = new Bar( "b1" );
+var b2 = new Bar( "b2" );
+b1.speak();
+b2.speak();
+// 对象关联设计模式
+Foo = {
+  init: function(who) {
+    this.me = who;
+  },
+  identify: function() {
+    return "I am " + this.me;
+  }
+};
+Bar = Object.create( Foo );
+Bar.speak = function() {
+  alert( "Hello, " + this.identify() + "." );
+};
+var b1 = Object.create( Bar );
+b1.init( "b1" );
+var b2 = Object.create( Bar );行为委托 ｜ 171
+b2.init( "b2" );
+b1.speak();
+b2.speak();
+```
+
+## 类型和语法
+
+### 类型
