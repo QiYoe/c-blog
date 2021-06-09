@@ -11,7 +11,8 @@ head:
 
 ## 为什么Nginx？
 
-[Ngonx官网](http://nginx.org/en/)
+[Nginx官网](http://nginx.org/en/)
+[Nginx文档官网](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-open-source/)
 
 Nginx时轻量级Web服务器，它不仅时一个高性能的HTTP和反向代理服务器，同时也是一个IMAP/POPS/SMTP代理服务器
 
@@ -139,20 +140,73 @@ sudo apt install nginx
 make install
 ```
 
-### 启动
+## 初学者指南
 
-确保系统的 80 端口没被其他程序占用，运行/usr/local/nginx/nginx 命令来启动 Nginx
+### 介绍
+
+本指南描述了如何启动和停止 nginx，以及重新加载其配置，解释了配置文件的结构，并描述了如何设置 nginx 以提供静态内容，如何将 nginx 配置为代理服务器，以及如何将其与 FastCGI 应用程序连接
+
+### nginx配置文件存放目录
+
+- /usr/local/nginx/conf/nginx.conf
+- /etc/nginx/nginx.conf
+- /usr/local/nginx.conf  `默认存放目录`
+
+### 启动、停止和重载配置
 
 ```bash
-netstat -ano|grep 80
+# 启动
+nginx
+
+# nginx -s signal
+# signal:使用参数调用可执行文件控制nginx
+
+# 快速关闭
+nginx -s stop
+
+# 优雅关闭
+nginx -s quit
+
+# 重载配置文件
+nginx -s reload
+
+# 重新打开日志文件
+nginx -s reopen
+
+# 获得所有正在运行的 nginx 进程的列表
+ps -ax | grep nginx
+
+# 默认情况下，nginx 主进程的进程 ID 写入到目录
+# killnginx.pid/usr/local/nginx/logs/var/run
+kill -s QUIT 1628
 ```
 
-如果查不到结果后执行，有结果则忽略此步骤（ubuntu下必须用sudo启动，不然只能在前台运行）
+### 读取静态文件
 
-```bash
-sudo /usr/local/nginx/nginx
+```nginx
+server {
+  location / {      # 路由
+    root /data/www; # 静态文件存放目录
+  }
+
+  location /images/ {
+    root /data;
+  }
+}
 ```
 
-打开浏览器访问此机器的 IP，如果浏览器出现 Welcome to nginx! 则表示 Nginx 已经安装并运行成功
+这已经是一个在标准端口80上侦听的服务器的工作配置，并且可以在本地机器上访问
 
-到这里nginx就安装完成了，如果只是处理静态html就不用继续安装了
+### 设置要给简单的代理服务器
+
+```nginx
+server {
+  location / {
+    proxy_pass http://localhost:8080/;  # 80端口代理到http://localhost:8080/
+  }
+
+  location ~ \.(gif|jpg|png)$ {
+    root /data/images;
+  }
+}
+```

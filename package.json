@@ -23,6 +23,8 @@
     "serve": "vitepress serve docs"
   },
   "devDependencies": {
+    "markdown-it-ins": "^3.0.1",
+    "markdown-it-multimd-table": "^4.1.0",
     "vitepress": "^0.13.2",
     "yarn": "^1.22.10"
   }

@@ -8,7 +8,23 @@ module.exports = {
   root: '/',
 //   base: '/c-blog/',
   head,
-  // theme: 'reco',
   themeConfig,
-  url: 'https://qiyoe.cn'
+  url: 'https://qiyoe.cn',
+  markdown: {
+    // options for markdown-it-anchor
+    anchor: {  
+      permalink: true,
+      permalinkBefore: true,
+      permalinkSymbol: '#'
+    },
+
+    // options for markdown-it-toc
+    toc: { includeLevel: [2, 3] },
+
+    config: (md) => {
+      // use more markdown-it plugins!
+      md.use(require('markdown-it-multimd-table'))
+        .use(require('markdown-it-ins'))
+    }
+  }
 }
