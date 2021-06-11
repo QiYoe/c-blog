@@ -95,7 +95,7 @@ function getFrontEndSidebar() {
       ]
     },
     {
-      text: 'vue',
+      text: 'Vue',
       children: [
         { text: 'Vue3学习笔记', link: '/front-end/vue/' },
         { text: 'Axios学习笔记', link: '/front-end/vue/axios' },
@@ -107,7 +107,7 @@ function getFrontEndSidebar() {
       ]
     },
     {
-      text: 'webContainer',
+      text: 'WebContainer',
       children: [
         { text: 'webContainer详解', link: '/front-end/web-container/' }
       ]

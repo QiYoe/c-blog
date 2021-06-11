@@ -415,6 +415,8 @@ stream {
 
 ### Overview（概览）
 
+负载均衡指的是在多个后端服务器之间有效地分配网络流量
+
 跨多个应用程序实例的负载平衡是一种常用的技术，用于优化资源利用率、最大化吞吐量、减少延迟并确保容错配置。
 
 ### Proxying HTTP Traffic to a Group of Servers
@@ -505,8 +507,230 @@ upstream backend {
 # 在本例中， backend1.example.com 服务器的权重为5; 其他两个服务器的默认权重为1，但 IP 地址为192.0.0.1的服务器被标记为备份服务器，除非其他两个服务器都不可用，否则不会接收请求。使用这种权重配置，每6个请求中，5个发送到 backend1.example.com ，1个发送到 backend2.example.com。
 ```
 
----
----
+## TCP and UDP Load Balancing
+
+### 配置反向代理
+
+首先，您需要配置反向代理，以便 NGINX Open Source 可以将客户机的 TCP 连接或 UDP 数据报转发到upstream组或代理服务器
+
+打开 NGINX 配置文件并执行以下步骤:
+
+```bash
+# 创建一个顶级 stream {} 块:
+stream {
+  # 为 stream {}上下文中的每个虚拟服务器定义一个或多个 server {} 配置块
+  # 在每个服务器的 server {}配置块中，包含 listen 指令来定义服务器侦听的 IP 地址和/或端口
+  # 使用 proxy_ pass 指令来定义被代理的服务器或者服务器转发流量的upstream组
+  server {
+    # TCP 是 stream 上下文的默认协议，所以 listen 指令没有 TCP 参数
+    listen 12345;
+    #TCP traffic will be forwarded to the "stream_backend" upstream group
+    proxy_pass stream_backend;
+    # ...
+  }
+
+  server {
+    # 对于 UDP 流量，还包括 UDP 参数
+    listen 53 udp;
+    #TCP traffic will be forwarded to the specified server
+    proxy_pass backend.example.com:12346;
+    # ...
+  }
+
+  server {
+    listen     53 udp;
+    #UDP traffic will be forwarded to the "dns_servers" upstream group
+    proxy_pass dns_servers;
+  }
+
+  server {
+    # 如果代理服务器有多个网络接口，您可以选择配置 NGINX，使其在连接到上游服务器时使用特定的源 IP 地址。如果 NGINX 后面的代理服务器配置为接受来自特定 IP 网络或 IP 地址范围的连接，这可能会很有用
+    listen     127.0.0.1:12345;
+    proxy_pass backend.example.com:12345;
+    # 包括 proxy _ bind 指令和适当网络接口的 IP 地址
+    proxy_bind 127.0.0.1:12345;
+    # 还可以选择调整两个内存缓冲区的大小，NGINX 可以在这两个缓冲区中放置来自客户端和上游连接的数据。如果数据量很小，可以减少缓冲区，从而节省内存资源。如果存在大量数据，则可以增加缓冲区大小，以减少套接字读/写操作的数量。一旦在一个连接上接收到数据，NGINX 就会读取数据并通过另一个连接将其转发。缓冲区由 proxy _ buffer _ size 指令控制
+    proxy_buffer_size 16k;
+  }
+  # ...
+}
+```
+
+### Configuring TCP or UDP Load Balancing
+
+```bash
+# 创建一组服务器，或者一个负载均衡的上游组。在upsteam{}上下文中定义一个或多个upsteam {}配置块，并设置上游组的名称，例如，TCP 服务器的 stream_backend 和 UDP 服务器的 dns_servers
+stream {
+  # 确保 proxy_pass 指令引用了上游组的名称，就像上面为反向代理配置的那些指令一样
+  upstream stream_backend {
+    # 用上游服务器填充上游组。在上游{}块中，为每个上游服务器添加一个服务器指令，指定它的 IP 地址或主机名(可以解析为多个 IP 地址)和一个必需的端口号。请注意，您没有为每个服务器定义协议，因为这是通过您在服务器块中的 listen 指令上包含的参数为整个上游组定义的，该参数是您前面创建的
+    server backend1.example.com:12345;
+    server backend2.example.com:12345;
+    server backend3.example.com:12346;
+    # ...
+  }
+
+  upstream dns_servers {
+    server 192.168.136.130:53;
+    server 192.168.136.131:53;
+    # ...
+  }
+
+  # ...
+}
+```
+
+配置上游组使用的负载平衡方法:
+
+- Round Robin - 默认情况下，NGINX 使用 Round Robin 算法来平衡负载流量，并将其顺序指向配置的上游组中的服务器
+- Least Connections - 最少连接-NGINX 选择当前活动连接数较少的服务器
+- Hash - Hash-NGINX 基于用户定义的密钥选择服务器，例如，源 IP 地址($remote_addr)
+- Random - 每个连接将被传递到一个随机选择的服务器。如果指定了这个`two`参数，首先，NGINX 随机选择两个服务器并考虑服务器权重，然后使用指定的方法选择其中一个服务器:
+  - least_conn - 活动连接的最少数量
+- 对于每个上游服务器，可以选择指定特定于服务器的参数，包括最大连接数、服务器重量等
+
+```bash
+upstream stream_backend {
+  hash   $remote_addr consistent;
+  server backend1.example.com:12345 weight=5;
+  server backend2.example.com:12345;
+  server backend3.example.com:12346 max_conns=3;
+}
+upstream dns_servers {
+  least_conn;
+  server 192.168.136.130:53;
+  server 192.168.136.131:53;
+  # ...
+}
+```
+
+- 另一种方法是代理流量到单个服务器，而不是上游组。如果您通过主机名识别服务器，并配置主机名以解析为多个 IP 地址，那么 NGINX 负载使用 Round Robin 算法平衡 IP 地址之间的流量。在这种情况下，您必须在 proxy _ pass 指令中指定服务器端口号，并且不能在 IP 地址或主机名之前指定协议
+
+```bash
+stream {
+  # ...
+  server {
+    listen     12345;
+    proxy_pass backend.example.com:12345;
+  }
+}
+```
+
+### Example of TCP and UDP Load-Balancing Configuration
+
+```bash
+stream {
+  upstream stream_backend {
+    least_conn;
+    server backend1.example.com:12345 weight=5;
+    server backend2.example.com:12345 max_fails=2 fail_timeout=30s;
+    server backend3.example.com:12345 max_conns=3;
+  }
+  
+  upstream dns_servers {
+    least_conn;
+    server 192.168.136.130:53;
+    server 192.168.136.131:53;
+    server 192.168.136.132:53;
+  }
+  
+  server {
+    # 服务器监听端口12345，并将所有 TCP 连接代理到上游服务器的 stream _ backend 组。注意，在流模块的上下文中定义的 proxy _ pass 指令不能包含协议
+    listen        12345;
+    proxy_pass    stream_backend;
+    proxy_timeout 3s;
+    proxy_connect_timeout 1s;
+  }
+  
+  server {
+    # 服务器监听端口53，并将所有 UDP 数据报(listen 指令的 UDP 参数)代理到名为 dns _ servers 的上游组。如果未指定 udp 参数，套接字将侦听 TCP 连接。
+    listen     53 udp;
+    proxy_pass dns_servers;
+  }
+  
+  server {
+    # 虚拟服务器监听端口12346并将 TCP 连接代理到 backend4.example.com 服务器，该服务器可以解析几个 IP 地址，这些 IP 地址通过 Round Robin 方法实现负载平衡
+    listen     12346;
+    proxy_pass backend4.example.com:12346;
+  }
+}
+```
+
+## HTTP Health Checks
+
+### Introduction
+
+NGINX 可以不断地测试上游服务器，避免出现故障的服务器，并优雅地将恢复的服务器添加到负载平衡组中。
+
+### Passive Health Checks（被动健康检查）
+
+对于被动健康检查，NGINX 会在事务发生时进行监视，并尝试恢复失败的连接。如果事务仍然不能恢复，NGINX 开放源码将服务器标记为不可用，并暂时停止向它发送请求，直到它再次被标记为活动
+
+- fail_timeout - 设置服务器被标记为不可用的时间，以及服务器被标记为不可用的时间(默认为10秒)
+- max_fails - 服务器被标记为不可用(默认为1次尝试)
+
+在下面的例子中，如果 NGINX 无法向服务器发送请求，或者在30秒内3次没有收到服务器的响应，它将服务器标记为30秒内不可用:
+
+```bash
+upstream backend {
+  server backend1.example.com;
+  server backend2.example.com max_fails=3 fail_timeout=30s;
+}
+```
+
+最近恢复的服务器很容易被连接压垮，这可能导致服务器再次被标记为不可用。缓慢启动允许上游服务器逐渐恢复其重量从零到其名义值后，它已恢复或成为可用。这可以通过上游服务器指令的 slow _ start 参数来完成
+
+```bash
+upstream backend {
+  server backend1.example.com slow_start=30s;
+  server backend2.example.com;
+  server 192.0.0.1 backup;
+}
+```
+
+:::warning 提醒
+注意，如果组中只有一个服务器，fail_timeout 和 max_fails 参数将被忽略，服务器永远不会被标记为不可用。
+:::
+
+### TCP Health Checks
+
+```bash
+stream {
+  #...
+  upstream stream_backend {
+    server backend1.example.com:12345 weight=5;
+    server backend2.example.com:12345 max_fails=2 fail_timeout=30s;
+    server backend3.example.com:12345 max_conns=3;
+  }
+  #...
+  server {
+    listen     12345;
+    proxy_pass stream_backend;
+  }
+}
+```
+
+### UDP Health Checks
+
+```bash
+stream {
+  #...
+  upstream dns_upstream {
+    server 192.168.136.130:53 fail_timeout=60s;
+    server 192.168.136.131:53 fail_timeout=60s;
+    server 192.168.136.132:53 fail_timeout=60s;
+  }
+  #...
+  server {
+    listen          53 udp;
+    proxy_pass      dns_upstream;
+    proxy_timeout   1s;
+    proxy_responses 1;
+    error_log       logs/dns.log;
+  }
+  #...
+}
+```
 
 ```bash
 
