@@ -1,0 +1,12 @@
+---
+title: Vue3
+head:
+  - - meta
+    - name: description
+      content: vue3学习笔记
+  - - meta
+    - name: keywords
+      content: vue vue3 vuejs vue.js
+---
+
+[vue3官方文档](https://v3.cn.vuejs.org/)

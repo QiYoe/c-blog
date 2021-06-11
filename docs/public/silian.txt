@@ -7,6 +7,14 @@ https://qiyoe.cn/front-end/swagger-hub/
 https://qiyoe.cn/front-end/linux/
 https://qiyoe.cn/front-end/linux/nginx.html
 https://qiyoe.cn/front-end/linux/docker.html
+https://qiyoe.cn/front-end/vue/
+https://qiyoe.cn/front-end/vue/axios.html
+https://qiyoe.cn/front-end/vue/vue-router.html
+https://qiyoe.cn/front-end/vue/typescript.html
+https://qiyoe.cn/front-end/vue/vite.html
+https://qiyoe.cn/front-end/vue/nuxt.html
+https://qiyoe.cn/front-end/vue/sass.html
+https://qiyoe.cn/front-end/web-container/
 https://qiyoe.cn/books/you-dont-know-js.html
 https://qiyoe.cn/algorithm/leetcode.html
 https://qiyoe.cn/tools/smart-tools.html

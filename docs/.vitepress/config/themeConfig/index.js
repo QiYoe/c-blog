@@ -15,17 +15,22 @@ module.exports = {
         { 
           text: '博客相关',
           link: '/front-end/blog-build/vitepress-build',
-          activeMatch: '^/front-end/'
         },
         { 
           text: 'SwaggerHub',
           link: '/front-end/swagger-hub/',
-          activeMatch: '^/front-end/'
         },
         { 
           text: 'Linux相关',
           link: '/front-end/linux/',
-          activeMatch: '^/front-end/'
+        },
+        { 
+          text: 'Vue',
+          link: '/front-end/vue/',
+        },
+        { 
+          text: 'WebContainer',
+          link: '/front-end/web-container/'
         },
       ]
     },
@@ -36,7 +41,6 @@ module.exports = {
         {
           text: '你不知道的JavaScript',
           link: '/books/you-dont-know-js',
-          activeMatch: '^/books/'
         }
       ]
     },
@@ -47,7 +51,6 @@ module.exports = {
         {
           text: 'LeetCode',
           link: '/algorithm/leetcode',
-          activeMatch: '^/algorithm/'
         }
       ]
     },
@@ -89,6 +92,24 @@ function getFrontEndSidebar() {
         { text: 'Linux启动Nginx服务', link: '/front-end/linux/' },
         { text: 'Nginx', link: '/front-end/linux/nginx' },
         { text: 'Docker', link: '/front-end/linux/docker' }
+      ]
+    },
+    {
+      text: 'vue',
+      children: [
+        { text: 'Vue3学习笔记', link: '/front-end/vue/' },
+        { text: 'Axios学习笔记', link: '/front-end/vue/axios' },
+        { text: 'VueRouter学习笔记', link: '/front-end/vue/vue-router' },
+        { text: 'TS学习笔记', link: '/front-end/vue/typescript' },
+        { text: 'Vite学习笔记', link: '/front-end/vue/vite' },
+        { text: 'Nuxt学习笔记', link: '/front-end/vue/nuxt' },
+        { text: 'Sass学习笔记', link: '/front-end/vue/sass' },
+      ]
+    },
+    {
+      text: 'webContainer',
+      children: [
+        { text: 'webContainer详解', link: '/front-end/web-container/' }
       ]
     }
   ]

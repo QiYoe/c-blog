@@ -183,40 +183,332 @@ nginx
 
 ## 在Docker上部署NGINX
 
-
-
-## NGINX命令及配置
-
-### 介绍
-
-本指南描述了如何启动和停止 nginx，以及重新加载其配置，解释了配置文件的结构，并描述了如何设置 nginx 以提供静态内容，如何将 nginx 配置为代理服务器，以及如何将其与 FastCGI 应用程序连接
-
-### nginx配置文件存放目录
-
-- /usr/local/nginx/conf/nginx.conf
-- /etc/nginx/nginx.conf
-- /usr/local/nginx.conf  `默认存放目录`
-
-### 启动、停止和重载配置
+### 在Docker上运行NGINX
 
 ```bash
-# 启动
-nginx
+# 启动运行在容器中的 NGINX 实例，使用缺省的 NGINX 配置，并执行以下命令
+docker run --name mynginx1 -p 80:80 -d nginx
+# mynginx1 是基于 NGINX 映像创建的容器的名称
+# -d 选项指定容器以分离模式运行: 容器继续运行，直到停止，但不响应命令行上运行的命令
+# -p 第一个参数指定 Docker 主机中的端口（nginx端口），第二个参数映射到容器中公开的端口（客户端端口）
+# 该命令返回容器 ID 的长格式: fcd1fb01b14557c7c9d991238f2558ae2704d129cf9fb97bb4fadf673a58580d。这种形式的 ID 用于日志文件的名称。
 
-# nginx -s signal
-# signal:使用参数调用可执行文件控制nginx
+# 验证容器是否已经创建并且正在使用
+docker ps
+```
 
-# 快速关闭
-nginx -s stop
+### 管理内容和配置文件
 
-# 优雅关闭
-nginx -s quit
+- 在Doker主机上维护内容和配置文件
 
-# 重载配置文件
-nginx -s reload
+在创建容器时，可以将 Docker 主机上的本地目录挂载到容器中的目录中。NGINX 映像使用默认的 NGINX 配置，它使用/usr/share/NGINX/html 作为容器的根目录，并将配置文件放入/etc/NGINX 中。对于Docker主机内容在本地目录/var/www 中、配置文件在/var/nginx/conf 中的 Docker 主机，运行以下命令：
 
-# 重新打开日志文件
-nginx -s reopen
+```bash
+docker run --name mynginx2 --mount type=bind,source=/var/www,target=/usr/share/nginx/html,readonly --mount source=/var/nginx/conf,target=/etc/nginx/conf,readonly -p 80:80 -d nginx
+```
+
+对 Docker 主机上的本地目录/var/www 和/var/nginx/conf 中的文件所做的任何更改都反映在容器中的目录/usr/share/nginx/html 和/etc/nginx 中。Readonly 选项意味着只能在 Docker 主机上更改这些目录，而不能从容器内更改
+
+- 从 Docker 主机复制内容和配置文件
+
+在容器创建期间，Docker 可以从 Docker 主机上的本地目录复制内容和配置文件。一旦创建了一个容器，文件将通过在文件更改时创建一个新容器或通过修改容器中的文件来维护。
+
+复制文件的一个简单方法是创建一个 Dockerfile，其中包含在基于 NGINX 映像生成新的 Docker 映像期间运行的命令。对于 Dockerfile 中的 file-COPY (COPY)命令，本地目录路径相对于 Dockerfile 所在的构建上下文。
+
+假设内容目录是`content`，配置文件目录是 `conf`，这两个子目录都是 Dockerfile 所在的目录。NGINX 映像在`/etc/NGINX/conf.d` 目录中有缺省的 NGINX 配置文件，包括 `default.conf`。要只使用 Docker 主机上的配置文件，请使用 RUN 命令删除默认文件:
+
+```bash
+FROM nginx
+RUN rm /etc/nginx/conf.d/default.conf
+COPY content /usr/share/nginx/html
+COPY conf /etc/nginx
+```
+
+通过在 Dockerfile 所在的目录中运行命令创建 NGINX 映像。句号(".")在命令的末尾将工作目录文件定义为构建上下文，其中包含 Dockerfile 和要复制的目录:
+
+```bash
+docker build -t mynginx_image1 .
+```
+
+基于 mynginx image1映像创建一个容器 mynginx3:
+
+```bash
+docker run --name mynginx3 -p 80:80 -d mynginx_image1
+```
+
+- 在容器中维护内容和配置文件
+
+由于 SSH 不能用于访问 NGINX 容器，因此要直接编辑内容或配置文件，您需要创建一个具有 shell 访问权限的辅助容器。要让 helper 容器能够访问这些文件，创建一个新的映像，其中包含为映像定义的适当的 Docker 数据卷:
+
+```bash
+# 复制 nginx 内容和配置文件，用 Dockerfile 定义映像的音量:
+FROM nginx
+COPY content /usr/share/nginx/html
+COPY conf /etc/nginx
+VOLUME /usr/share/nginx/html
+VOLUME /etc/nginx
+
+# 通过运行以下命令创建新的 NGINX 映像:
+docker build -t mynginx_image2 .
+
+# 基于 mynginx image2映像创建一个 NGINX 容器 mynginx4:
+docker run --name mynginx4 -p 80:80 -d mynginx_image2
+
+# 启动一个带有 shell 的 helper 容器 mynginx4文件，提供对我们刚刚创建的 mynginx4容器的内容和配置目录的访问:
+docker run -i -t --volumes-from mynginx4 --name mynginx4_files debian /bin/bash
+# 新的mynginx4_files帮助器容器在前台运行，带有一个持久的标准输入(-i选项)和一个tty (-t选项)。mynginx4中定义的所有卷都作为helper容器中的本地目录挂载。
+# debian参数意味着帮助容器使用来自Docker Hub的debian映像。因为NGINX映像也使用Debian，所以最有效的方法是使用Debian作为辅助容器，而不是让Docker加载另一个操作系统
+# /bin/bash参数意味着bash shell在helper容器中运行，显示一个shell提示符，您可以根据需要使用该提示符修改文件
+
+# 要启动和停止容器，请运行以下命令:
+docker start mynginx4_files
+docker stop mynginx4_files
+
+# 要退出 shell 但保持容器运行，请按 Ctrl + p，然后按 Ctrl + q 组合键恢复对正在运行的容器的 shell 访问，运行以下命令:
+docker attach mynginx4_files
+
+# 要退出 shell 并终止容器，请运行 exit 命令。
+```
+
+### 管理日志
+
+- 使用默认日志记录
+
+默认情况下，NGINX 映像配置为向 Docker 日志收集器发送 NGINX 访问日志和错误日志。这是通过将它们链接到 stdout 和 stderr 来实现的: 然后将来自这两个日志的所有消息写入文件/var/lib/docker/containers/container-ID/container-ID-json。登录 Docker 主机。Container-ID 是创建容器时返回的长形式 ID。要显示长表单 ID，请运行以下命令:
+
+```bash
+docker inspect --format '{{ .Id }}' container-name
+```
+
+可以使用 Docker 命令行和 Docker 引擎 API 提取日志消息:
+
+```bash
+# 要从命令行提取日志消息，请运行以下命令:
+docker logs container-name
+
+# 要使用 Docker Remote API 提取日志消息，请使用 Docker Unix sock 发送一个 GET 请求:
+curl --unix-sock /var/run/docker-sock http://localhost/containers/container-name/logs?stdout=1&stderr=1
+# 若要在输出中只包含访问日志消息，请只包含 stdout = 1。要将输出限制为错误日志消息，只包含 stderr = 1
+```
+
+- 使用定制的日志记录
+
+如果希望为某些配置块(如服务器{}和位置{})以不同的方式配置日志记录，请为容器中存储日志文件的目录定义 Docker 卷，创建一个帮助容器来访问日志文件，并使用任何日志记录工具。要实现这一点，请创建一个新映像，其中包含日志文件的卷或卷。
+
+```bash
+# 例如，为了配置 NGINX 将日志文件存储在/var/log/NGINX/log 中，在 Dockerfile 中添加该目录的 VOLUME 定义(前提是内容和配置文件在容器中进行管理) :
+FROM nginx
+COPY content /usr/share/nginx/html
+COPY conf /etc/nginx
+VOLUME /var/log/nginx/log
+# 然后，您可以创建一个映像，并使用它创建一个 NGINX 容器和一个可以访问日志目录的 helper 容器。助手容器可以安装任何所需的日志记录工具。
+```
+
+### 控制 NGINX
+
+由于不能直接访问 NGINX 容器的命令行，因此不能直接将 NGINX 命令发送到容器。相反，信号可以通过 Docker kill 命令发送到容器
+
+```bash
+# 要重新加载 NGINX 配置，请向 Docker 发送 HUP 信号:
+docker kill -s HUP container-name
+
+# 要重新启动 NGINX，运行以下命令重新启动容器:
+docker restart container-name
+```
+
+## 基本功能
+
+### Master and Worker Processes
+
+NGINX 有一个主进程和一个或多个辅助进程。如果启用了缓存，缓存加载器和缓存管理器进程也会在启动时运行。
+
+主进程的主要目的是读取和评估配置文件，以及维护辅助进程。
+
+辅助进程执行请求的实际处理。NGINX 依靠依赖于操作系统的机制在工作进程之间有效地分配请求。辅助进程的数量由 nginx.conf 配置文件中的 worker _ processes 指令定义，可以设置为固定数量，也可以配置为自动调整可用 CPU 内核的数量。
+
+### 控制 NGINX 命令
+
+要重新加载配置，可以停止或重新启动 NGINX，或者向主进程发送信号。可以通过运行带有-s 参数的 NGINX 命令(调用 NGINX 可执行文件)来发送信号。
+
+```bash
+nginx -s <SIGNAL>
+```
+
+其中 < signal > 可以是以下任何一个:
+
+- quit – 优雅关闭
+- reload – 重新加载配置文件
+- reopen – 重新打开日志文件
+- stop – 立即关闭(快速关闭)
+
+Kill 实用程序也可用于直接向主进程发送信号。默认情况下，主进程的进程 ID 被写入 nginx.pid 文件，该文件位于/usr/local/nginx/logs 或/var/run 目录中。
+
+### 创建 NGINX 配置文件
+
+默认情况下，配置文件名为 NGINX.conf。它通常是/usr/local/nginx/conf、/etc/nginx 或/usr/local/etc/nginx 之一
+
+- Directives
+
+配置文件由指令及其参数组成。简单(单行)指令的每个末尾都有一个分号。其他指令充当“容器”，将相关指令组合在一起，并用花括号括起来({}) ; 这些指令通常称为块。下面是一些简单指令的例子。
+
+```bash
+user             nobody;
+error_log        logs/error.log notice;
+worker_processes 1;
+```
+
+- 特定功能的配置文件
+
+为了使配置更易于维护，我们建议您将其分割为一组特定于特性的文件，存储在/etc/nginx/conf.d 目录中，并使用 nginx.conf 主文件中的头文件文件来引用特定于特性的文件的内容。
+
+```bash
+include conf.d/http;
+include conf.d/stream;
+include conf.d/exchange-enhanced;
+```
+
+- Contexts(称为上下文)
+
+一些顶级指令(称为上下文)将适用于不同流量类型的指令组合在一起:
+
+- events – 一般连接处理
+- http - HTTP 传输
+- mail - 邮件通信
+- stream - TCP 和 UDP 通信
+
+置于这些Contexts之外的指令被认为是`main context`
+
+```bash
+user nobody; # a directive in the 'main' context
+
+events {
+  # configuration of connection processing
+}
+
+http {
+  # Configuration specific to HTTP and affecting all virtual servers  
+
+  server {
+    # configuration of HTTP virtual server 1       
+    location /one {
+      # configuration for processing URIs starting with '/one'
+    }
+    location /two {
+      # configuration for processing URIs starting with '/two'
+    }
+  } 
+  
+  server {
+    # configuration of HTTP virtual server 2
+  }
+}
+
+stream {
+  # Configuration specific to TCP/UDP and affecting all virtual servers
+  server {
+    # configuration of TCP virtual server 1 
+  }
+}
+```
+
+## HTTP Load Balancing（负载均衡）
+
+### Overview（概览）
+
+跨多个应用程序实例的负载平衡是一种常用的技术，用于优化资源利用率、最大化吞吐量、减少延迟并确保容错配置。
+
+### Proxying HTTP Traffic to a Group of Servers
+
+要开始使用 NGINX Open Source 来平衡一组服务器的 HTTP 流量，首先需要使用`upstream`指令定义该组。该指令被放置在 http 上下文中。
+
+例如，下面的配置定义了一个名为 backend 的组，由三个服务器配置组成(可以在三个以上的实际服务器中解析) :
+
+```bash
+http {
+  upstream backend {
+    server backend1.example.com weight=5; # 运行同一应用程序的实例
+    server backend2.example.com; # 运行同一应用程序的实例
+    server 192.0.0.1 backup; # 备份服务器
+  }
+
+  server {
+    location / {
+      proxy_pass http://backend;
+    }
+  }
+  # NGINX 上运行的虚拟服务器将所有请求传递给前面例子中定义的备份服务器
+}
+# 因为在upstream中没有指定负载平衡算法，所以 NGINX 使用默认算法 Round Robin:
+```
+
+### 选择负载平衡方法
+
+NGINX 开源支持四种负载平衡方法:
+
+- Round Robin - 请求均匀地分布在服务器上，并考虑服务器权重。默认情况下使用此方法(没有启用它的指令)
+
+```bash
+upstream backend {
+  # no load balancing method is specified for Round Robin
+  server backend1.example.com;
+  server backend2.example.com;
+}
+```
+
+- Least Connections - 最少的连接——向服务器发送的请求中活动连接的数量最少，同样要考虑服务器权重:
+
+```bash
+upstream backend {
+  least_conn;
+  server backend1.example.com;
+  server backend2.example.com;
+}
+```
+
+- IP Hash - 发送请求的服务器是由客户端 IP 地址决定的。在这种情况下，使用 IPv4地址的前三个八位元组或整个 IPv6地址来计算散列值。该方法保证来自相同地址的请求到达相同的服务器，除非它不可用。
+
+```bash
+upstream backend {
+  ip_hash;
+  server backend1.example.com;
+  server backend2.example.com;
+
+  # 如果某个服务器需要暂时从负载平衡旋转中删除，可以用 down 参数对其进行标记，以便保留当前客户端 IP 地址的散列。由此服务器处理的请求将自动发送到组中的下一个服务器:
+  server backend3.example.com down;
+
+}
+```
+
+- Hash - 请求是从用户定义的关键，可以是一个文本字符串，变量，或一个组合确定。例如，密钥可能是一个成对的源 IP 地址和端口，或者是一个 URI，如下例所示:
+
+```bash
+upstream backend {
+  hash $request_uri consistent;
+  server backend1.example.com;
+  server backend2.example.com;
+}
+```
+
+Hash 指令的可选的 consistent 参数启用 ketama consistent-hash 负载平衡。根据用户定义的散列键值，请求均匀地分布在所有上游服务器上。如果将上游服务器添加到上游组或从上游组移除，则只需重新映射少量密钥，从而在负载平衡缓存服务器或其他累积状态的应用程序的情况下，最大限度地减少缓存丢失。
+
+### Server Weights
+
+默认情况下，NGINX 使用 Round Robin 方法根据请求的权重在组中的服务器之间分发请求。服务器指令的 weight 参数设置服务器的权重; 默认值是1:
+
+```bash
+upstream backend {
+  server backend1.example.com weight=5;
+  server backend2.example.com;
+  server 192.0.0.1 backup;
+}
+
+# 在本例中， backend1.example.com 服务器的权重为5; 其他两个服务器的默认权重为1，但 IP 地址为192.0.0.1的服务器被标记为备份服务器，除非其他两个服务器都不可用，否则不会接收请求。使用这种权重配置，每6个请求中，5个发送到 backend1.example.com ，1个发送到 backend2.example.com。
+```
+
+---
+---
+
+```bash
 
 # 获得所有正在运行的 nginx 进程的列表
 ps -ax | grep nginx
