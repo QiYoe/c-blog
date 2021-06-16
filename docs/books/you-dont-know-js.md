@@ -61,7 +61,7 @@ head:
   - 函数表达式--非function()开头`(function foo(){...}())或foo()`
     - 匿名（不建议）
     - 具名
-      - IIFE（立即执行函数）
+      - IIFE（立即执行函数）(也是函数，即内部变量不是全局变量)
 - 块作用域：{}（**if条件语句不算块**）
   - try/catch：catch会创建一个块作用域
   - let、const
@@ -73,6 +73,10 @@ head:
 引擎会在解释 JavaScript 代码之前首先对其进行编译。编译阶段中的一部分工作就是找到所有的声明，并用合适的作用域将它们关联起来，[词法作用域](#词法作用域)核心内容（**针对当前作用域**）
 
 函数优先：函数会首先被提升，然后才是变量（**同名的函数声明和变量声明不提升规则方式进行覆盖**）
+
+:::warning 提醒
+**if语句中的var会`提升`到外层作用域，即使if条件不成立**
+:::
 
 ### 作用域闭包
 
@@ -349,3 +353,336 @@ b2.speak();
 ## 类型和语法
 
 ### 类型
+
+内置类型：
+
+- null            - const a = null; (!a && typeof a === "object")
+- undefined       - typeof undefined === "undefined"
+- boolean         - typeof true === "boolean"
+- number          - typeof 42 === "number"
+- string          - typeof "42" === "string"
+- object          - typeof { lift: 42 } === "object"
+- symbol(es6新增)  - typeof Symbol() === "symbol"
+
+**可以用`typeof`查看值的类型**
+
+`object`子类型：
+
+- typeof function a() {} === "function"  **a.length是参数个数**
+- typeof [1, 2, 3] === "object"
+
+### 值
+
+++数组：++
+
+:::warning 提醒
+delete运算符可以删除数组单元，但是会留下空白。即length不变
+:::
+
+类数组（一组通过数字索引的值）转换为数组：
+
+```js
+function foo() {
+  var arr = Array.prototype.slice.call(arguments)
+  // var arr = Array.from(arguments)
+  arr.push("bam")
+  console.log(arr)
+}
+
+foo("baz", "bar") // ["baz", "bar", "bam"]
+```
+
+---
+
+++字符串：++
+
+JavaScript中字符串是不可变的：
+
+```js
+var a = "foo";
+var b = ["f", "o", "o"];
+
+a[1] = "O";
+b[1] = "0";
+
+a; // "foo"
+b; // ["f", "O", "o"]
+```
+
+:::warning
+只有成员可变更的值才可以借用方法。比如字符串可以借用数组的map、join方法，但是不可以借用reverse方法，因为reverse方法会改变值成员
+
+```js
+a.join; // undefined
+a.map; // undefined
+
+var c = Array.prototype.join.call( a, "-" );
+var d = Array.prototype.map.call( a, function(v){
+  return v.toUpperCase() + ".";
+} ).join( "" );
+
+c; // "f-o-o"
+d; // "F.O.O."
+
+a.reverse; // undefined
+b.reverse(); // ["!","o","O","f"]
+b; // ["f","O","o","!"]
+
+
+var f = a
+ // 将a的值转换为字符数组
+ .split( "" )
+ // 将数组中的字符进行倒转
+ .reverse()
+ // 将数组中的字符拼接回字符串
+ .join( "" );
+f; // "oof
+```
+
+:::
+
+---
+
+++数字：++
+
+```js
+// 特别大和特别小的数字默认用指数格式显示，与 toExponential() 函数的输出结果相同
+var a = 5E10;
+a; // 50000000000
+a.toExponential(); // "5e+10"
+
+// tofixed(..) 方法可指定小数部分的显示位数：
+var a = 42.59;
+a.toFixed( 0 ); // "43"
+a.toFixed( 1 ); // "42.6"
+a.toFixed( 2 ); // "42.59"
+a.toFixed( 3 ); // "42.590"
+a.toFixed( 4 ); // "42.5900"
+
+// toPrecision(..) 方法用来指定有效数位的显示位数：
+var a = 42.59;
+a.toPrecision( 1 ); // "4e+1"
+a.toPrecision( 2 ); // "43"
+a.toPrecision( 3 ); // "42.6"
+a.toPrecision( 4 ); // "42.59"
+a.toPrecision( 5 ); // "42.590"
+a.toPrecision( 6 ); // "42.5900"
+
+// . 运算符需要给予特别注意，因为它是一个有效的数字字符，会被优先识别为数字常量的一部分，然后才是对象属性访问运算符
+// 无效语法：
+42.toFixed( 3 ); // SyntaxError  . 被视为常量 42. 的一部分
+// 下面的语法都有效：
+(42).toFixed( 3 ); // "42.000"
+0.42.toFixed( 3 ); // "0.420"
+42..toFixed( 3 ); // "42.000"
+
+// 还可以用指数形式来表示较大的数字
+var onethousand = 1E3; // 即 1 * 10^3
+var onemilliononehundredthousand = 1.1E6; // 即 1.1 * 10^6
+
+0xf3; // 243的十六进制          推荐
+0Xf3; // 同上
+0363; // 243的八进制
+0o363; // 243的八进制          推荐
+0O363; // 同上
+0b11110011; // 243的二进制     推荐
+0B11110011; // 同上
+
+0.1 + 0.2 === 0.3; // false
+0.1 + 0.2 === 0.30000000000000004; // true
+
+// 判断 0.1 + 0.2 和 0.3 是否相等，最常见的方法是设置一个误差范围值
+if (!Number.EPSILON) {
+  Number.EPSILON = Math.pow(2,-52);
+}
+// 可以使用 Number.EPSILON 来比较两个数字是否相等（在指定的误差范围内）
+function numbersCloseEnoughToEqual(n1,n2) {
+ return Math.abs( n1 - n2 ) < Number.EPSILON;
+}
+var a = 0.1 + 0.2;
+var b = 0.3;
+numbersCloseEnoughToEqual( a, b ); // true
+numbersCloseEnoughToEqual( 0.0000001, 0.0000002 ); // false
+
+// 数位运算符 | 只适用于 32 位整数，可以将变量 a 中的数值转换为 32 位有符号整数
+a | 0
+
+// 表达式 void ___ 没有返回值，因此返回结果是 undefined。void 并不改变表达式的结果，只是让表达式不返回值：
+var a = 42;
+console.log( void a, a ); // undefined 42
+
+Infinity/Infinity  // NaN
+
+// 判断两个值是否绝对相等
+Object.is(a, b)
+
+function foo(x) {
+  x.push( 4 );
+  x; // [1,2,3,4]
+  // 然后
+  x = [4,5,6];
+  x.push( 7 );
+  x; // [4,5,6,7]
+}
+var a = [1,2,3];
+foo( a );
+a; // 是[1,2,3,4]，不是[4,5,6,7]
+```
+
+:::warning 提醒
+向函数传递 a 的时候，实际是将引用 a 的一个复本赋值给 x，而 a 仍然指向 [1,2,3]。在函数中我们可以通过引用 x 来更改数组的值（push(4) 之后变为 [1,2,3,4]）。但 x = [4,5,6] 并不影响 a 的指向，所以 a 仍然指向 [1,2,3,4]
+
+```js
+function foo(x) {
+  x.push( 4 );
+  x; // [1,2,3,4]
+  // 然后
+  x = [4,5,6];
+  x.push( 7 );
+  x; // [4,5,6,7]
+}
+var a = [1,2,3];
+foo( a );
+a; // 是[1,2,3,4]，不是[4,5,6,7]
+```
+
+不能通过引用 x 来更改引用 a 的指向，只能更改 a 和 x 共同指向的值。如果要将 a 的值变为 [4,5,6,7]，必须更改 x 指向的数组，而不是为 x 赋值一个新的数组
+
+```js
+function foo(x) {
+  x.push( 4 );
+  x; // [1,2,3,4]
+  // 然后
+  x.length = 0; // 清空数组
+  x.push( 4, 5, 6, 7 );
+  x; // [4,5,6,7]
+}
+var a = [1,2,3];
+foo( a );
+a; // 是[4,5,6,7]，不是[1,2,3,4]
+```
+
+原因是标量基本类型值是不可更改的（字符串和布尔也是如此）。如果一个数字对象的标量基本类型值是 2，那么该值就不能更改，除非创建一个包含新值的数字对象。
+
+x = x + 1 中，x 中的标量基本类型值 2 从数字对象中拆封（或者提取）出来后，x 就神不知鬼不觉地从引用变成了数字对象，它的值为 2 + 1 等于 3。然而函数外的 b 仍然指向原来那个值为 2 的数字对象。
+
+```js
+function foo(x) {
+  x = x + 1;
+  x; // 3 
+}
+var a = 2;
+var b = new Number( a ); // Object(a)也一样
+foo( b );
+console.log( b ); // 是2，不是3
+```
+
+:::
+
+### 原生函数（内置函数）
+
+原生函数：
+
+- String()
+- Number()
+- Boolean()
+- Array()
+- Object()
+- Function()
+- RegExp()
+- Date()
+- Error()
+- Symbol()
+
+:::warning 提醒
+
+```js
+var a = new String( "abc" );
+typeof a; // 是"object"，不是"String"
+a instanceof String; // true
+Object.prototype.toString.call( a ); // "[object String]"
+```
+
+**typeof 在这里返回的是对象类型的子类型。**
+:::
+
+所有 typeof 返回值为 "object" 的对象（如数组）都包含一个内部属性 [[Class]]（可以把它看作一个内部的分类，而非传统的面向对象意义上的类）。这个属性无法直接访问，一般通过 Object.prototype.toString(..) 来查看。
+
+```js
+Object.prototype.toString.call( [1,2,3] );
+// "[object Array]"
+Object.prototype.toString.call( /regex-literal/i );
+// "[object RegExp]"
+Object.prototype.toString.call( null );
+// "[object Null]"
+Object.prototype.toString.call( undefined );
+// "[object Undefined]"
+Object.prototype.toString.call( "abc" );
+// "[object String]"
+Object.prototype.toString.call( 42 );
+// "[object Number]"
+Object.prototype.toString.call( true );
+// "[object Boolean]"
+```
+
+如果想要自行封装基本类型值，可以使用 Object(..) 函数（不带 new 关键字）：
+
+```js
+var a = "abc";
+var b = new String( a );
+var c = Object( a );
+
+typeof a; // "string"
+typeof b; // "object"
+typeof c; // "object"
+
+b instanceof String; // true
+c instanceof String; // true
+
+Object.prototype.toString.call( b ); // "[object String]"
+Object.prototype.toString.call( c ); // "[object String]"
+```
+
+如果想要得到封装对象中的基本类型值，可以使用 valueOf() 函数：
+
+```js
+var a = new String( "abc" );
+var b = new Number( 42 );
+var c = new Boolean( true );
+
+a.valueOf(); // "abc"
+b.valueOf(); // 42
+c.valueOf(); // true
+
+// 在需要用到封装对象中的基本类型值的地方会发生隐式拆封。
+var a = new String( "abc" );
+var b = a + ""; // b的值为"abc"
+
+typeof a; // "object"
+typeof b; // "string"
+```
+
+**`Symnol`可以用作属性名，但无论是在代码还是开发控制台中都无法查看和访问它的值，符号可以用作属性名，但无论是在代码还是开发控制台中都无法查看和访问它的值**
+
+```js
+// Function.prototype 是一个函数，RegExp.prototype 是一个正则表达式，而 Array.prototype 是一个数组。
+typeof Function.prototype; // "function"
+Function.prototype(); // 空函数！
+
+RegExp.prototype.toString(); // "/(?:)/"——空正则表达式
+"abc".match( RegExp.prototype ); // [""]
+
+function isThisCool(vals = Array.prototype, fn = Function.prototype, rx = RegExp.prototype) {
+  return rx.test(
+    vals.map( fn ).join( "" )
+  ); 
+}
+isThisCool(); // true原生函数 ｜ 45
+isThisCool(
+  ["a","b","c"],
+  function(v){ return v.toUpperCase(); },
+  /D/
+); // false
+```
+
+### 强制类型转换
