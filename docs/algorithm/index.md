@@ -11,8 +11,6 @@ head:
 
 [用JavaScript刷LeetCode的正确姿势](https://juejin.cn/post/6844903876206805005)
 
-[算法图解(书籍)](https://read.douban.com/reader/ebook/52186827/?from=book)
-
 [用 js 刷 LeetCode 题的解法题集](https://leetcode-solution-leetcode-pp.gitbook.io/leetcode-solution/)
 
 [用动画的形式呈现解 LeetCode 题目的思路(Java)](https://github.com/MisterBooo/LeetCodeAnimation)

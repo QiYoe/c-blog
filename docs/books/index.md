@@ -692,8 +692,6 @@ ToString:
 对普通对象来说，除非自行定义，否则 toString()（Object.prototype.toString()）返回
 内部属性 [[Class]] 的值（参见第 3 章），如 "[object Object]"。如果对象有自己的 toString() 方法，字符串化时就会调用该方法并使用其返回值，数组的 toString()。
 
-
-
 ---
 
 ToNumber:
@@ -707,5 +705,3 @@ ToBoolean:
 ToPrimitive:
 
 ---
-
-

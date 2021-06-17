@@ -29,6 +29,18 @@ module.exports = {
           link: '/front-end/vue/',
         },
         { 
+          text: 'AST',
+          link: '/front-end/ast/',
+        },
+        { 
+          text: 'Git',
+          link: '/front-end/git/',
+        },
+        { 
+          text: 'WebSocket',
+          link: '/front-end/websocket/',
+        },
+        { 
           text: 'WebContainer',
           link: '/front-end/web-container/'
         },
@@ -40,8 +52,20 @@ module.exports = {
       items: [
         {
           text: '你不知道的JavaScript',
-          link: '/books/you-dont-know-js',
-        }
+          link: '/books/',
+        },
+        {
+          text: 'JavaScript深入系列',
+          link: '/books/js-advice',
+        },
+        {
+          text: 'CSS揭秘',
+          link: '/books/css-secrets',
+        },
+        {
+          text: '算法图解',
+          link: '/books/grokking-algorithms',
+        },
       ]
     },
     {
@@ -50,21 +74,35 @@ module.exports = {
       items: [
         {
           text: 'LeetCode',
-          link: '/algorithm/leetcode',
+          link: '/algorithm/',
+        },
+        {
+          text: 'Lodash',
+          link: '/algorithm/lodash',
         }
       ]
     },
     {
-      text: '工具',
-      ariaLabel: '工具',
-      link: '/tools/smart-tools'
+      text: '其他',
+      ariaLabel: '其他',
+      // link: '/other/'
+      items: [
+        {
+          text: 'Markdown',
+          link: '/other/',
+        },
+        {
+          text: '计算机基础知识',
+          link: '/other/computer-tech',
+        }
+      ]
     }
   ],
 
   sidebar: {
     '/front-end/': getFrontEndSidebar(),
     '/books/': getBooksSidebar(),
-    '/tools/': getToolsSidebar(),
+    '/other/': getOtherSidebar(),
     '/algorithm/': getAlgorithmSidebar()
   }
 }
@@ -107,6 +145,26 @@ function getFrontEndSidebar() {
       ]
     },
     {
+      text: 'AST',
+      children: [
+        { text: 'AST详解', link: '/front-end/ast/' }
+      ]
+    },
+    {
+      text: 'Git',
+      children: [
+        { text: 'git入门指南', link: '/front-end/git/' },
+        { text: 'git进阶', link: '/front-end/git/advance' },
+        { text: 'git飞行规则', link: '/front-end/git/flight-rules' }
+      ]
+    },
+    {
+      text: 'WebSocket',
+      children: [
+        { text: 'WebSocket', link: '/front-end/websocket/' }
+      ]
+    },
+    {
       text: 'WebContainer',
       children: [
         { text: 'webContainer详解', link: '/front-end/web-container/' }
@@ -119,16 +177,25 @@ function getBooksSidebar() {
   return [
     {
       text: '前端书籍',
-      children: [{ text: '你不知道的JavaScript', link: '/books/you-dont-know-js' }]
+      children: [
+        { text: '你不知道的JavaScript', link: '/books/' },
+        { text: 'JavaScript深入系列', link: '/books/js-advice' },
+        { text: 'CSS揭秘', link: '/books/css-secrets' },
+        { text: '算法图解', link: '/books/grokking-algorithms' }
+        
+      ]
     }
   ]
 }
 
-function getToolsSidebar() {
+function getOtherSidebar() {
   return [
     {
-      text: '常用工具',
-      children: [{ text: 'markdown', link: '/tools/smart-tools' }]
+      text: '其他',
+      children: [
+        { text: 'markdown', link: '/other/' },
+        { text: '计算机基础知识', link: '/other/computer-tech' },
+      ]
     }
   ]
 }
@@ -137,7 +204,10 @@ function getAlgorithmSidebar() {
   return [
     {
       text: '算法',
-      children: [{ text: 'markdown', link: '/algorithm/leetcode' }]
+      children: [
+        { text: 'LeetCode', link: '/algorithm/' },
+        { text: 'Lodash', link: '/algorithm/lodash' },
+      ]
     }
   ]
 }
