@@ -1174,3 +1174,5 @@ server {
   #...
 }
 ```
+
+[可视化配置 nginx 提供了多个基础模板](https://github.com/digitalocean/nginxconfig.io)
