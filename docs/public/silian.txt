@@ -1,5 +1,5 @@
 https://qiyoe.cn/
-https://qiyoe.cn/front-end/vitepress-build.html
+https://qiyoe.cn/front-end/
 https://qiyoe.cn/front-end/baidu-include.html
 https://qiyoe.cn/front-end/seo-optimize.html
 https://qiyoe.cn/front-end/aliyun-domin.html

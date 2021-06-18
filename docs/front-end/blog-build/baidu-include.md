@@ -44,7 +44,7 @@ site:你的网址
 
 ```bash
 httpa://www.qiyoe.cn/
-httpa://www.qiyoe.cn/front-end/vitepress-build.html
+httpa://www.qiyoe.cn/front-end/
 httpa://www.qiyoe.cn/books/you-dont-know-js.html
 httpa://www.qiyoe.cn/tools/smart-tools.html
 ```
