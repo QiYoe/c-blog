@@ -67,7 +67,7 @@ module.exports = {
           link: '/books/grokking-algorithms',
         },
         {
-          text: '算法图解',
+          text: 'Pro-Git',
           link: '/books/pro-git',
         },
       ]
