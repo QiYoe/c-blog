@@ -66,6 +66,10 @@ module.exports = {
           text: '算法图解',
           link: '/books/grokking-algorithms',
         },
+        {
+          text: '算法图解',
+          link: '/books/pro-git',
+        },
       ]
     },
     {
@@ -94,11 +98,19 @@ module.exports = {
         {
           text: '计算机基础知识',
           link: '/other/computer-tech',
-        }
+        },
+        {
+          text: '30 seconds of code',
+          link: '/other/30-seconds-of-code',
+        },
+        {
+          text: 'vanillawebprojects',
+          link: '/other/vanillawebprojects',
+        },
       ]
     }
   ],
-
+ 
   sidebar: {
     '/front-end/': getFrontEndSidebar(),
     '/books/': getBooksSidebar(),
@@ -181,7 +193,8 @@ function getBooksSidebar() {
         { text: '你不知道的JavaScript', link: '/books/' },
         { text: 'JavaScript深入系列', link: '/books/js-advice' },
         { text: 'CSS揭秘', link: '/books/css-secrets' },
-        { text: '算法图解', link: '/books/grokking-algorithms' }
+        { text: '算法图解', link: '/books/grokking-algorithms' },
+        { text: 'Pro-Git', link: '/books/pro-git' },
         
       ]
     }
@@ -195,6 +208,9 @@ function getOtherSidebar() {
       children: [
         { text: 'markdown', link: '/other/' },
         { text: '计算机基础知识', link: '/other/computer-tech' },
+        { text: '计算机基础知识', link: '/other/computer-tech' },
+        { text: '30 seconds of code', link: '/other/30-seconds-of-code' },
+        { text: 'vanillawebprojects', link: '/other/vanillawebprojects' },
       ]
     }
   ]

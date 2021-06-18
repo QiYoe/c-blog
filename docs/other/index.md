@@ -26,3 +26,5 @@ head:
 [正则大全](https://any86.github.io/any-rule/)
 
 [你用前端知识认识各种算法](https://github.com/trekhleb/javascript-algorithms/blob/master/README.zh-CN.md)
+
+[个人博客-工具集合](https://www.kwgg2020.com/study.html)
