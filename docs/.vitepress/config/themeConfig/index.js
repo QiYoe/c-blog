@@ -208,7 +208,6 @@ function getOtherSidebar() {
       children: [
         { text: 'markdown', link: '/other/smart-tools' },
         { text: '计算机基础知识', link: '/other/computer-tech' },
-        { text: '计算机基础知识', link: '/other/computer-tech' },
         { text: '30 seconds of code', link: '/other/30-seconds-of-code' },
         { text: 'vanillawebprojects', link: '/other/vanillawebprojects' },
       ]
