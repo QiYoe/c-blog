@@ -690,7 +690,56 @@ isThisCool(
 ToString:
 
 对普通对象来说，除非自行定义，否则 toString()（Object.prototype.toString()）返回
-内部属性 [[Class]] 的值（参见第 3 章），如 "[object Object]"。如果对象有自己的 toString() 方法，字符串化时就会调用该方法并使用其返回值，数组的 toString()。
+内部属性 [[Class]] 的值，如 "[object Object]"。如果对象有自己的 toString() 方法，字符串化时就会调用该方法并使用其返回值，数组的 toString()。
+
+**JSON.stringify(..) 在将 JSON 对象序列化为字符串时也用到了 ToString**
+
+:::waring 提醒
+对大多数简单值来说，JSON 字符串化和 toString() 的效果基本相同，只不过序列化的结
+果总是字符串：
+
+```js
+JSON.stringify( 42 ); // "42"
+JSON.stringify( "42" ); // "\"42\"" （含有双引号的字符串）
+JSON.stringify( null ); // "null"
+JSON.stringify( true ); // "true"
+```
+:::
+
+- 安全的JSON值 - 指能够呈现为有效JSON的值，可使用JSON.stringify()字符串化
+- 不安全的JSON值 - undefined、function、symbol、对象循环引用（对象相互引用，形成无限循环）
+
+```js
+// JSON.stringify(..) 在对象中遇到 undefined、function 和 symbol 时会自动将其忽略，在数组中则会返回 null（以保证单元位置不变）
+JSON.stringify( undefined ); // undefined
+JSON.stringify( function(){} ); // undefined
+JSON.stringify(
+ [1,undefined,function(){},4]
+); // "[1,null,null,4]"
+JSON.stringify(
+ { a:2, b:function(){} }
+); // "{"a":2}"
+// 对包含循环引用的对象执行 JSON.stringify(..) 会出错。
+
+// 如果对象中定义了 toJSON() 方法，JSON 字符串化时会首先调用该方法，然后用它的返回值来进行序列化。
+var o = { };
+var a = { 
+ b: 42,
+ c: o,
+ d: function(){}
+};
+// 在a中创建一个循环引用
+o.e = a;
+// 循环引用在这里会产生错误
+// JSON.stringify( a );
+// 自定义的JSON序列化
+a.toJSON = function() {
+ // 序列化仅包含b
+ return { b: this.b };
+};
+JSON.stringify( a ); // "{"b":42}"
+
+```
 
 ---
 

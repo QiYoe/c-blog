@@ -12,78 +12,33 @@ module.exports = {
       text: '前端',
       ariaLabel: '前端',
       items: [
-        { 
-          text: '博客相关',
-          link: '/front-end/blog-build/',
-        },
-        { 
-          text: 'SwaggerHub',
-          link: '/front-end/swagger-hub/',
-        },
-        { 
-          text: 'Linux相关',
-          link: '/front-end/linux/',
-        },
-        { 
-          text: 'Vue',
-          link: '/front-end/vue/',
-        },
-        { 
-          text: 'AST',
-          link: '/front-end/ast/',
-        },
-        { 
-          text: 'Git',
-          link: '/front-end/git/',
-        },
-        { 
-          text: 'WebSocket',
-          link: '/front-end/websocket/',
-        },
-        { 
-          text: 'WebContainer',
-          link: '/front-end/web-container/'
-        },
+        { text: '博客相关', link: '/front-end/blog-build/' },
+        { text: 'SwaggerHub', link: '/front-end/swagger-hub/' },
+        { text: 'Linux相关', link: '/front-end/linux/' },
+        { text: 'Vue', link: '/front-end/vue/' },
+        { text: 'AST', link: '/front-end/ast/' },
+        { text: 'Git', link: '/front-end/git/' },
+        { text: 'WebSocket', link: '/front-end/websocket/' },
+        { text: 'WebContainer', link: '/front-end/web-container/' },
       ]
     },
     {
       text: '书籍',
       ariaLabel: '书籍',
       items: [
-        {
-          text: '你不知道的JavaScript',
-          link: '/books/you-dont-know-js',
-        },
-        {
-          text: 'JavaScript深入系列',
-          link: '/books/js-advice',
-        },
-        {
-          text: 'CSS揭秘',
-          link: '/books/css-secrets',
-        },
-        {
-          text: '算法图解',
-          link: '/books/grokking-algorithms',
-        },
-        {
-          text: 'Pro-Git',
-          link: '/books/pro-git',
-        },
+        {text: '你不知道的JavaScript', link: '/books/you-dont-know-js' },
+        {text: 'JavaScript深入系列', link: '/books/js-advice' },
+        {text: 'CSS揭秘', link: '/books/css-secrets' },
+        {text: '算法图解', link: '/books/grokking-algorithms' },
+        {text: 'Pro-Git', link: '/books/pro-git' },
       ]
     },
     {
       text: '算法',
       ariaLabel: '算法',
       items: [
-        {
-          text: 'LeetCode',
-          link: '/algorithm/leetcode',
-        },
-        {
-          text: 'Lodash',
-          link: '/algorithm/lodash',
-        }
+        {text: 'LeetCode', link: '/algorithm/leetcode' },
+        {text: 'Lodash', link: '/algorithm/lodash' },
       ]
     },
     {
@@ -91,22 +46,10 @@ module.exports = {
       ariaLabel: '其他',
       // link: '/other/'
       items: [
-        {
-          text: 'Markdown',
-          link: '/other/smart-tools',
-        },
-        {
-          text: '计算机基础知识',
-          link: '/other/computer-tech',
-        },
-        {
-          text: '30 seconds of code',
-          link: '/other/30-seconds-of-code',
-        },
-        {
-          text: 'vanillawebprojects',
-          link: '/other/vanillawebprojects',
-        },
+        {text: 'Markdown', link: '/other/smart-tools' },
+        {text: '计算机基础知识', link: '/other/computer-tech' },
+        {text: '30 seconds of code', link: '/other/30-seconds-of-code' },
+        {text: 'vanillawebprojects', link: '/other/vanillawebprojects' },
       ]
     }
   ],
@@ -207,7 +150,6 @@ function getOtherSidebar() {
       text: '其他',
       children: [
         { text: 'markdown', link: '/other/smart-tools' },
-        { text: '计算机基础知识', link: '/other/computer-tech' },
         { text: '计算机基础知识', link: '/other/computer-tech' },
         { text: '30 seconds of code', link: '/other/30-seconds-of-code' },
         { text: 'vanillawebprojects', link: '/other/vanillawebprojects' },
