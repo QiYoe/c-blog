@@ -14,7 +14,7 @@ module.exports = {
       items: [
         { 
           text: '博客相关',
-          link: '/front-end/blog-build/vitepress-build',
+          link: '/front-end/blog-build/',
         },
         { 
           text: 'SwaggerHub',
@@ -52,7 +52,7 @@ module.exports = {
       items: [
         {
           text: '你不知道的JavaScript',
-          link: '/books/',
+          link: '/books/you-dont-know-js',
         },
         {
           text: 'JavaScript深入系列',
@@ -78,7 +78,7 @@ module.exports = {
       items: [
         {
           text: 'LeetCode',
-          link: '/algorithm/',
+          link: '/algorithm/leetcode',
         },
         {
           text: 'Lodash',
@@ -93,7 +93,7 @@ module.exports = {
       items: [
         {
           text: 'Markdown',
-          link: '/other/',
+          link: '/other/smart-tools',
         },
         {
           text: '计算机基础知识',
@@ -124,7 +124,7 @@ function getFrontEndSidebar() {
     {
       text: '博客相关',
       children: [
-        { text: '博客搭建', link: '/front-end/blog-build/vitepress-build' },
+        { text: '博客搭建', link: '/front-end/blog-build/' },
         { text: '百度收录', link: '/front-end/blog-build/baidu-include' },
         { text: 'SEO优化', link: '/front-end/blog-build/seo-optimize' },
         { text: '阿里云域名', link: '/front-end/blog-build/aliyun-domin' },
@@ -190,7 +190,7 @@ function getBooksSidebar() {
     {
       text: '前端书籍',
       children: [
-        { text: '你不知道的JavaScript', link: '/books/' },
+        { text: '你不知道的JavaScript', link: '/books/you-dont-know-js' },
         { text: 'JavaScript深入系列', link: '/books/js-advice' },
         { text: 'CSS揭秘', link: '/books/css-secrets' },
         { text: '算法图解', link: '/books/grokking-algorithms' },
@@ -206,7 +206,7 @@ function getOtherSidebar() {
     {
       text: '其他',
       children: [
-        { text: 'markdown', link: '/other/' },
+        { text: 'markdown', link: '/other/smart-tools' },
         { text: '计算机基础知识', link: '/other/computer-tech' },
         { text: '计算机基础知识', link: '/other/computer-tech' },
         { text: '30 seconds of code', link: '/other/30-seconds-of-code' },
@@ -221,7 +221,8 @@ function getAlgorithmSidebar() {
     {
       text: '算法',
       children: [
-        { text: 'LeetCode', link: '/algorithm/' },
+        // { text: '', link: '/algorithm/' },
+        { text: 'LeetCode', link: '/algorithm/leetcode' },
         { text: 'Lodash', link: '/algorithm/lodash' },
       ]
     }
