@@ -694,7 +694,7 @@ ToString:
 
 **JSON.stringify(..) 在将 JSON 对象序列化为字符串时也用到了 ToString**
 
-:::waring 提醒
+:::warning 提醒
 对大多数简单值来说，JSON 字符串化和 toString() 的效果基本相同，只不过序列化的结
 果总是字符串：
 
@@ -714,19 +714,19 @@ JSON.stringify( true ); // "true"
 JSON.stringify( undefined ); // undefined
 JSON.stringify( function(){} ); // undefined
 JSON.stringify(
- [1,undefined,function(){},4]
+  [1,undefined,function(){},4]
 ); // "[1,null,null,4]"
 JSON.stringify(
- { a:2, b:function(){} }
+  { a:2, b:function(){} }
 ); // "{"a":2}"
 // 对包含循环引用的对象执行 JSON.stringify(..) 会出错。
 
 // 如果对象中定义了 toJSON() 方法，JSON 字符串化时会首先调用该方法，然后用它的返回值来进行序列化。
 var o = { };
 var a = { 
- b: 42,
- c: o,
- d: function(){}
+  b: 42,
+  c: o,
+  d: function(){}
 };
 // 在a中创建一个循环引用
 o.e = a;
@@ -734,23 +734,763 @@ o.e = a;
 // JSON.stringify( a );
 // 自定义的JSON序列化
 a.toJSON = function() {
- // 序列化仅包含b
- return { b: this.b };
+  // 序列化仅包含b
+  return { b: this.b };
 };
 JSON.stringify( a ); // "{"b":42}"
 
+// toJSON() 返回的应该是一个适当的值，可以是任何类型，然后再由 JSON.stringify(..) 对其进行字符串化。
+var a = {
+  val: [1,2,3],
+  // 可能是我们想要的结果！
+  toJSON: function(){
+    return this.val.slice( 1 );
+  }
+};
+var b = {
+  val: [1,2,3],
+  // 可能不是我们想要的结果！
+  toJSON: function(){
+    return "[" +
+      this.val.slice( 1 ).join() +
+    "]"; 
+  }
+};
+JSON.stringify( a ); // "[2,3]"
+JSON.stringify( b ); // ""[2,3]""
 ```
+
+:::warning 提醒
+可以向 JSON.stringify(..) 传递一个可选参数 replacer，它可以是数组或者函数，用来指定对象序列化过程中哪些属性应该被处理，哪些应该被排除，和 toJSON() 很像。如果 replacer 是一个数组，那么它必须是一个字符串数组，其中包含序列化要处理的对象的属性名称，除此之外其他的属性则被忽略。如果 replacer 是一个函数，它会对对象本身调用一次，然后对对象中的每个属性各调用一次，每次传递两个参数，键和值。如果要忽略某个键就返回 undefined，否则返回指定的值。
+
+```js
+var a = { 
+  b: 42,
+  c: "42",
+  d: [1,2,3] 
+};
+JSON.stringify( a, ["b","c"] ); // "{"b":42,"c":"42"}"
+JSON.stringify( a, function(k,v){
+  if (k !== "c") return v;
+} );
+// "{"b":42,"d":[1,2,3]}"
+```
+
+**如果 replacer 是函数，它的参数 k 在第一次调用时为 undefined（就是对对象本身调用的那次）。if 语句将属性 "c" 排除掉。由于字符串化是递归的，因此数组 [1,2,3] 中的每个元素都会通过参数 v 传递给 replacer，即 1、2 和 3，参数 k 是它们的索引值，即 0、1 和 2。**
+:::
+
+JSON.string 还有一个可选参数 space，用来指定输出的缩进格式。space 为正整数时是指定每一级缩进的字符数，它还可以是字符串，此时最前面的十个字符被用于每一级的缩进
 
 ---
 
 ToNumber:
 
+true 转换为 1，false 转换为 0。undefined 转换为 NaN，null 转换为 0。
+
+对象（包括数组）会首先被转换为相应的基本类型值，如果返回的是非数字的基本类型值，则再遵循以上规则将其强制转换为数字。
+
+为了将值转换为相应的基本类型值，抽象操作 ToPrimitive 会首先（通过内部操作 DefaultValue 节）检查该值是否有 valueOf() 方法。如果有并且返回基本类型值，就使用该值进行强制类型转换。如果没有就使用 toString()的返回值（如果存在）来进行强制类型转换。如果 valueOf() 和 toString() 均不返回基本类型值，会产生 TypeError 错误(返回 NaN)。
+
+```js
+var a = {
+  valueOf: function(){
+    return "42";
+  }
+};
+var b = {
+  toString: function(){
+    return "42";
+  }
+};
+var c = [4,2];
+c.toString = function(){
+  return this.join( "" ); // "42"
+};
+Number( a ); // 42
+Number( b ); // 42
+Number( c ); // 42
+Number( "" ); // 0
+Number( [] ); // 0
+Number( [ "abc" ] ); // NaN
+```
+
 ---
 
 ToBoolean:
 
+- 假值
+  - undefined
+  - null
+  - false
+  - +0、-0、NaN
+  - ""
+- 真值：假值之外都是真值
+
+字符串和数字之间的转换是通过 String(..) 和 Number(..) 这两个内建函数（原生构造函
+数，参见第 3 章）来实现的，请注意它们前面没有 new 关键字，并不创建封装对象。
+```js
+var a = 42;
+var b = String( a );
+var c = "3.14";
+var d = Number( c );
+b; // "42"
+d; // 3.14
+```
+
+位运算符：只适用32位整数，运算符强制操作数使用32位格式。这是通过抽象操作 ToInt32 来实现的。ToInt32 首先执行 ToNumber 强制类型转换，比如 "123" 会先被转换为 123，然后再执行ToInt32。
+
+`|（或）`：空操作（no-op）0 | x，它仅执行 ToInt32 转换。
+```js
+0 | -0; // 0
+0 | NaN; // 0
+0 | Infinity; // 0
+0 | -Infinity; // 0
+// 以上这些特殊数字无法以 32 位格式呈现（因为它们来自 64 位 IEEE 754 标准），因此 ToInt32 返回 0。
+```
+
+`~（非）`：首先将值强制类型转换为 32 位数字，然后执行字位操作“非”（对每一个字位进行反转）-  返回 2 的补码。
+```js
+// ~x 大致等同于 -(x+1)
+~42; // -(42+1) ==> -43
+```
+
+:::warning 注意
+-(x+1) 中唯一能够得到 0（或者严格说是 -0）的 x 值是 -1。-1 是一个“哨位值”：1 来代表函数执行失败，用大于等于 0 的值来代表函数执行成功。JavaScript 中字符串的 indexOf(..) 方法也遵循这一惯例
+
+**字位操作是没有-0的，只有0。比如~-1 === 0，而不是-0**
+
+```js
+// ~~x 能将值截除为一个 32 位整数，x | 0 也可以，而且看起来还更简洁。
+Math.floor( -49.6 ); // -50
+~~-49.6; // -49
+// 出于对运算符优先级的考虑，我们可能更倾向于使用 ~~x：
+```
+:::
+
+:::warning 注意
+```js
+parseInt( 1/0, 19 ); // 18
+```
+
+- 1/0 === Infinity
+- parseInt(..)先将参数强制类型转换为字符串再进行解析（toString(..)） === 'Infinity'
+- 基数 19，有效数字字符范围是 0-9 和 a-i（区分大小写）- 'i' === 18
+- 第二个字符 "n" 不是一个有效的数字字符，解析到此为止。
+```
+
+```js
+parseInt( 'i', 19 ); // 18
+parseInt( 'i1', 19 ); // 18*19+1
+
+parseInt( 0.000008 ); // 0 ("0" 来自于 "0.000008")
+parseInt( 0.0000008 ); // 8 ("8" 来自于 "8e-7")
+parseInt( false, 16 ); // 250 ("fa" 来自于 "false")
+parseInt( parseInt, 16 ); // 15 ("f" 来自于 "function..")
+parseInt( "0x10" ); // 16
+parseInt( "103", 2 ); // 2
+```
+:::
+
+与 + 类似，一元运算符 ! 显式地将值强制类型转换为布尔值
+
+```js
+var a = [ 
+  1,
+  function(){ /*..*/ },
+  2,
+  function(){ /*..*/ }
+];
+JSON.stringify( a ); // "[1,null,2,null]"
+JSON.stringify( a, function(key,val){
+  if (typeof val == "function") {
+    // 函数的ToBoolean强制类型转换
+    return !!val;
+  }
+  else {
+    return val;
+  }
+});
+// "[1,true,2,true]"
+```
+
+如果某个操作数是字符串或者能够通过以下步骤转换为字符串的话，+ 将进行拼接操作。如果其中一个操作数是对象（包括数组），则首先对其调用ToPrimitive 抽象操作，该抽象操作再调用 [[DefaultValue]]，以数字作为上下文。
+
+```js
+var a = [1,2];
+var b = [3,4];
+a + b; // "1,23,4"
+```
+
+这与 ToNumber 抽象操作处理对象的方式一样。因为数组的valueOf() 操作无法得到简单基本类型值，于是它转而调用 toString()。因此上例中的两个数组变成了 "1,2" 和 "3,4"。+ 将它们拼接后返回 "1,23,4"。
+
+简单来说就是，如果 + 的其中一个操作数是字符串（或者通过以上步骤可以得到字符串），则执行字符串拼接；否则执行数字加法。
+
+根据ToPrimitive 抽象操作规则，a + "" 会对 a 调用 valueOf() 方法，然后通过 ToString 抽象操作将返回值转换为字符串。而 String(a) 则是直接调用 ToString()。
+
+```js
+var a = {
+  valueOf: function() { return 42; },
+  toString: function() { return 4; }
+};
+a + ""; // "42"
+String( a ); // "4"
+```
+
+```js
+function foo() {
+  console.log( a );
+}
+var a = 42;
+a && foo(); // 42
+```
+
+:::warning 提醒
+if (a) { foo(); }可以使用 a && foo() 代替
+```js
+// ES6 允许从符号到字符串的显式强制类型转换，然而隐式强制类型转换会产生错误。
+var s1 = Symbol( "cool" );
+String( s1 ); // "Symbol(cool)"
+s1 + ""; // TypeError
+Boolean( s1 ); // true
+s1 || 2; // Symbol(cool)
+Number(s1); // TypeErrorc
++s1; // TypeErrorc
+// 符号不能够被强制类型转换为数字（显式和隐式都会产生错误），但可以被强制类型转换为布尔值（显式和隐式结果都是 true）
+```
+:::
+
+> **“== 检查值是否相等，=== 检查值和类型是否相等”不够准确，正确的解释：== 允许在相等比较中进行强制类型转换，而 === 不允许。**
+
+```js
+var a = 42;
+var b = "42";
+a === b; // false
+a == b; // true
+```
+
+> == (string)
+>> - 如果 Type(x) 是数字，Type(y) 是字符串，则返回 x == ToNumber(y) 的结果
+>> - 如果 Type(x) 是字符串，Type(y) 是数字，则返回 ToNumber(x) == y 的结果
+
+```js
+var a = "42";
+var b = true;
+a == b; // false
+// "42" == 1 > 42 == 1
+```
+
+> == (boolean)
+>> - 如果 Type(x) 是布尔类型，则返回 ToNumber(x) == y 的结果
+>> - 如果 Type(y) 是布尔类型，则返回 x == ToNumber(y) 的结果
+
+> == (null、undefined)
+>> 在 == 中 null 和 undefined 相等（它们也与其自身相等）
+>> - 如果 x 为 null，y 为 undefined，则结果为 true
+>> - 如果 x 为 undefined，y 为 null，则结果为 true
+
+```js
+var a = 42;
+var b = [ 42 ];
+a == b; // true
+```
+
+> == (object)
+>> 在 == 中 null 和 undefined 相等（它们也与其自身相等），
+>> - 如果 Type(x) 是字符串或数字，Type(y) 是对象，则返回 x == ToPrimitive(y) 的结果
+>> - 如果 Type(x) 是对象，Type(y) 是字符串或数字，则返回 ToPromitive(x) == y 的结果
+
+:::warning 注意
+这里只提到了字符串和数字，没有布尔值。原因是布尔值会先被强制类型转换为数字
+
+[ 42 ] 首先调用 ToPromitive 抽象操作，返回 "42"，变成 "42" == 42，然后又变成 42 == 42，最后二者相等。
+
+```js
+[].valueOf()        // []
+[].toString()       // ""
+Object().valueOf()  // {}
+Object().toString() // "[object Object]"
+
+[] == {}            // false
+{} == []            // SynyaxError
+[] + {};            // "[object Object]"  "[object Object]" + ""
+{} + [];            // 0  独立空代码块 + '' -> 独立空代码块 + 0
+
+var a = "abc";
+var b = Object( a ); // 和new String( a )一样
+a === b; // false
+a == b; // true
+var c = null;
+var d = Object( c ); // 和Object()一样
+c == d; // false
+var e = undefined; 
+var f = Object( e ); // 和Object()一样
+e == f; // false
+var g = NaN; 
+var h = Object( g ); // 和new Number( e )一样
+g == h; // false
+// 因为没有对应的封装对象，所以 null 和 undefined 不能够被封装（boxed），Object(null)和 Object() 均返回一个常规对象。NaN 能够被封装为数字封装对象，但拆封之后 NaN == NaN 返回 false，因为 NaN 不等于 NaN
+
+"0" == null; // false
+"0" == undefined; // false
+"0" == false; // true -- 晕！
+"0" == NaN; // false
+"0" == 0; // true
+"0" == ""; // false
+false == null; // false
+false == undefined; // false
+false == NaN; // false
+false == 0; // true -- 晕！
+false == ""; // true -- 晕！
+false == []; // true -- 晕！
+false == {}; // false
+"" == null; // false
+"" == undefined; // false
+"" == NaN; // false
+"" == 0; // true -- 晕！
+"" == []; // true -- 晕！
+"" == {}; // false
+0 == null; // false
+0 == undefined; // false
+0 == NaN; // false
+0 == []; // true -- 晕！
+0 == {}; // false
+[] == ![] // true
+"" == [null]; // true
+0 == "\n"; // true  ""、"\n"（或者 " " 等其他空格组合）等空字符串被 ToNumber 强制类型转换为 0。
+```
+:::
+
 ---
 
-ToPrimitive:
+> 其他情况
+>> - 比较双方首先调用 ToPrimitive，如果结果出现非字符串，就根据 ToNumber 规则将双方强制类型转换为数字来进行比较。
+>> ```js
+>> var a = [ 42 ];
+>> var b = [ "43" ];
+>> a < b; // true
+>> b < a; // false
+>> ```
+>> - 如果比较双方都是字符串，则按字母顺序来进行比较
+>> ```js
+>> var a = [ 42 ];
+>> var b = [ "043" ];
+>> b < a; // false
+>> // a 和 b 并没有被转换为数字，因为 ToPrimitive 返回的是字符串，所以这里比较的是 "42" 和 "043" 两个字符串，它们分别以 "4" 和 "0" 开头。因为 "0" 在字母顺序上小于 "4"，所以最后结果为 false。
+>> ```
+>> - 特例
+>> ```js
+>> var a = { b: 42 };
+>> var b = { b: 43 };
+>> a < b; // false NaN < NaN
+>> a == b; // false NaN == NaN
+>> a > b; // false NaN > NaN
+>> a <= b; // true !(a > b)
+>> a >= b; // true !(a < b)
+>> // a 和 b 并没有被转换为数字，因为 ToPrimitive 返回的是字符串，所以这里比较的是 "42" 和 "043" 两个字符串，它们分别以 "4" 和 "0" 开头。因为 "0" 在字母顺序上小于 "4"，所以最后结果为 false。
+>> // 实际上 JavaScript 中 <= 是“不大于”的意思（即 !(a > b)，处理为 !(b < a)）。同理 a >= b 处理为 b <= a。
+>> var a = [ 42 ];
+>> var b = "043";
+>> a < b; // false -- 字符串比较！ "42" < "042"
+>> Number( a ) < Number( b ); // true -- 数字比较！ 42 < 43
+>> ```
+> 比较双方都是字符串
+>> 避免 a < b 中发生隐式强制类型转换，只能确保 a 和 b 为相同的类型
 
----
+### 语法
+
+- 语句（statement）相当于句子 - 语句都有一个`结果值`(只有控制台可以获得，代码中无法获得)
+- 表达式（expression）相当于短语
+
+```js
+var a = 3 * 6; // 声明语句
+b = a;         // 赋值表达式
+b;             // 表达式语句
+// var 的结果值为undefined
+// {...} 的结果值为 其最后一个语句 / 表达式的结果
+
+// 下面这样的代码无法运行
+var a, b;
+a = if (true) {
+  b = 4 + 38;
+};
+// 因为语法不允许我们获得语句的结果值并将其赋值给另一个变量
+
+var a = 42;
+var b = a++;  // === var b = (a++);
+a; // 43
+b; // 42
+
+var a = 42, b;
+b = ( a++, a );
+a; // 43
+b; // 43
+
+var a = b = 42  // 创建全局变量b
+
+function vowels(str) {
+  var matches;
+    if (str) {
+      // 提取所有元音字母
+      matches = str.match( /[aeiou]/g );
+      if (matches) {
+        return matches;
+      } 
+  }
+}
+vowels( "Hello World" ); // ["e","o","o"]
+// 利用赋值语句的副作用将两个 if 语句合二为一
+function vowels(str) {
+  var matches;
+  // 提取所有元音字母
+  if (str && (matches = str.match( /[aeiou]/g ))) {
+    return matches;语法 ｜ 99
+  }
+}
+vowels( "Hello World" ); // ["e","o","o"]
+```
+
+标签语句：
+
+```js
+// 标签为foo的循环
+foo: for (var i=0; i<4; i++) {
+  for (var j=0; j<4; j++) {
+  // 如果j和i相等，继续外层循环
+    if (j == i) {
+      // 跳转到foo的下一个循环
+      continue foo;
+    }
+    // 跳过奇数结果
+    if ((j * i) % 2 == 1) {
+      // 继续内层循环（没有标签的）
+      continue; 
+    }
+    console.log( i, j );
+  }
+}
+// 1 0
+// 2 0
+// 2 1
+// 3 0
+// 3 2
+```
+
+带标签的循环跳转一个更大的用处在于，和 break __ 一起使用可以实现从内层循环跳转到外层循环。没有它们的话实现起来有时会非常麻烦：
+
+```js
+// 标签为foo的循环
+foo: for (var i=0; i<4; i++) {
+  for (var j=0; j<4; j++) {
+    if ((i * j) >= 3) {
+      console.log( "stopping!", i, j );
+      break foo; 
+    }
+    console.log( i, j );
+  }
+}
+// 0 0
+// 0 1
+// 0 2
+// 0 3
+// 1 0
+// 1 1
+// 1 2
+// 停止！ 1 3
+```
+
+标签也能用于非循环代码块，但只有 break 才可以。我们可以对带标签的代码块使用break ___，但是不能对带标签的非循环代码块使用 continue ___，也不能对不带标签的代码块使用 break：
+
+```js
+// 标签为bar的代码块
+function foo() {
+  bar: {
+    console.log( "Hello" );
+    break bar;
+    console.log( "never runs" );
+  }
+  console.log( "World" );
+}
+foo();
+// Hello
+// World
+```
+
+:::warning 提醒
+标签不允许使用双引号，如控制台中输入 {"a":42} 会报错
+
+JSON 的确是 JavaScript 语法的一个子集，但是 JSON 本身并不是合法的 JavaScript 语法。
+
+JSON-P 能将 JSON 转换为合法的JavaScript 语法。JSON-P（将 JSON 数据封装为函数调用，比如 foo({"a":42})）通过将 JSON 数据传递给函数来实现对其的访问
+
+**解构：{ a, b } 实际上是 { a: a, b: b } 的简化版本**
+
+&& 运算符先于 || 执行
+:::
+
+```js
+true || false && false; // true
+(true || false) && false; // false
+true || (false && false); // true
+
+// &&、|| > ?: > =
+a ? b : c ? d : e;  //  a ? b : (c ? d : e)  ? : 是右关联
+
+a && b || c ? c || b ? a : c && b : a;  // ((a && b) || c) ? ((c || b) ? a : (c && b)) : a
+```
+
+如果参数被`省略`或者值为 `undefined`，则取该参数的默认值：
+
+```js
+function foo( a = 42, b = a + 1 ) {
+  console.log( a, b );
+}
+foo(); // 42 43
+foo( undefined ); // 42 43
+foo( 5 ); // 5 6
+foo( void 0, 7 ); // 42 7
+foo( null ); // null 1  null 被强制类型转换为 0
+
+function foo( a = 42, b = a + 1 ) {
+  console.log(arguments.length, a, b, arguments[0], arguments[1]);
+}
+foo(); // 0 42 43 undefined undefined
+foo( 10 ); // 1 10 11 10 undefined
+foo( 10, undefined ); // 2 10 11 10 undefined
+foo( 10, null ); // 2 10 null 10 null
+```
+
+finally 中的代码总是会在 try 之后执行，如果有 catch 的话则在 catch 之后执行。也可以将 finally 中的代码看作一个回调函数，即无论出现什么情况最后一定会被调用。
+
+```js
+function foo() {
+  try {
+    return 42;
+  } 
+  finally {
+    console.log( "Hello" );
+  }
+    console.log( "never runs" );
+}
+console.log( foo() );
+// Hello
+// 42
+
+// 这里 return 42 先执行，并将 foo() 函数的返回值设置为 42。然后 try 执行完毕，接着执行 finally。最后 foo() 函数执行完毕，console.log(..) 显示返回值。
+
+// try 中的 throw 也是如此：
+function foo() {
+  try {
+    throw 42; 
+  }
+  finally {
+    console.log( "Hello" );
+  }
+  console.log( "never runs" );
+}
+console.log( foo() );
+// Hello
+// Uncaught Exception: 42
+
+// 如果 finally 中抛出异常（无论是有意还是无意），函数就会在此处终止。如果此前 try 中已经有 return 设置了返回值，则该值会被丢弃：
+function foo() {
+  try {
+    return 42;
+  } 
+  finally {
+    throw "Oops!";
+  }
+ console.log( "never runs" );
+}
+console.log( foo() );
+// Uncaught Exception: Oops!
+
+// continue 和 break 等控制语句也是如此：
+for (var i=0; i<10; i++) {
+ try {
+ continue; 
+ }
+ finally {
+ console.log( i );
+ }
+}
+// 0 1 2 3 4 5 6 7 8 9
+// continue 在每次循环之后，会在 i++ 执行之前执行 console.log(i)，所以结果是 0..9 而非1..10。
+
+// finally 中的 return 会覆盖 try 和 catch 中 return 的返回值：
+function foo() {
+  try {
+    return 42;
+  } 
+  finally {
+    // 没有返回语句，所以没有覆盖
+  } 
+}
+function bar() {
+  try {
+    return 42;
+  }
+  finally {
+    // 覆盖前面的 return 42
+    return; 
+  }
+}
+function baz() {
+  try {
+    return 42;
+  } 
+  finally {
+    // 覆盖前面的 return 42
+    return "Hello";
+  }
+}
+foo(); // 42
+bar(); // undefined
+baz(); // Hello
+
+function foo() {
+  bar: {
+    try {
+      return 42;
+    } 
+    finally {
+      // 跳出标签为bar的代码块
+      break bar;
+    }
+  }
+  console.log( "Crazy" );120 ｜ 第 5 章
+  return "Hello";
+}
+console.log( foo() );
+// Crazy
+// Hello
+```
+
+- window.escape(..) 和 window.unescape(..) 让你能够转义（escape）和回转（unescape）带有 % 分隔符的十六进制字符串。例如，window.escape( "? foo=97%&bar=3%" ) 的结果为 "%3Ffoo%3D97%25%26bar%3D3%25"。
+- String.prototype.substr 和 String.prototype.substring 十分相似，除了前者的第二个参数是结束位置索引（非自包含），后者的第二个参数是长度（需要包含的字符数）。
+- RegExp.$1 .. RegExp.$9（匹配组）和 RegExp.lastMatch/RegExp["$&"]（最近匹配）
+- 由于浏览器演进的历史遗留问题，在创建带有 id 属性的 DOM 元素时也会创建同名的全局变量。
+
+```js
+<div id="foo"></div>
+
+if (typeof foo == "undefined") {
+ foo = 42; // 永远也不会运行
+}
+console.log( foo ); // HTML元素
+
+// shim/polyfill
+if (!Array.prototype.foobar) {
+  // 幼稚
+  Array.prototype.foobar = function() {
+    this.push( "foo", "bar" );
+    // 问题在于一些标准功能无法被完整地 polyfill/prollyfill
+  }; 
+}
+
+function addAll() {
+  var sum = 0;
+  for (var i=0; i < arguments.length; i++) {
+    sum += arguments[i];
+  }
+  return sum;
+}
+addAll( 2, 4, 6 ); // 12
+addAll( 1000 ); // 1000 arguments.length===1  arguments[0]===1000  arguments[1]===undefined
+addAll.apply( null, nums ); // 应该是: 499950000
+```
+
+## 异步和性能
+
+### 异步：现在与将来
+
+- 举例：
+```js
+function now() {
+  return 21;
+}
+function later() {
+  answer = answer * 2;
+  console.log( "Meaning of life:", answer );
+}
+var answer = now();
+setTimeout( later, 1000 ); // Meaning of life: 42
+```
+
+- 现在：
+```js
+function now() {
+  return 21;
+}
+function later() { .. }
+var answer = now();
+setTimeout( later, 1000 );
+```
+
+- 现在：
+```js
+answer = answer * 2;
+console.log( "Meaning of life:", answer );
+```
+
+现在这一块在程序运行之后就会立即执行。但是，setTimeout(..) 还设置了一个事件（定时）在将来执行，所以函数 later() 的内容会在之后的某个时间（从现在起 1000 毫秒之后）执行
+
+事件循环：JavaScript 引擎（在给定的任意时刻执行程序中的单个代码块）并不是独立运行的，它运行在宿主环境中（Web 浏览器、Node等），所有这些环境都有线程，即它们都提供了一种机制来处理程序中多个块的执行，且执行每块时调用 JavaScript 引擎，这种机制被称为事件循环
+
+```js
+// 事件循环伪代码
+// eventLoop是一个用作队列的数组
+// （先进，先出）
+var eventLoop = [ ];
+var event;
+// “永远”执行
+while (true) {
+  // 一次tick
+  if (eventLoop.length > 0) {
+    // 拿到队列中的下一个事件
+    event = eventLoop.shift();
+    // 现在，执行下一个事件
+    try {
+      event();
+    }
+    catch (err) {
+      reportError(err);异步：现在与将来 ｜ 143
+    }
+  }
+}
+```
+
+### 回调
+
+### Promise
+
+### 生成器
+
+### 程序性能
+
+### 性能测试与调优
+
+## 起步上路
+
+### 深入编程
+
+### 深入JavaScript
+
+### 深入“你不知道的JavaScript系列”
+
+## ES6及更新版本
+
+### ES？现在与未来
+
+### 语法
+
+### 代码组织
+
+### 异步流控制
+
+### 集合
+
+### 新增API
+
+### 元编程
+
+### ES6之后

@@ -16,7 +16,7 @@ actionLink: /front-end/blog-build/
 #   details: 学如逆水行舟，不进则退
 # - title: 理财
 #   details: 有钱男子汉，没钱汉子难
-footer: MIT Licensed | Copyright © 2021-QiYoe
+footer: MIT Licensed | Copyright © 2021-QiYoe | 京ICP备2021014403号-1
 ---
 
 <script setup>
