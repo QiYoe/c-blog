@@ -23,7 +23,11 @@ module.exports = {
 
     config: (md) => {
       // use more markdown-it plugins!
-      md.use(require('markdown-it-multimd-table'))
+      md.use(require('markdown-it-multimd-table'), {
+          multiline:  true,
+          rowspan:    true,
+          headerless: true
+        })
         .use(require('markdown-it-ins'))
     }
   }
