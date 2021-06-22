@@ -51,14 +51,20 @@ module.exports = {
         {text: '30 seconds of code', link: '/other/30-seconds-of-code' },
         {text: 'vanillawebprojects', link: '/other/vanillawebprojects' },
       ]
-    }
+    },
+    {
+      text: '摘抄语录',
+      ariaLabel: '摘抄语录',
+      link: '/quotations/'
+    },
   ],
  
   sidebar: {
     '/front-end/': getFrontEndSidebar(),
     '/books/': getBooksSidebar(),
     '/other/': getOtherSidebar(),
-    '/algorithm/': getAlgorithmSidebar()
+    '/algorithm/': getAlgorithmSidebar(),
+    // '/quotations/': getQuotationsSidebar(),
   }
 }
 
@@ -163,10 +169,22 @@ function getAlgorithmSidebar() {
     {
       text: '算法',
       children: [
-        // { text: '', link: '/algorithm/' },
         { text: 'LeetCode', link: '/algorithm/leetcode' },
         { text: 'Lodash', link: '/algorithm/lodash' },
       ]
     }
   ]
 }
+
+// function getQuotationsSidebar() {
+//   return [
+//     {
+//       text: '摘抄语录',
+//       children: [
+//         // { text: '', link: '/algorithm/' },
+//         { text: 'LeetCode', link: '/algorithm/leetcode' },
+//         { text: 'Lodash', link: '/algorithm/lodash' },
+//       ]
+//     }
+//   ]
+// }

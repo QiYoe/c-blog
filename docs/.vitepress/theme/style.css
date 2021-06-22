@@ -6,4 +6,13 @@
   margin: 1rem 0 !important;
 }
 
+.cite-author {
+  width: 100%;
+  text-align: end;
+}
 
+cite {
+  display: block;
+  width: 100%;
+  text-align: end;
+}
