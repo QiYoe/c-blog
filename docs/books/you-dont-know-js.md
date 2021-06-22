@@ -1637,13 +1637,284 @@ doF();
 如果 doA(..) 或 doD(..) 是异步执行：A → F → B → C → E → D
 如果 doA(..) 或 doD(..) 是同步执行：A → B → C → D → E → F
 
-> 致跟踪异步流如此之难
+> 回调导致跟踪异步流如此之难
 
 - 我们的顺序阻塞式的大脑计划行为无法很好地映射到面向回调的异步代码。这就是回调方式最主要的缺陷：对于它们在代码中表达异步的方式，我们的大脑需要努力才能同步得上。
 
 ### Promise
 
-> 什么是 Promise
+不足用p instanceof Promise 以作为检查方法，原因有许多。其中最主要的是，Promise 值可能是从其他浏览器窗口（iframe 等）接收到的。这个浏览器窗口自己的 Promise 可能和当前窗口 /frame 的不同，因此这样的检查无法识别 Promise实例。还有，库或框架可能会选择实现自己的 Promise，而不是使用原生 ES6 Promise 实现。实际上，很有可能你是在早期根本没有 Promise 实现的浏览器中使用由库提供的 Promise。
+
+- 鸭子类型：“如果它看起来像只鸭子，叫起来像只鸭子，那它一定就是只鸭子”
+
+```js
+if ( 
+  p !== null && 
+  ( 
+    typeof p === "object" || 
+    typeof p === "function" 
+  ) && 
+  typeof p.then === "function" 
+) { 
+  // 假定这是一个thenable! 
+} 
+else { 
+  // 不是thenable 
+}
+
+Object.prototype.then = function(){}; 
+Array.prototype.then = function(){}; 
+var v1 = { hello: "world" }; 
+var v2 = [ "Hello", "World" ]; 
+```
+
+我并不喜欢最后还得用 thenable 鸭子类型检测作为 Promise 的识别方案。还有其他选择，比如 branding，甚至 anti-branding。可我们所用的似乎是针对最差情况的妥协。但情况也并不完全是一片黯淡。后面我们就会看到，thenable 鸭子类型检测还是有用的。只是要清楚，如果 thenable 鸭子类型误把不是 Promise 的东西识别为了 Promise，可能就是有害的。
+
+Promise 创建对象调用 resolve(..) 或 reject(..) 时，这个 Promise 的then(..) 注册的观察回调就会被自动调度。可以确信，这些被调度的回调在下一个异步事件点上一定会被触发。所以一个同步任务链无法以这种方式运行来实现按照预期有效延迟另一个回调的发生。也就是说，一个 Promise 决议后，这个 Promise 上所有的通过then(..) 注册的回调都会在下一个异步时机点上依次被立即调用。这些回调中的任意一个都无法影响或延误对其他回调的调用。
+
+```js
+p.then( function(){ 
+  p.then( function(){ 
+    console.log( "C" ); 
+  } ); 
+  console.log( "A" ); 
+} ); 
+p.then( function(){ 
+  console.log( "B" ); 
+} ); 
+// A B C 
+// 这里，"C" 无法打断或抢占 "B"，这是因为 Promise 的运作方式。
+
+var p3 = new Promise( function(resolve,reject){ 
+  resolve( "B" ); 
+} ); 
+var p1 = new Promise( function(resolve,reject){ 
+  resolve( p3 ); 
+} ); 
+p2 = new Promise( function(resolve,reject){ 
+  resolve( "A" ); 
+} ); 
+p1.then( function(v){ 
+  console.log( v ); 
+} );
+p2.then( function(v){ 
+  console.log( v ); 
+} ); 
+// A B <-- 而不是像你可能认为的B A 
+```
+
+如果在 Promise 的创建过程中或在查看其决议结果过程中的任何时间点上出现了一个 JavaScript 异常错误，比如一个 TypeError 或ReferenceError，那这个异常就会被捕捉，并且会使这个 Promise 被拒绝。
+
+```js
+var p = new Promise( function(resolve,reject){ 
+  foo.bar(); // foo未定义，所以会出错！
+  resolve( 42 ); // 永远不会到达这里 :( 
+} ); 
+p.then( 
+  function fulfilled(){ 
+    // 永远不会到达这里 :( 
+  }, 
+  function rejected(err){ 
+    // err将会是一个TypeError异常对象来自foo.bar()这一行
+  } 
+); 
+```
+
+如果向 Promise.resolve(..) 传递一个非 Promise、非 thenable 的立即值，就会得到一个用这个值填充的 promise。下面这种情况下，promise p1 和 promise p2 的行为是完全一样的：
+
+```js
+var p1 = new Promise( function(resolve,reject){ 
+  resolve( 42 ); 
+} ); 
+var p2 = Promise.resolve( 42 );
+```
+
+而如果向 Promise.resolve(..) 传递一个真正的 Promise，就只会返回同一个 promise：
+
+```js
+var p1 = Promise.resolve( 42 ); 
+var p2 = Promise.resolve( p1 );
+p1 === p2; // true
+```
+更重要的是，如果向 Promise.resolve(..) 传递了一个非 Promise 的 thenable 值，前者就会试图展开这个值，而且展开过程会持续到提取出一个具体的非类 Promise 的最终值。
+
+```js
+var p = { 
+  then: function(cb) { 
+    cb( 42 ); 
+  } 
+}; 
+// 这可以工作，但只是因为幸运而已
+p 
+.then( 
+  function fulfilled(val){ 
+    console.log( val ); // 42 
+  }, 
+  function rejected(err){ 
+    // 永远不会到达这里
+  } 
+); 
+
+var p = { 
+  then: function(cb,errcb) { 
+    cb( 42 ); 
+    errcb( "evil laugh" ); 
+  } 
+}; 
+p 
+.then( 
+  function fulfilled(val){ 
+    console.log( val ); // 42 
+  }, 
+  function rejected(err){ 
+    // 啊，不应该运行！
+    console.log( err ); // 邪恶的笑
+  } 
+); 
+// 这个 p 是一个 thenable，
+```
+
+尽管如此，我们还是都可以把这些版本的 p 传给 Promise.resolve(..)，然后就会得到期望Promise中的规范化后的安全结果：
+
+```js
+Promise.resolve( p ) 
+.then( 
+  function fulfilled(val){ 
+    console.log( val ); // 42 
+  }, 
+  function rejected(err){ 
+    // 永远不会到达这里
+  } 
+); 
+```
+
+Promise.resolve(..) 可以接受任何 thenable，将其解封为它的非 thenable 值。从 Promise.resolve(..) 得到的是一个真正的 Promise，是一个可以信任的值。如果你传入的已经是真正的 Promise，那么你得到的就是它本身，所以通过 Promise.resolve(..) 过滤来获得可信任性完全没有坏处。
+
+```js
+// 不要只是这么做：
+foo( 42 ) 
+.then( function(v){ 
+  console.log( v ); 
+} ); 
+// 而要这么做：
+Promise.resolve( foo( 42 ) ) 
+.then( function(v){ 
+  console.log( v ); 
+} );
+```
+
+```js
+var p = Promise.resolve( 21 ); 
+var p2 = p.then( function(v){ 
+  console.log( v ); // 21 
+  // 用值42填充p2
+  return v * 2; 
+} ); 
+// 连接p2 
+p2.then( function(v){ 
+  console.log( v ); // 42 
+} );
+
+var p = Promise.resolve( 21 ); 
+p 
+.then( function(v){ 
+  console.log( v ); // 21 
+  // 用值42完成连接的promise 
+  return v * 2; 
+} ) 
+// 这里是链接的promise 
+.then( function(v){ 
+  console.log( v ); // 42 
+} ); 
+```
+
+如果需要步骤 2 等待步骤 1 异步来完成一些事情怎么办？我们使用了立即返回 return 语句，这会立即完成链接的 promise。
+
+```js
+var p = Promise.resolve( 21 ); 
+p.then( function(v){ 
+  console.log( v ); // 21 
+  // 创建一个promise并将其返回
+  return new Promise( function(resolve,reject){ 
+    // 用值42填充
+    resolve( v * 2 ); 
+  } ); 
+} ) 
+.then( function(v){ 
+  console.log( v ); // 42 
+} ); 
+```
+
+虽然我们把 42 封装到了返回的 promise 中，但它仍然会被展开并最终成为链接的 promise的决议，因此第二个 then(..) 得到的仍然是 42。如果我们向封装的 promise 引入异步，一切都仍然会同样工作：
+
+```js
+var p = Promise.resolve( 21 ); 
+p.then( function(v){ 
+  console.log( v ); // 21 200 ｜ 第 3 章
+  // 创建一个promise并返回
+  return new Promise( function(resolve,reject){ 
+    // 引入异步！
+    setTimeout( function(){ 
+      // 用值42填充
+      resolve( v * 2 ); 
+    }, 100 ); 
+  } ); 
+} ) 
+.then( function(v){ 
+  // 在前一步中的100ms延迟之后运行
+  console.log( v ); // 42 
+} );
+```
+
+当然，在这些例子中，一步步传递的值是可选的。如果不显式返回一个值，就会隐式返回undefined，并且这些 promise 仍然会以同样的方式链接在一起。这样，每个 Promise 的决议就成了继续下一个步骤的信号。
+
+```js
+// 步骤1：
+request( "http://some.url.1/" ) 
+// 步骤2：
+.then( function(response1){ 
+  foo.bar(); // undefined，出错！
+  // 永远不会到达这里
+  return request( "http://some.url.2/?v=" + response1 ); 
+} ) 
+// 步骤3：
+.then( 
+  function fulfilled(response2){ 
+  // 永远不会到达这里
+  }, 
+  // 捕捉错误的拒绝处理函数
+  function rejected(err){ 
+    console.log( err ); 
+    // 来自foo.bar()的错误TypeError 
+    return 42; 
+  } 
+) 
+// 步骤4：
+.then( function(msg){ 
+  console.log( msg ); // 42 
+} ); 
+```
+
+Promise.resolve(..) 会将传入的真正 Promise 直接返回，对传入的 thenable 则会展开。如果这个 thenable 展开得到一个拒绝状态，那么从 Promise.resolve(..) 返回的 Promise 实际上就是这同一个拒绝状态。
+
+Promise(..) 构造器的第一个参数回调会展开 thenable（和 Promise.resolve(..) 一样）或真正的 Promise：
+
+```js
+var rejectedPr = new Promise( function(resolve,reject){ 
+  // 用一个被拒绝的promise完成这个promise 
+  resolve( Promise.reject( "Oops" ) ); 
+} ); 
+rejectedPr.then( 
+  function fulfilled(){ 
+    // 永远不会到达这里
+  }, 
+  function rejected(err){ 
+    console.log( err ); // "Oops" 206 ｜ 第 3 章
+  } 
+); 
+```
+
+前面提到的 reject(..) 不会像 resolve(..) 一 样 进 行 展 开。 如 果 向reject(..) 传入一个 Promise/thenable 值，它会把这个值原封不动地设置为拒绝理由。后续的拒绝处理函数接收到的是你实际传给 reject(..) 的那个Promise/thenable，而不是其底层的立即值。
 
 ### 生成器
 
