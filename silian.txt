@@ -31,3 +31,4 @@ https://qiyoe.cn/other/30-seconds-of-code.html
 https://qiyoe.cn/other/vanillawebprojects.html
 https://qiyoe.cn/algorithm/leetcode.html
 https://qiyoe.cn/algorithm/lodash.html
+https://qiyoe.cn/quotations/
