@@ -1916,7 +1916,144 @@ rejectedPr.then(
 
 前面提到的 reject(..) 不会像 resolve(..) 一 样 进 行 展 开。 如 果 向reject(..) 传入一个 Promise/thenable 值，它会把这个值原封不动地设置为拒绝理由。后续的拒绝处理函数接收到的是你实际传给 reject(..) 的那个Promise/thenable，而不是其底层的立即值。
 
+对多数开发者来说，错误处理最自然的形式就是同步的 try..catch 结构。遗憾的是，它只能是同步的，无法用于异步代码模式：
+
+```js
+function foo() { 
+  setTimeout( function(){ 
+    baz.bar(); 
+  }, 100 ); 
+} 
+try { Promise ｜ 207
+  foo(); 
+  // 后面从 `baz.bar()` 抛出全局错误
+} 
+catch (err) { 
+  // 永远不会到达这里
+} 
+```
+
+try..catch 当然很好，但是无法跨异步操作工作。也就是说，还需要一些额外的环境支持。
+
+```js
+function foo(cb) { 
+  setTimeout( function(){ 
+    try { 
+      var x = baz.bar(); 
+      cb( null, x ); // 成功！
+    } 
+    catch (err) { 
+      cb( err ); 
+    } 
+  }, 100 ); 
+} 
+foo( function(err,val){ 
+  if (err) { 
+    console.error( err ); // 烦 :( 
+  } 
+  else { 
+    console.log( val ); 
+  } 
+} );
+// 只有在 baz.bar() 调用会同步地立即成功或失败的情况下，这里的 try..catch 才能工作。如果 baz.bar() 本身有自己的异步完成函数，其中的任何异步错误都将无法捕捉到。
+```
+
+为了避免丢失被忽略和抛弃的 Promise 错误，一些开发者表示，Promise 链的一个最佳实践就是最后总以一个 catch(..) 结束，比如：
+
+```js
+var p = Promise.resolve( 42 ); 
+p.then( 
+  function fulfilled(msg){ 
+    // 数字没有string函数，所以会抛出错误
+    console.log( msg.toLowerCase() ); 
+  } 
+) 
+.catch( handleErrors );
+```
+
+- 默认情况下，Promsie 在下一个任务或时间循环 tick 上（向开发者终端）报告所有拒绝，如果在这个时间点上该 Promise 上还没有注册错误处理函数。
+- 如果想要一个被拒绝的 Promise 在查看之前的某个时间段内保持被拒绝状态，可以调用defer()（禁止这种错误报告），这个函数优先级高于该 Promise 的自动错误报告。
+
+Promise.all([ .. ]) 需要一个参数，是一个数组，通常由 Promise 实例组成。从 Promise.all([ .. ]) 调用返回的 promise 会收到一个完成消息（代码片段中的 msg）。这是一个由所有传入 promise 的完成消息组成的数组，与指定的顺序一致（与完成顺序无关）
+
+```js
+// request(..)是一个Promise-aware Ajax工具
+// 就像我们在本章前面定义的一样
+var p1 = request( "http://some.url.1/" ); 
+var p2 = request( "http://some.url.2/" ); 
+Promise.all( [p1,p2] ) 
+.then( function(msgs){ 
+  // 这里，p1和p2完成并把它们的消息传入
+  return request( 
+    "http://some.url.3/?v=" + msgs.join(",") 
+  ); 
+} ) 
+.then( function(msg){ 
+  console.log( msg ); 
+} ); 
+```
+
+严格说来，传给Promise.all([ .. ]) 的数组中的值可以是 Promise、thenable，甚至是立即值。就本质而言，列表中的每个值都会通过 Promise.resolve(..) 过滤，以确保要等待的是一个真正的 Promise，所以立即值会被规范化为为这个值构建的 Promise。如果数组是空的，主 Promise 就会立即完成。
+
+与 Promise.all([ .. ]) 类似，一旦有任何一个 Promise 决议为完成，Promise.race([ .. ])就会完成；一旦有任何一个 Promise 决议为拒绝，它就会拒绝。
+
+```js
+// request(..)是一个支持Promise的Ajax工具
+// 就像我们在本章前面定义的一样
+var p1 = request( "http://some.url.1/" ); 
+var p2 = request( "http://some.url.2/" ); 
+Promise.race( [p1,p2] ) 
+.then( function(msg){ 
+  // p1或者p2将赢得这场竞赛
+  return request( 
+    "http://some.url.3/?v=" + msg 
+  ); 
+} ) 
+.then( function(msg){ 
+  console.log( msg ); 
+} ); 
+```
+
+```js
+var fulfilledTh = { 
+  then: function(cb) { cb( 42 ); } 
+}; 
+var rejectedTh = { 
+  then: function(cb,errCb) { 
+    errCb( "Oops" ); 
+  } 
+}; 
+var p1 = Promise.resolve( fulfilledTh ); 
+var p2 = Promise.resolve( rejectedTh ); 
+// p1是完成的promise
+// p2是拒绝的promise
+```
+
+还要记住，如果传入的是真正的 Promise，Promise.resolve(..) 什么都不会做，只会直接把这个值返回。所以，对你不了解属性的值调用 Promise.resolve(..)，如果它恰好是一个真正的 Promise，是不会有额外的开销的。
+
+```js
+var p1 = Promise.resolve( 42 ); 
+var p2 = Promise.resolve( "Hello World" ); 
+var p3 = Promise.reject( "Oops" ); 
+Promise.race( [p1,p2,p3] ) 
+  .then( function(msg){ 
+  console.log( msg ); // 42 
+} ); 
+Promise.all( [p1,p2,p3] ) 
+.catch( function(err){ 
+  console.error( err ); // "Oops" 
+} ); 
+Promise.all( [p1,p2] ) 
+.then( function(msgs){ 
+  console.log( msgs ); // [42,"Hello World"] 
+} ); 
+```
+
+当心！若向 Promise.all([ .. ]) 传入空数组，它会立即完成，但 Promise.race([ .. ]) 会挂住，且永远不会决议。
+
 ### 生成器
+
+> generator
 
 ### 程序性能
 
