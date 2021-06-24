@@ -82,7 +82,8 @@ function getFrontEndSidebar() {
     {
       text: 'SwaggerHub',
       children: [
-        { text: 'SwaggerHub使用教程', link: '/front-end/swagger-hub/' }
+        { text: 'SwaggerHub使用教程', link: '/front-end/swagger-hub/' },
+        { text: 'Curl', link: '/front-end/swagger-hub/curl' },
       ]
     },
     {
