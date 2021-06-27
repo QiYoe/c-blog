@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/assets/style.021c40aa.css">
     <link rel="modulepreload" href="/assets/Home.6222c4b1.js">
     <link rel="modulepreload" href="/assets/app.af15a0c3.js">
-    <link rel="modulepreload" href="/assets/books_you-dont-know-js.md.393b33eb.lean.js">
+    <link rel="modulepreload" href="/assets/books_you-dont-know-js.md.6d0cfa16.lean.js">
     <link rel="modulepreload" href="/assets/app.af15a0c3.js">
     <link rel="image/x-icon" href="/favicon.ico">
     <link rel="manifest" href="/manifest.json">
@@ -1551,8 +1551,647 @@ it<span class="token punctuation">.</span><span class="token function">next</spa
   <span class="token comment">// 不行，没有处理！</span>
   console<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// Oops </span>
 <span class="token punctuation">}</span> 
-</code></pre></div><h3 id="程序性能"><a class="header-anchor" href="#程序性能" aria-hidden="true">#</a> 程序性能</h3><h3 id="性能测试与调优"><a class="header-anchor" href="#性能测试与调优" aria-hidden="true">#</a> 性能测试与调优</h3><h2 id="起步上路"><a class="header-anchor" href="#起步上路" aria-hidden="true">#</a> 起步上路</h2><h3 id="深入编程"><a class="header-anchor" href="#深入编程" aria-hidden="true">#</a> 深入编程</h3><h3 id="深入javascript"><a class="header-anchor" href="#深入javascript" aria-hidden="true">#</a> 深入JavaScript</h3><h3 id="深入“你不知道的javascript系列”"><a class="header-anchor" href="#深入“你不知道的javascript系列”" aria-hidden="true">#</a> 深入“你不知道的JavaScript系列”</h3><h2 id="es6及更新版本"><a class="header-anchor" href="#es6及更新版本" aria-hidden="true">#</a> ES6及更新版本</h2><h3 id="es？现在与未来"><a class="header-anchor" href="#es？现在与未来" aria-hidden="true">#</a> ES？现在与未来</h3><h3 id="语法-1"><a class="header-anchor" href="#语法-1" aria-hidden="true">#</a> 语法</h3><h3 id="代码组织"><a class="header-anchor" href="#代码组织" aria-hidden="true">#</a> 代码组织</h3><h3 id="异步流控制"><a class="header-anchor" href="#异步流控制" aria-hidden="true">#</a> 异步流控制</h3><h3 id="集合"><a class="header-anchor" href="#集合" aria-hidden="true">#</a> 集合</h3><h3 id="新增api"><a class="header-anchor" href="#新增api" aria-hidden="true">#</a> 新增API</h3><h3 id="元编程"><a class="header-anchor" href="#元编程" aria-hidden="true">#</a> 元编程</h3><h3 id="es6之后"><a class="header-anchor" href="#es6之后" aria-hidden="true">#</a> ES6之后</h3></div></div><footer class="page-footer" data-v-7eddb2c4 data-v-fb8d84c6><div class="edit" data-v-fb8d84c6><div class="edit-link" data-v-fb8d84c6 data-v-1ed99556><a class="link" href="https://github.com/QiYoe/c-blog/edit/master/docs/books/you-dont-know-js.md" target="_blank" rel="noopener noreferrer" data-v-1ed99556>在 GitHub 上编辑此页 <svg class="icon outbound icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewbox="0 0 100 100" width="15" height="15" data-v-1ed99556><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path><polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></div></div><div class="updated" data-v-fb8d84c6><p class="last-updated" data-v-fb8d84c6 data-v-5797b537><span class="prefix" data-v-5797b537>最新更新时间:</span><span class="datetime" data-v-5797b537></span></p></div></footer><div class="next-and-prev-link" data-v-7eddb2c4 data-v-38ede35f><div class="container" data-v-38ede35f><div class="prev" data-v-38ede35f><!----></div><div class="next" data-v-38ede35f><a class="link" href="/books/js-advice" data-v-38ede35f><span class="text" data-v-38ede35f>JavaScript深入系列</span><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" class="icon icon-next" data-v-38ede35f><path d="M19.9,12.4c0.1-0.2,0.1-0.5,0-0.8c-0.1-0.1-0.1-0.2-0.2-0.3l-7-7c-0.4-0.4-1-0.4-1.4,0s-0.4,1,0,1.4l5.3,5.3H5c-0.6,0-1,0.4-1,1s0.4,1,1,1h11.6l-5.3,5.3c-0.4,0.4-0.4,1,0,1.4c0.2,0.2,0.5,0.3,0.7,0.3s0.5-0.1,0.7-0.3l7-7C19.8,12.6,19.9,12.5,19.9,12.4z"></path></svg></a></div></div></div><!--[--><!--]--></div></main></div><!----><!--]--></div>
-    <script>__VP_HASH_MAP__ = JSON.parse("{\"index.md\":\"f2d8efa0\",\"algorithm_index.md\":\"d9e5092b\",\"algorithm_leetcode.md\":\"81e85abb\",\"algorithm_lodash.md\":\"aa5247ed\",\"books_css-secrets.md\":\"6348ad3d\",\"books_grokking-algorithms.md\":\"87a70f6b\",\"books_index.md\":\"e0d2de67\",\"books_js-advice.md\":\"5d65b58d\",\"books_pro-git.md\":\"27a53977\",\"books_you-dont-know-js.md\":\"393b33eb\",\"front-end_index.md\":\"38cd64d0\",\"other_30-seconds-of-code.md\":\"29e0188b\",\"other_computer-tech.md\":\"9f4d31de\",\"other_index.md\":\"5960e386\",\"other_smart-tools.md\":\"36bfad0f\",\"other_vanillawebprojects.md\":\"933b8568\",\"quotations_index.md\":\"583d2bd8\",\"front-end_ast_index.md\":\"63d090bd\",\"front-end_blog-build_aliyun-domin.md\":\"bf454f17\",\"front-end_blog-build_baidu-include.md\":\"42f38e5f\",\"front-end_blog-build_index.md\":\"a19b1ccb\",\"front-end_blog-build_seo-optimize.md\":\"d3b9c4d8\",\"front-end_git_advance.md\":\"4943769a\",\"front-end_git_flight-rules.md\":\"ef90e1c0\",\"front-end_git_index.md\":\"79aea16f\",\"front-end_linux_docker.md\":\"1186e34b\",\"front-end_linux_index.md\":\"26017550\",\"front-end_linux_nginx.md\":\"d32ba1c7\",\"front-end_swagger-hub_curl.md\":\"dc970b03\",\"front-end_swagger-hub_index.md\":\"49056094\",\"front-end_vue_axios.md\":\"0aaf5a04\",\"front-end_vue_index.md\":\"fbe194e7\",\"front-end_vue_nuxt.md\":\"2c4ea6da\",\"front-end_vue_sass.md\":\"f9d1f299\",\"front-end_vue_typescript.md\":\"e6c71607\",\"front-end_vue_vite.md\":\"8a3ae170\",\"front-end_vue_vue-router.md\":\"0e5ff440\",\"front-end_web-container_index.md\":\"91fe216b\",\"front-end_websocket_index.md\":\"74220e0a\"}")</script>
+</code></pre></div><p>异步迭代生成器错失了很重要的两点：Promise 的可信任性和可组合性</p><div class="language-js"><pre><code><span class="token comment">// 在运行 Ajax 例子中基于 Promise 的实现方法：</span>
+<span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span>y</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">return</span> <span class="token function">request</span><span class="token punctuation">(</span> 
+    <span class="token string">&quot;http://some.url.1/?x=&quot;</span> <span class="token operator">+</span> x <span class="token operator">+</span> <span class="token string">&quot;&amp;y=&quot;</span> <span class="token operator">+</span> y 
+  <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token function">foo</span><span class="token punctuation">(</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">31</span> <span class="token punctuation">)</span> 
+<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> 
+  <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">text</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> text <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> 
+  <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">err</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// foo(..) 没有返回值（undefined），并且我们的迭代器控制代码并不关心 yield 出来的值。</span>
+
+
+<span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span>y</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">return</span> <span class="token function">request</span><span class="token punctuation">(</span> 
+    <span class="token string">&quot;http://some.url.1/?x=&quot;</span> <span class="token operator">+</span> x <span class="token operator">+</span> <span class="token string">&quot;&amp;y=&quot;</span> <span class="token operator">+</span> y 
+  <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">try</span> <span class="token punctuation">{</span> 
+    <span class="token keyword">var</span> text <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">foo</span><span class="token punctuation">(</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">31</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> text <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+  <span class="token keyword">catch</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">var</span> it <span class="token operator">=</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> p <span class="token operator">=</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span> 
+<span class="token comment">// 等待promise p决议</span>
+p<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> 
+  <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">text</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> text <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> 
+  <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">err</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    it<span class="token punctuation">.</span><span class="token function">throw</span><span class="token punctuation">(</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token function">run</span><span class="token punctuation">(</span><span class="token parameter">gen</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">var</span> args <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">.</span><span class="token function">call</span><span class="token punctuation">(</span> arguments<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> it<span class="token punctuation">;</span> 
+  <span class="token comment">// 在当前上下文中初始化生成器</span>
+  it <span class="token operator">=</span> <span class="token function">gen</span><span class="token punctuation">.</span><span class="token function">apply</span><span class="token punctuation">(</span> <span class="token keyword">this</span><span class="token punctuation">,</span> args <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token comment">// 返回一个promise用于生成器完成</span>
+  <span class="token keyword">return</span> Promise<span class="token punctuation">.</span><span class="token function">resolve</span><span class="token punctuation">(</span><span class="token punctuation">)</span> 
+    <span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> <span class="token keyword">function</span> <span class="token function">handleNext</span><span class="token punctuation">(</span><span class="token parameter">value</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+      <span class="token comment">// 对下一个yield出的值运行</span>
+      <span class="token keyword">var</span> next <span class="token operator">=</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+      <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token keyword">function</span> <span class="token function">handleResult</span><span class="token punctuation">(</span><span class="token parameter">next</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+        <span class="token comment">// 生成器运行完毕了吗？</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>next<span class="token punctuation">.</span>done<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+          <span class="token keyword">return</span> next<span class="token punctuation">.</span>value<span class="token punctuation">;</span> 
+        <span class="token punctuation">}</span> 
+        <span class="token comment">// 否则继续运行</span>
+        <span class="token keyword">else</span> <span class="token punctuation">{</span> 
+          <span class="token keyword">return</span> Promise<span class="token punctuation">.</span><span class="token function">resolve</span><span class="token punctuation">(</span> next<span class="token punctuation">.</span>value <span class="token punctuation">)</span> 
+            <span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> 
+              <span class="token comment">// 成功就恢复异步循环，把决议的值发回生成器</span>
+              handleNext<span class="token punctuation">,</span> 
+              <span class="token comment">// 如果value是被拒绝的 promise，</span>
+              <span class="token comment">// 就把错误传回生成器进行出错处理</span>
+              <span class="token keyword">function</span> <span class="token function">handleErr</span><span class="token punctuation">(</span><span class="token parameter">err</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+                <span class="token keyword">return</span> Promise<span class="token punctuation">.</span><span class="token function">resolve</span><span class="token punctuation">(</span> 
+                    it<span class="token punctuation">.</span><span class="token function">throw</span><span class="token punctuation">(</span> err <span class="token punctuation">)</span>
+                  <span class="token punctuation">)</span> 
+                  <span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> handleResult <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+              <span class="token punctuation">}</span> 
+            <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token punctuation">}</span> 
+      <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">(</span>next<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token comment">// .. </span>
+<span class="token punctuation">}</span> 
+<span class="token function">run</span><span class="token punctuation">(</span> main <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 它会自动异步运行你传给它的生成器，直到结束。</span>
+</code></pre></div><p>async 与 await</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span>y</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">return</span> <span class="token function">request</span><span class="token punctuation">(</span> 
+    <span class="token string">&quot;http://some.url.1/?x=&quot;</span> <span class="token operator">+</span> x <span class="token operator">+</span> <span class="token string">&quot;&amp;y=&quot;</span> <span class="token operator">+</span> y 
+  <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">try</span> <span class="token punctuation">{</span> 
+    <span class="token keyword">var</span> text <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">foo</span><span class="token punctuation">(</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">31</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> text <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span>
+  <span class="token keyword">catch</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">}</span> 
+<span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token comment">// 让两个请求&quot;并行&quot;</span>
+  <span class="token keyword">var</span> p1 <span class="token operator">=</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.1&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> p2 <span class="token operator">=</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.2&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token comment">// 等待两个promise都决议</span>
+  <span class="token keyword">var</span> r1 <span class="token operator">=</span> <span class="token keyword">yield</span> p1<span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> r2 <span class="token operator">=</span> <span class="token keyword">yield</span> p2<span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> r3 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> 
+    <span class="token string">&quot;http://some.url.3/?v=&quot;</span> <span class="token operator">+</span> r1 <span class="token operator">+</span> <span class="token string">&quot;,&quot;</span> <span class="token operator">+</span> r2 
+  <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> r3 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token comment">// 使用前面定义的工具run(..)</span>
+<span class="token function">run</span><span class="token punctuation">(</span> foo <span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><p>观察一下 yield 的位置。p1 和 p2 是并发执行（即“并行”）的用于 Ajax 请求的 promise。哪一个先完成都无所谓，因为 promise 会按照需要在决议状态保持任意长时间。</p><p>然后我们使用接下来的两个 yield 语句等待并取得 promise 的决议（分别写入 r1 和 r2）。如果 p1 先决议，那么 yield p1 就会先恢复执行，然后等待 yield p2 恢复。如果 p2 先决议，它就会耐心保持其决议值等待请求，但是 yield p1 将会先等待，直到 p1 决议。</p><p>不管哪种情况，p1 和 p2 都会并发执行，无论完成顺序如何，两者都要全部完成，然后才会发出 r3 = yield request..Ajax 请求。</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token comment">// 让两个请求&quot;并行&quot;，并等待两个promise都决议</span>
+  <span class="token keyword">var</span> results <span class="token operator">=</span> <span class="token keyword">yield</span> Promise<span class="token punctuation">.</span><span class="token function">all</span><span class="token punctuation">(</span> <span class="token punctuation">[</span> 
+    <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.1&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">,</span> 
+    <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.2&quot;</span> <span class="token punctuation">)</span> 
+  <span class="token punctuation">]</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> r1 <span class="token operator">=</span> results<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> r2 <span class="token operator">=</span> results<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> r3 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> 
+    <span class="token string">&quot;http://some.url.3/?v=&quot;</span> <span class="token operator">+</span> r1 <span class="token operator">+</span> <span class="token string">&quot;,&quot;</span> <span class="token operator">+</span> r2 
+  <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> r3 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token comment">// 使用前面定义的工具run(..) </span>
+<span class="token function">run</span><span class="token punctuation">(</span> foo <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><div class="language-js"><pre><code><span class="token comment">// 注：普通函数，不是生成器</span>
+<span class="token keyword">function</span> <span class="token function">bar</span><span class="token punctuation">(</span><span class="token parameter">url1<span class="token punctuation">,</span>url2</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">return</span> Promise<span class="token punctuation">.</span><span class="token function">all</span><span class="token punctuation">(</span> <span class="token punctuation">[</span> 
+    <span class="token function">request</span><span class="token punctuation">(</span> url1 <span class="token punctuation">)</span><span class="token punctuation">,</span> 
+    <span class="token function">request</span><span class="token punctuation">(</span> url2 <span class="token punctuation">)</span> 
+  <span class="token punctuation">]</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token comment">// 隐藏bar(..)内部基于Promise的并发细节</span>
+  <span class="token keyword">var</span> results <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">bar</span><span class="token punctuation">(</span> 
+    <span class="token string">&quot;http://some.url.1&quot;</span><span class="token punctuation">,</span> 
+    <span class="token string">&quot;http://some.url.2&quot;</span> 
+  <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> r1 <span class="token operator">=</span> results<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> r2 <span class="token operator">=</span> results<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> r3 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> 
+    <span class="token string">&quot;http://some.url.3/?v=&quot;</span> <span class="token operator">+</span> r1 <span class="token operator">+</span> <span class="token string">&quot;,&quot;</span> <span class="token operator">+</span> r2 
+  <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> r3 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token comment">// 使用前面定义的工具run(..)</span>
+<span class="token function">run</span><span class="token punctuation">(</span> foo <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><p>在 *foo() 内部，我们所做的一切就是要求 bar(..) 给我们一些 results，并通过 yield来等待结果，这样更简洁也更清晰。我们不需要关心在底层是用 Promise.all([ .. ])Promise 组合来实现这一切。我们把异步，实际上是 Promise，作为一个实现细节看待</p><p>从一个生成器调用另一个生成器，使用辅助函数 run(..)，就像这样：</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">var</span> r2 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.2&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> r3 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.3/?v=&quot;</span> <span class="token operator">+</span> r2 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">return</span> r3<span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">var</span> r1 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.1&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token comment">// 通过 run(..) &quot;委托&quot;给*foo()</span>
+  <span class="token keyword">var</span> r3 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">run</span><span class="token punctuation">(</span> foo <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> r3 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token function">run</span><span class="token punctuation">(</span> bar <span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><p>通过 run(..) 工具从 *bar() 内部运行 *foo()。这里我们利用了如下事实：我们前面定义的 run(..) 返回一个 promise，这个 promise 在生成器运行结束时（或出错退出时）决议。因此，如果从一个 run(..) 调用中 yield 出来一个 promise 到另一个 run(..) 实例中，它会自动暂停 *bar()，直到 *foo() 结束。</p><p>但其实还有一个更好的方法可以实现从 *bar() 调用 *foo()，称为 yield 委托。yield 委托的具体语法是：yield * __（注意多出来的 *）。在我们弄清它在前面的例子中的使用之前，先来看一个简单点的场景：</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;*foo() starting&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 生成器 ｜ <span class="token number">263</span>
+  <span class="token keyword">yield</span> <span class="token number">3</span><span class="token punctuation">;</span> 
+  <span class="token keyword">yield</span> <span class="token number">4</span><span class="token punctuation">;</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;*foo() finished&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">yield</span> <span class="token number">1</span><span class="token punctuation">;</span> 
+  <span class="token keyword">yield</span> <span class="token number">2</span><span class="token punctuation">;</span> 
+  <span class="token keyword">yield</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// yield委托！</span>
+  <span class="token keyword">yield</span> <span class="token number">5</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">var</span> it <span class="token operator">=</span> <span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span> <span class="token comment">// 1 </span>
+it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span> <span class="token comment">// 2 </span>
+it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span> <span class="token comment">// *foo()启动</span>
+                  <span class="token comment">// 3 </span>
+it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span> <span class="token comment">// 4 </span>
+it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span> <span class="token comment">// *foo()完成</span>
+                  <span class="token comment">// 5</span>
+</code></pre></div><p>调用 foo() 创建一个迭代器。然后 yield * 把迭代器实例控制（当前 *bar() 生成器的）委托给 / 转移到了这另一个 *foo() 迭代器。</p><p>所以，前面两个 it.next() 调用控制的是 *bar()。但当我们发出第三个 it.next() 调用时，*foo() 现在启动了，我们现在控制的是 *foo() 而不是 *bar()。这也是为什么这被称为委托：*bar() 把自己的迭代控制委托给了 *foo()。</p><p>一旦 it 迭代器控制消耗了整个 *foo() 迭代器，it 就会自动转回控制 *bar()。</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">var</span> r2 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.2&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">var</span> r3 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.3/?v=&quot;</span> <span class="token operator">+</span> r2 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">return</span> r3<span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">var</span> r1 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.1&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token number">264</span> ｜ 第 <span class="token number">4</span> 章
+  <span class="token comment">// 通过 yeild* &quot;委托&quot;给*foo()</span>
+  <span class="token keyword">var</span> r3 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> r3 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token function">run</span><span class="token punctuation">(</span> bar <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><p>这段代码和前面版本的唯一区别就在于使用了 yield *foo()，而不是前面的 yield run(foo)。</p><p>yield * 暂停了迭代控制，而不是生成器控制。当你调用 *foo() 生成器时，现在 yield 委托到了它的迭代器。但实际上，你可以 yield 委托到任意iterable，yield *[1,2,3] 会消耗数组值 [1,2,3] 的默认迭代器。</p><p>yield 委托的主要目的是代码组织，以达到与普通函数调用的对称。</p><p>想像一下有两个模块分别提供了方法 foo() 和 bar()，其中 bar() 调用了 foo()。一般来说，把两者分开实现的原因是该程序的适当的代码组织要求它们位于不同的函数中。比如，可能有些情况下是单独调用 foo()，另外一些地方则由 bar() 调用 foo()。</p><p>同样是出于这些原因，保持生成器分离有助于程序的可读性、可维护性和可调试性。在这一方面，yield * 是一个语法上的缩写，用于代替手工在 <em>foo() 的步骤上迭代，不过是在</em>bar() 内部。</p><p>yield 委托是如何不只用于迭代器控制工作，也用于双向消息传递工作的呢。认真跟踪下面的通过 yield 委托实现的消息流出入：</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;inside *foo():&quot;</span><span class="token punctuation">,</span> <span class="token keyword">yield</span> <span class="token string">&quot;B&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;inside *foo():&quot;</span><span class="token punctuation">,</span> <span class="token keyword">yield</span> <span class="token string">&quot;C&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">return</span> <span class="token string">&quot;D&quot;</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 生成器 ｜ <span class="token number">265</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;inside *bar():&quot;</span><span class="token punctuation">,</span> <span class="token keyword">yield</span> <span class="token string">&quot;A&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token comment">// yield委托！</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;inside *bar():&quot;</span><span class="token punctuation">,</span> <span class="token keyword">yield</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;inside *bar():&quot;</span><span class="token punctuation">,</span> <span class="token keyword">yield</span> <span class="token string">&quot;E&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">return</span> <span class="token string">&quot;F&quot;</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">var</span> it <span class="token operator">=</span> <span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// outside: A </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">1</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// inside *bar(): 1 </span>
+<span class="token comment">// outside: B </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">2</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// inside *foo(): 2 </span>
+<span class="token comment">// outside: C </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">3</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// inside *foo(): 3 </span>
+<span class="token comment">// inside *bar(): D </span>
+<span class="token comment">// outside: E </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">4</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// inside *bar(): 4 </span>
+<span class="token comment">// outside: F </span>
+</code></pre></div><p>要特别注意 it.next(3) 调用之后的执行步骤。</p><ol><li>值 3（通过 *bar() 内部的 yield 委托）传入等待的 *foo() 内部的 yield &quot;C&quot; 表达式。</li><li>然后 *foo() 调用 return &quot;D&quot;，但是这个值并没有一直返回到外部的 it.next(3) 调用。</li><li>取而代之的是，值 &quot;D&quot; 作为 <em>bar() 内部等待的 yield</em>foo() 表达式的结果发出——这个yield 委托本质上在所有的 *foo() 完成之前是暂停的。所以 &quot;D&quot; 成为 *bar() 内部的最后结果，并被打印出来。</li><li>yield &quot;E&quot; 在 *bar() 内部调用，值 &quot;E&quot; 作为 it.next(3) 调用的结果被 yield 发出。</li></ol><p>实际上，yield 委托甚至并不要求必须转到另一个生成器，它可以转到一个非生成器的一般 iterable。比如：</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;inside *bar():&quot;</span><span class="token punctuation">,</span> <span class="token keyword">yield</span> <span class="token string">&quot;A&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token number">266</span> ｜ 第 <span class="token number">4</span> 章
+  <span class="token comment">// yield委托给非生成器！</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;inside *bar():&quot;</span><span class="token punctuation">,</span> <span class="token keyword">yield</span> <span class="token operator">*</span><span class="token punctuation">[</span> <span class="token string">&quot;B&quot;</span><span class="token punctuation">,</span> <span class="token string">&quot;C&quot;</span><span class="token punctuation">,</span> <span class="token string">&quot;D&quot;</span> <span class="token punctuation">]</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;inside *bar():&quot;</span><span class="token punctuation">,</span> <span class="token keyword">yield</span> <span class="token string">&quot;E&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">return</span> <span class="token string">&quot;F&quot;</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">var</span> it <span class="token operator">=</span> <span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// outside: A </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">1</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// inside *bar(): 1 </span>
+<span class="token comment">// outside: B </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">2</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// outside: C </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">3</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// outside: D </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">4</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// inside *bar(): undefined </span>
+<span class="token comment">// outside: E </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">5</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// inside *bar(): 5 </span>
+<span class="token comment">// outside: F </span>
+</code></pre></div><p>注意这个例子和之前那个例子在消息接收位置和报告位置上的区别。最显著的是，默认的数组迭代器并不关心通过 next(..) 调用发送的任何消息，所以值 2、3 和 4 根本就被忽略了。还有，因为迭代器没有显式的返回值（和前面使用的 *foo() 不同），所以 yield * 表达式完成后得到的是一个 undefined。</p><p>异常也被委托！和 yield 委托透明地双向传递消息的方式一样，错误和异常也是双向传递的：</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">try</span> <span class="token punctuation">{</span> 
+    <span class="token keyword">yield</span> <span class="token string">&quot;B&quot;</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+  <span class="token keyword">catch</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;error caught inside *foo():&quot;</span><span class="token punctuation">,</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+  <span class="token keyword">yield</span> <span class="token string">&quot;C&quot;</span><span class="token punctuation">;</span> 
+  <span class="token keyword">throw</span> <span class="token string">&quot;D&quot;</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span>
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+ <span class="token keyword">yield</span> <span class="token string">&quot;A&quot;</span><span class="token punctuation">;</span> 
+ <span class="token keyword">try</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">yield</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+ <span class="token punctuation">}</span> 
+ <span class="token keyword">catch</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;error caught inside *bar():&quot;</span><span class="token punctuation">,</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+ <span class="token punctuation">}</span> 
+ <span class="token keyword">yield</span> <span class="token string">&quot;E&quot;</span><span class="token punctuation">;</span> 
+ <span class="token keyword">yield</span> <span class="token operator">*</span><span class="token function">baz</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+ <span class="token comment">// 注：不会到达这里！</span>
+ <span class="token keyword">yield</span> <span class="token string">&quot;G&quot;</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">baz</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">throw</span> <span class="token string">&quot;F&quot;</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">var</span> it <span class="token operator">=</span> <span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// outside: A </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">1</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// outside: B </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">throw</span><span class="token punctuation">(</span> <span class="token number">2</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// error caught inside *foo(): 2 </span>
+<span class="token comment">// outside: C </span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">3</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// error caught inside *bar(): D </span>
+<span class="token comment">// outside: E </span>
+<span class="token keyword">try</span> <span class="token punctuation">{</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;outside:&quot;</span><span class="token punctuation">,</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> <span class="token number">4</span> <span class="token punctuation">)</span><span class="token punctuation">.</span>value <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">catch</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;error caught outside:&quot;</span><span class="token punctuation">,</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token comment">// error caught outside: F </span>
+</code></pre></div><p>这段代码中需要注意以下几点。</p><ol><li>调用 it.throw(2) 时，它会发送错误消息 2 到 *bar()，它又将其委托给 *foo()，后者捕获并处理它。然后，yield &quot;C&quot; 把 &quot;C&quot; 发送回去作为 it.throw(2) 调用返回的 value。</li><li>接下来从 *foo() 内 throw 出来的值 &quot;D&quot; 传播到 *bar()，这个函数捕获并处理它。然后yield &quot;E&quot; 把 &quot;E&quot; 发送回去作为 it.next(3) 调用返回的 value。</li><li>然后，从 *baz() throw 出来的异常并没有在 *bar() 内被捕获——所以 *baz() 和 *bar()都被设置为完成状态。这段代码之后，就再也无法通过任何后续的 next(..) 调用得到值 &quot;G&quot;，next(..) 调用只会给 value 返回 undefined。</li></ol><p>我们终于回到前面的多个顺序 Ajax 请求的 yield 委托例子：</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+ <span class="token keyword">var</span> r2 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.2&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+ <span class="token keyword">var</span> r3 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.3/?v=&quot;</span> <span class="token operator">+</span> r2 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+ <span class="token keyword">return</span> r3<span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+ <span class="token keyword">var</span> r1 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.1&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+ <span class="token keyword">var</span> r3 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+ console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> r3 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token function">run</span><span class="token punctuation">(</span> bar <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><p>这里我们在 *bar() 内部没有调用 yield run(foo)，而是调用 yield *foo()。</p><p>在这个例子之前的版本中，使用了 Promise 机制（通过 run(..) 控制）把值从 *foo() 内的return r3 传递给 *bar() 中的局部变量 r3。现在，这个值通过 yield * 机制直接返回。除此之外的行为非常相似。</p><p>当然，yield 委托可以跟踪任意多委托步骤，只要你把它们连在一起。甚至可以使用 yield委托实现异步的生成器递归，即一个 yield 委托到它自身的生成器：</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">val</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>val <span class="token operator">&gt;</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token comment">// 生成器递归</span>
+  val <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span> val <span class="token operator">-</span> <span class="token number">1</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+  <span class="token keyword">return</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url/?v=&quot;</span> <span class="token operator">+</span> val <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">var</span> r1 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span> <span class="token number">3</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> r1 <span class="token punctuation">)</span><span class="token punctuation">;</span> 生成器 ｜ <span class="token number">269</span>
+<span class="token punctuation">}</span> 
+<span class="token function">run</span><span class="token punctuation">(</span> bar <span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><p>run(..) 工具可以通过 run( foo, 3 ) 调用，因为它支持额外的参数和生成器一起传入。但是，这里使用了没有参数的 *bar()，以展示 yield * 的灵活性。</p><ol><li>run(bar) 启动生成器 *bar()。</li><li>foo(3) 创建了一个 *foo(..) 的迭代器，并传入 3 作为其参数 val。</li><li>因为 3 &gt; 1，所以 foo(2) 创建了另一个迭代器，并传入 2 作为其参数 val。</li><li>因为 2 &gt; 1，所以 foo(1) 又创建了一个新的迭代器，并传入 1 作为其参数 val。</li><li>因为 1 &gt; 1 不成立，所以接下来以值 1 调用 request(..)，并从这第一个 Ajax 调用得到一个 promise。</li><li>这个 promise 通过 yield 传出，回到 *foo(2) 生成器实例。</li><li>yield * 把这个 promise 传出回到 *foo(3) 生成器实例。另一个 yield * 把这个 promise传出回到 *bar() 生成器实例。再有一个 yield * 把这个 promise 传出回到 run(..) 工具，这个工具会等待这个 promsie（第一个 Ajax 请求）的处理。</li><li>这个 promise 决议后，它的完成消息会发送出来恢复 <em>bar()；后者通过 yield * 转入</em>foo(3) 实例；后者接着通过 yield * 转入 *foo(2) 生成器实例；后者再接着通过 yield *转入 *foo(3) 生成器实例内部的等待着的普通 yield。</li><li>第一个调用的 Ajax 响应现在立即从 <em>foo(3) 生成器实例中返回。这个实例把值作为</em>foo(2) 实例中 yield * 表达式的结果返回，赋给它的局部变量 val。</li><li>在 *foo(2) 中，通过 request(..) 发送了第二个 Ajax 请求。它的 promise 通过 yield发回给 *foo(1) 实例，然后通过 yield * 一路传递到 run(..)（再次进行步骤 7）。这个promise 决议后，第二个 Ajax 响应一路传播回到 *foo(2) 生成器实例，赋给它的局部变量 val。</li><li>最后，通过 request(..) 发出第三个 Ajax 请求，它的 promise 传出到 run(..)，然后它的决议值一路返回，然后 return 返回到 *bar() 中等待的 yield * 表达式。</li></ol><p>两个同时运行的进程可以合作式地交替运作，而很多时候这可以产生（双关，原文为 yield：既指产生又指 yield 关键字）非常强大的异步表示。</p><div class="language-js"><pre><code><span class="token comment">// 首先，使用 Promise 手工实现：</span>
+<span class="token keyword">var</span> it1 <span class="token operator">=</span> <span class="token function">reqData</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.1&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> it2 <span class="token operator">=</span> <span class="token function">reqData</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.2&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> p1 <span class="token operator">=</span> it1<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> p2 <span class="token operator">=</span> it2<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+p1 
+<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">data</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+  it1<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> data <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">return</span> p2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span> <span class="token punctuation">)</span> 
+<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">data</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+  it2<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> data <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><p>*reqData(..) 的两个实例都被启动来发送它们的 Ajax 请求，然后通过 yield 暂停。然后我们选择在 p1 决议时恢复第一个实例，然后 p2 的决议会重启第二个实例。通过这种方式，我们使用 Promise 配置确保 res[0] 中会放置第一个响应，而 res[1] 中会放置第二个响应。</p><div class="language-js"><pre><code><span class="token comment">// request(..)是一个支持Promise的Ajax工具</span>
+<span class="token keyword">var</span> res <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> 
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">reqData</span><span class="token punctuation">(</span><span class="token parameter">url</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">var</span> data <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token comment">// 控制转移</span>
+  <span class="token keyword">yield</span><span class="token punctuation">;</span> 
+  res<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span> data <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">var</span> it1 <span class="token operator">=</span> <span class="token function">reqData</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.1&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> it2 <span class="token operator">=</span> <span class="token function">reqData</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.2&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> p1 <span class="token operator">=</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> p2 <span class="token operator">=</span> it<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+p1<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">data</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+  it1<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> data <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+p2<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">data</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+  it2<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span> data <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+Promise<span class="token punctuation">.</span><span class="token function">all</span><span class="token punctuation">(</span> <span class="token punctuation">[</span>p1<span class="token punctuation">,</span>p2<span class="token punctuation">]</span> <span class="token punctuation">)</span> 
+<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+  it1<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  it2<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><p>在前面的代码中，第二个实例直到第一个实例完全结束才得到数据。但在这里，两个实例都是各自的响应一回来就取得了数据，然后每个实例再次 yield，用于控制传递的目的。 然后我们在 Promise.all([ .. ]) 处理函数中选择它们的恢复顺序。</p><p>可能不那么明显的是，因为对称性，这种方法以更简单的形式暗示了一种可重用的工具。还可以做得更好。来设想一下使用一个称为 runAll(..) 的工具：</p><div class="language-js"><pre><code><span class="token comment">// request(..)是一个支持Promise的Ajax工具</span>
+<span class="token keyword">var</span> res <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> 
+<span class="token function">runAll</span><span class="token punctuation">(</span> 
+  <span class="token keyword">function</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    <span class="token keyword">var</span> p1 <span class="token operator">=</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.1&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token comment">// 控制转移</span>
+    <span class="token keyword">yield</span><span class="token punctuation">;</span> 
+    res<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span> <span class="token keyword">yield</span> p1 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> 
+  <span class="token keyword">function</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    <span class="token keyword">var</span> p2 <span class="token operator">=</span> <span class="token function">request</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.2&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token comment">// 控制转移</span>
+    <span class="token keyword">yield</span><span class="token punctuation">;</span> 
+    res<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span> <span class="token keyword">yield</span> p2 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><p>以下是 runAll(..) 内部运行的过程。</p><ol><li>第一个生成器从第一个来自于 &quot;<a href="http://some.url.1" target="_blank" rel="noopener noreferrer">http://some.url.1</a>&quot; 的 Ajax 响应得到一个 promise，然后把控制 yield 回 runAll(..) 工具。</li><li>第二个生成器运行，对于 &quot;<a href="http://some.url.2" target="_blank" rel="noopener noreferrer">http://some.url.2</a>&quot; 实现同样的操作，把控制 yield 回runAll(..) 工具。</li><li>第一个生成器恢复运行，通过 yield 传出其 promise p1。在这种情况下，runAll(..) 工具所做的和我们之前的 run(..) 一样，因为它会等待这个 promise 决议，然后恢复同一个生成器（没有控制转移！）。p1 决议后，runAll(..) 使用这个决议值再次恢复第一个生成器，然后 res[0] 得到了自己的值。接着，在第一个生成器完成的时候，有一个隐式的控制转移。</li><li>第二个生成器恢复运行，通过 yield 传出其 promise p2，并等待其决议。一旦决议，runAll(..) 就用这个值恢复第二个生成器，设置 res[1]。</li></ol><p>在这个例子的运行中，我们使用了一个名为 res 的外层变量来保存两个不同的 Ajax 响应结果，我们的并发协调使其成为可能。但是，如果继续扩展 runAll(..) 来提供一个内层的变量空间，以使多个生成器实例可以共享，将是非常有帮助的，比如下面这个称为 data 的空对象。还有，它可以接受 yield 的非Promise 值，并把它们传递到下一个生成器。</p><div class="language-js"><pre><code><span class="token comment">// request(..)是一个支持Promise的Ajax工具</span>
+<span class="token function">runAll</span><span class="token punctuation">(</span> 
+  <span class="token keyword">function</span><span class="token operator">*</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    data<span class="token punctuation">.</span>res <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> 
+    <span class="token comment">// 控制转移（以及消息传递）</span>
+    <span class="token keyword">var</span> url1 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token string">&quot;http://some.url.2&quot;</span><span class="token punctuation">;</span> 
+    <span class="token keyword">var</span> p1 <span class="token operator">=</span> <span class="token function">request</span><span class="token punctuation">(</span> url1 <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// &quot;http://some.url.1&quot; </span>
+    <span class="token comment">// 控制转移</span>
+    <span class="token keyword">yield</span><span class="token punctuation">;</span> 
+    data<span class="token punctuation">.</span>res<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span> <span class="token keyword">yield</span> p1 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> 
+  <span class="token keyword">function</span><span class="token operator">*</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    <span class="token comment">// 控制转移（以及消息传递）</span>
+    <span class="token keyword">var</span> url2 <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token string">&quot;http://some.url.1&quot;</span><span class="token punctuation">;</span> 
+    <span class="token keyword">var</span> p2 <span class="token operator">=</span> <span class="token function">request</span><span class="token punctuation">(</span> url2 <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// &quot;http://some.url.2&quot; </span>
+    <span class="token comment">// 控制转移</span>
+    <span class="token keyword">yield</span><span class="token punctuation">;</span> 
+    data<span class="token punctuation">.</span>res<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span> <span class="token keyword">yield</span> p2 <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><p>在这一方案中，实际上两个生成器不只是协调控制转移，还彼此通信，通过 data.res 和yield 的消息来交换 url1 和 url2 的值。真是极其强大！</p><p>这样的实现也为被称作通信顺序进程（Communicating Sequential Processes，CSP）的更高级异步技术提供了一个概念基础。</p><p>形实转换程序（thunk）：JavaScript 中的 thunk 是指一个用于调用另外一个函数的函数，没有任何参数。换句话说，你用一个函数定义封装函数调用，包括需要的任何参数，来定义这个调用的执行，那么这个封装函数就是一个形实转换程序。之后在执行这个 thunk 时，最终就是调用了原始的函数。</p><div class="language-js"><pre><code><span class="token comment">// 同步的 thunk</span>
+<span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span>y</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">return</span> x <span class="token operator">+</span> y<span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token function">fooThunk</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">return</span> <span class="token function">foo</span><span class="token punctuation">(</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token comment">// 将来</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token function">fooThunk</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 7</span>
+
+<span class="token comment">// 异步的 thunk</span>
+<span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span>y<span class="token punctuation">,</span>cb</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token function">setTimeout</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    <span class="token function">cb</span><span class="token punctuation">(</span> x <span class="token operator">+</span> y <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">1000</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">function</span> <span class="token function">fooThunk</span><span class="token punctuation">(</span><span class="token parameter">cb</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token function">foo</span><span class="token punctuation">(</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> cb <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token comment">// 将来</span>
+<span class="token function">fooThunk</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">sum</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> sum <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 7 </span>
+<span class="token punctuation">}</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+
+<span class="token comment">// 但是，你并不会想手工编写 thunk。所以，我们发明一个工具来做这部分封装工作</span>
+<span class="token keyword">function</span> <span class="token function">thunkify</span><span class="token punctuation">(</span><span class="token parameter">fn</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">var</span> args <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">.</span><span class="token function">call</span><span class="token punctuation">(</span> arguments<span class="token punctuation">,</span> <span class="token number">1</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token keyword">return</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">cb</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    args<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span> cb <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token keyword">return</span> <span class="token function">fn</span><span class="token punctuation">.</span><span class="token function">apply</span><span class="token punctuation">(</span> <span class="token keyword">null</span><span class="token punctuation">,</span> args <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">var</span> fooThunk <span class="token operator">=</span> <span class="token function">thunkify</span><span class="token punctuation">(</span> foo<span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// 将来</span>
+<span class="token function">fooThunk</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">sum</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> sum <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 7 </span>
+<span class="token punctuation">}</span> <span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><p>thunkory（thunk+factory）。于是就有，thunkify(..) 生成一个 thunkory，然后 thunkory 生成 thunk。</p><div class="language-js"><pre><code><span class="token keyword">var</span> fooThunkory <span class="token operator">=</span> <span class="token function">thunkify</span><span class="token punctuation">(</span> foo <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> fooThunk1 <span class="token operator">=</span> <span class="token function">fooThunkory</span><span class="token punctuation">(</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> fooThunk2 <span class="token operator">=</span> <span class="token function">fooThunkory</span><span class="token punctuation">(</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// 将来</span>
+<span class="token function">fooThunk1</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">sum</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> sum <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 7 </span>
+<span class="token punctuation">}</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token function">fooThunk2</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">sum</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> sum <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 11 </span>
+<span class="token punctuation">}</span> <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 更简洁：</span>
+<span class="token keyword">var</span> fooThunkory <span class="token operator">=</span> <span class="token function">thunkify</span><span class="token punctuation">(</span> foo <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> fooThunk1 <span class="token operator">=</span> <span class="token function">fooThunkory</span><span class="token punctuation">(</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> fooThunk2 <span class="token operator">=</span> <span class="token function">fooThunkory</span><span class="token punctuation">(</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// 而不是：生成器 ｜ 277</span>
+<span class="token keyword">var</span> fooThunk1 <span class="token operator">=</span> <span class="token function">thunkify</span><span class="token punctuation">(</span> foo<span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> fooThunk2 <span class="token operator">=</span> <span class="token function">thunkify</span><span class="token punctuation">(</span> foo<span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><p>在第 3 章里我们定义了一个工具用于 promise 化一个函数，我们称之为Promise.wrap(..)，也可以将其称为 promisify(..) ！这个 Promise 封装工具并不产生Promise，它生成的是 promisory，而 promisory 则接着产生 Promise。这和现在讨论的thunkory 和 thunk 是完全对称的。</p><p>为了说明这种对称性，我们要首先把前面的 foo(..) 例子修改一下，改成使用 error-first 风格的回调：</p><div class="language-js"><pre><code><span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span>y<span class="token punctuation">,</span>cb</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token function">setTimeout</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    <span class="token comment">// 假定cb(..)是error-first风格的</span>
+    <span class="token function">cb</span><span class="token punctuation">(</span> <span class="token keyword">null</span><span class="token punctuation">,</span> x <span class="token operator">+</span> y <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">1000</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+</code></pre></div><p>现在我们对比一下 thunkify(..) 和 promisify(..)（即第 3 章中的 Promise.wrap(..)）的使用：</p><div class="language-js"><pre><code><span class="token comment">// 对称：构造问题提问者</span>
+<span class="token keyword">var</span> fooThunkory <span class="token operator">=</span> <span class="token function">thunkify</span><span class="token punctuation">(</span> foo <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> fooPromisory <span class="token operator">=</span> <span class="token function">promisify</span><span class="token punctuation">(</span> foo <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// 对称：提问</span>
+<span class="token keyword">var</span> fooThunk <span class="token operator">=</span> <span class="token function">fooThunkory</span><span class="token punctuation">(</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token keyword">var</span> fooPromise <span class="token operator">=</span> <span class="token function">fooPromisory</span><span class="token punctuation">(</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// 得到答案</span>
+<span class="token function">fooThunk</span><span class="token punctuation">(</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">err<span class="token punctuation">,</span>sum</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+  <span class="token keyword">else</span> <span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> sum <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 7 278 ｜ 第 4 章</span>
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">}</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token comment">// 得到promise答案</span>
+fooPromise 
+<span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span> 
+  <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">sum</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> sum <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 7 </span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> 
+  <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">err</span><span class="token punctuation">)</span><span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+</code></pre></div><div class="language-js"><pre><code><span class="token comment">// request(..)是一个支持Promise的Ajax工具</span>
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">url</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">try</span> <span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;requesting:&quot;</span><span class="token punctuation">,</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token keyword">var</span> val <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token function">request</span><span class="token punctuation">(</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> val <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+  <span class="token keyword">catch</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;Oops:&quot;</span><span class="token punctuation">,</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">var</span> it <span class="token operator">=</span> <span class="token function">foo</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.1&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 首先要观察到的是，我们仍然需要一个可以调用的普通函数 foo()，它仍然需要返回一个迭代器。因此，先把非生成器变换的轮廓刻画出来：</span>
+<span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">url</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token comment">// .. </span>
+  <span class="token comment">// 构造并返回一个迭代器</span>
+  <span class="token keyword">return</span> <span class="token punctuation">{</span> 
+    <span class="token function-variable function">next</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">v</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    <span class="token comment">// .. </span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> 
+  <span class="token function-variable function">throw</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">e</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    <span class="token comment">// .. </span>
+  <span class="token punctuation">}</span> 
+  <span class="token punctuation">}</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span>
+<span class="token keyword">var</span> it <span class="token operator">=</span> <span class="token function">foo</span><span class="token punctuation">(</span> <span class="token string">&quot;http://some.url.1&quot;</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+
+<span class="token comment">// 接下来要观察到的是，生成器是通过暂停自己的作用域 / 状态实现它的“魔法”的。可以通过函数闭包来模拟这一点。为了理解这样的代码是如何编写的，我们先给生成器的各个部分标注上状态值</span>
+<span class="token comment">// request(..)是一个支持Promise的Ajax工具</span>
+<span class="token keyword">function</span> <span class="token operator">*</span><span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">url</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token comment">// 状态1 </span>
+  <span class="token keyword">try</span> <span class="token punctuation">{</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;requesting:&quot;</span><span class="token punctuation">,</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token keyword">var</span> <span class="token constant">TMP1</span> <span class="token operator">=</span> <span class="token function">request</span><span class="token punctuation">(</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token comment">// 状态2 </span>
+    <span class="token keyword">var</span> val <span class="token operator">=</span> <span class="token keyword">yield</span> <span class="token constant">TMP1</span><span class="token punctuation">;</span> 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> val <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+  <span class="token keyword">catch</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    <span class="token comment">// 状态3 </span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;Oops:&quot;</span><span class="token punctuation">,</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span> 
+  <span class="token punctuation">}</span> 
+<span class="token punctuation">}</span> 
+<span class="token comment">// 1 是起始状态，2 是 request(..) 成功后的状态，3 是 request(..) 失败的状态。</span>
+
+<span class="token comment">// 回到我们翻译的生成器，让我们在闭包中定义一个变量 state 用于跟踪状态：</span>
+<span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">url</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token comment">// 管理生成器状态</span>
+  <span class="token keyword">var</span> state<span class="token punctuation">;</span> 
+  <span class="token comment">// .. </span>
+<span class="token punctuation">}</span> 
+
+<span class="token comment">// 现在在闭包内定义一个内层函数，称为 process(..)，使用 switch 语句处理每个状态：</span>
+<span class="token comment">// request(..)是一个支持Promise的Ajax工具 </span>
+<span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">url</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token comment">// 管理生成器状态282 ｜ 第 4 章</span>
+  <span class="token keyword">var</span> state<span class="token punctuation">;</span> 
+  <span class="token comment">// 生成器范围变量声明</span>
+  <span class="token keyword">var</span> val<span class="token punctuation">;</span> 
+  <span class="token keyword">function</span> <span class="token function">process</span><span class="token punctuation">(</span><span class="token parameter">v</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    <span class="token keyword">switch</span> <span class="token punctuation">(</span>state<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+      <span class="token keyword">case</span> <span class="token number">1</span><span class="token operator">:</span> 
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;requesting:&quot;</span><span class="token punctuation">,</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span> <span class="token function">request</span><span class="token punctuation">(</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+      <span class="token keyword">case</span> <span class="token number">2</span><span class="token operator">:</span> 
+        val <span class="token operator">=</span> v<span class="token punctuation">;</span> 
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> val <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span><span class="token punctuation">;</span> 
+      <span class="token keyword">case</span> <span class="token number">3</span><span class="token operator">:</span> 
+        <span class="token keyword">var</span> err <span class="token operator">=</span> v<span class="token punctuation">;</span> 
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;Oops:&quot;</span><span class="token punctuation">,</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span> 
+    <span class="token punctuation">}</span> 
+  <span class="token punctuation">}</span> 
+  <span class="token comment">// .. </span>
+<span class="token punctuation">}</span>
+<span class="token comment">// 对于每个生成器级的变量声明（val），我们都把它移动为 process(..) 外的一个 val 声明，这样它们就可以在多个 process(..) 调用之间存活。不过块作用域的变量 err 只在状态 3中需要使用，所以把它留在原来的位置。</span>
+<span class="token comment">// 在状态 1，没有了 yield resolve(..)，我们所做的是 return resolve(..)。在终止状态 2，没有显式的 return，所以我们只做一个 return，这等价于 return undefined。在终止状态3，有一个 return false，因此就保留这一句。</span>
+
+<span class="token comment">// 现在需要定义迭代器函数的代码，使这些函数正确调用 process(..)：</span>
+<span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">url</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token comment">// 管理生成器状态</span>
+  <span class="token keyword">var</span> state<span class="token punctuation">;</span> 
+  <span class="token comment">// 生成器变量范围声明</span>
+  <span class="token keyword">var</span> val<span class="token punctuation">;</span> 
+  <span class="token keyword">function</span> <span class="token function">process</span><span class="token punctuation">(</span><span class="token parameter">v</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    <span class="token keyword">switch</span> <span class="token punctuation">(</span>state<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+      <span class="token keyword">case</span> <span class="token number">1</span><span class="token operator">:</span> 
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;requesting:&quot;</span><span class="token punctuation">,</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span> <span class="token function">request</span><span class="token punctuation">(</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+      <span class="token keyword">case</span> <span class="token number">2</span><span class="token operator">:</span> 
+        val <span class="token operator">=</span> v<span class="token punctuation">;</span> 
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> val <span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span> 
+      <span class="token keyword">case</span> <span class="token number">3</span><span class="token operator">:</span> 
+        <span class="token keyword">var</span> err <span class="token operator">=</span> v<span class="token punctuation">;</span> 
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;Oops:&quot;</span><span class="token punctuation">,</span> err <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span> 
+    <span class="token punctuation">}</span> 
+  <span class="token punctuation">}</span> 
+  <span class="token comment">// 构造并返回一个生成器</span>
+  <span class="token keyword">return</span> <span class="token punctuation">{</span> 
+    <span class="token function-variable function">next</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">v</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+      <span class="token comment">// 初始状态</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>state<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+        state <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> 
+          done<span class="token operator">:</span> <span class="token boolean">false</span><span class="token punctuation">,</span> 
+          value<span class="token operator">:</span> <span class="token function">process</span><span class="token punctuation">(</span><span class="token punctuation">)</span> 
+        <span class="token punctuation">}</span><span class="token punctuation">;</span> 
+      <span class="token punctuation">}</span> 
+      <span class="token comment">// yield成功恢复</span>
+      <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>state <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+        state <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> 
+          done<span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span> 
+          value<span class="token operator">:</span> <span class="token function">process</span><span class="token punctuation">(</span> v <span class="token punctuation">)</span> 
+        <span class="token punctuation">}</span><span class="token punctuation">;</span> 
+      <span class="token punctuation">}</span> 
+      <span class="token comment">// 生成器已经完成</span>
+      <span class="token keyword">else</span> <span class="token punctuation">{</span> 
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> 
+          done<span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span> 
+          value<span class="token operator">:</span> <span class="token keyword">undefined</span> 
+        <span class="token punctuation">}</span><span class="token punctuation">;</span> 
+      <span class="token punctuation">}</span> 
+    <span class="token punctuation">}</span><span class="token punctuation">,</span> 
+    <span class="token string">&quot;throw&quot;</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">e</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+      <span class="token comment">// 唯一的显式错误处理在状态1</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>state <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+        state <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> 
+          done<span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span> 
+          value<span class="token operator">:</span> <span class="token function">process</span><span class="token punctuation">(</span> e <span class="token punctuation">)</span> 
+        <span class="token punctuation">}</span><span class="token punctuation">;</span> 
+      <span class="token punctuation">}</span> 
+      <span class="token comment">// 否则错误就不会处理，所以只把它抛回</span>
+      <span class="token keyword">else</span> <span class="token punctuation">{</span> 
+        <span class="token keyword">throw</span> e<span class="token punctuation">;</span> 
+      <span class="token punctuation">}</span> 
+    <span class="token punctuation">}</span> 
+  <span class="token punctuation">}</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span>
+</code></pre></div><ol><li>对迭代器的 next() 的第一个调用会把生成器从未初始化状态转移到状态 1，然后调用process() 来处理这个状态。request(..) 的返回值是对应 Ajax 响应的 promise，作为value 属性从 next() 调用返回。</li><li>如果 Ajax 请求成功，第二个 next(..) 调用应该发送 Ajax 响应值进来，这会把状态转移到状态 2。再次调用 process(..)（这次包括传入的 Ajax 响应值），从 next(..) 返回的 value 属性将是 undefined。</li><li>然而，如果 Ajax 请求失败的话，就会使用错误调用 throw(..)，这会把状态从 1 转移到3（而非 2）。再次调用 process(..)，这一次包含错误值。这个 case 返回 false，被作为 throw(..) 调用返回的 value 属性。从外部来看（也就是说，只与迭代器交互），这个普通函数 foo(..) 与生成器 *foo(..) 的工作几乎完全一样。所以我们已经成功地把 ES6 生成器转为了前 ES6 兼容代码！然后就可以手工实例化生成器并控制它的迭代器了，调用 var it = foo(&quot;..&quot;) 和it.next(..) 等。甚至更好的是，我们可以把它传给前面定义的工具 run(..)，就像run(foo,&quot;..&quot;)。</li></ol><p>如果使用 regenerator 来转换前面的生成器的话，以下是产生的代码（本书写作之时）：</p><div class="language-js"><pre><code><span class="token comment">// request(..)是一个支持Promise的Ajax工具</span>
+<span class="token keyword">var</span> foo <span class="token operator">=</span> regeneratorRuntime<span class="token punctuation">.</span><span class="token function">mark</span><span class="token punctuation">(</span><span class="token keyword">function</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token parameter">url</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+  <span class="token keyword">var</span> val<span class="token punctuation">;</span> 
+  <span class="token keyword">return</span> regeneratorRuntime<span class="token punctuation">.</span><span class="token function">wrap</span><span class="token punctuation">(</span><span class="token keyword">function</span> <span class="token function">foo$</span><span class="token punctuation">(</span><span class="token parameter">context$<span class="token number">1</span>$<span class="token number">0</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">switch</span> <span class="token punctuation">(</span>context$<span class="token number">1</span>$<span class="token number">0.</span>prev <span class="token operator">=</span> context$<span class="token number">1</span>$<span class="token number">0.</span>next<span class="token punctuation">)</span> <span class="token punctuation">{</span> 
+      <span class="token keyword">case</span> <span class="token number">0</span><span class="token operator">:</span> 
+        context$<span class="token number">1</span>$<span class="token number">0.</span>prev <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> 
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> <span class="token string">&quot;requesting:&quot;</span><span class="token punctuation">,</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 生成器 ｜ <span class="token number">285</span>
+        context$<span class="token number">1</span>$<span class="token number">0.</span>next <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span> <span class="token function">request</span><span class="token punctuation">(</span> url <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+      <span class="token keyword">case</span> <span class="token number">4</span><span class="token operator">:</span> 
+        val <span class="token operator">=</span> context$<span class="token number">1</span>$<span class="token number">0.</span>sent<span class="token punctuation">;</span> 
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> val <span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        context$<span class="token number">1</span>$<span class="token number">0.</span>next <span class="token operator">=</span> <span class="token number">12</span><span class="token punctuation">;</span> 
+        <span class="token keyword">break</span><span class="token punctuation">;</span> 
+      <span class="token keyword">case</span> <span class="token number">8</span><span class="token operator">:</span> 
+        context$<span class="token number">1</span>$<span class="token number">0.</span>prev <span class="token operator">=</span> <span class="token number">8</span><span class="token punctuation">;</span> 
+        context$<span class="token number">1</span>$<span class="token number">0.</span>t0 <span class="token operator">=</span> context$<span class="token number">1</span>$<span class="token number">0.</span><span class="token function">catch</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&quot;Oops:&quot;</span><span class="token punctuation">,</span> context$<span class="token number">1</span>$<span class="token number">0.</span>t0<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span> context$<span class="token number">1</span>$<span class="token number">0.</span><span class="token function">abrupt</span><span class="token punctuation">(</span><span class="token string">&quot;return&quot;</span><span class="token punctuation">,</span> <span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+      <span class="token keyword">case</span> <span class="token number">12</span><span class="token operator">:</span> 
+      <span class="token keyword">case</span> <span class="token string">&quot;end&quot;</span><span class="token operator">:</span> 
+        <span class="token keyword">return</span> context$<span class="token number">1</span>$<span class="token number">0.</span><span class="token function">stop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token punctuation">}</span> 
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> foo<span class="token punctuation">,</span> <span class="token keyword">this</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><h3 id="程序性能"><a class="header-anchor" href="#程序性能" aria-hidden="true">#</a> 程序性能</h3><hr><h3 id="性能测试与调优"><a class="header-anchor" href="#性能测试与调优" aria-hidden="true">#</a> 性能测试与调优</h3><h2 id="起步上路"><a class="header-anchor" href="#起步上路" aria-hidden="true">#</a> 起步上路</h2><h3 id="深入编程"><a class="header-anchor" href="#深入编程" aria-hidden="true">#</a> 深入编程</h3><h3 id="深入javascript"><a class="header-anchor" href="#深入javascript" aria-hidden="true">#</a> 深入JavaScript</h3><h3 id="深入“你不知道的javascript系列”"><a class="header-anchor" href="#深入“你不知道的javascript系列”" aria-hidden="true">#</a> 深入“你不知道的JavaScript系列”</h3><h2 id="es6及更新版本"><a class="header-anchor" href="#es6及更新版本" aria-hidden="true">#</a> ES6及更新版本</h2><h3 id="es？现在与未来"><a class="header-anchor" href="#es？现在与未来" aria-hidden="true">#</a> ES？现在与未来</h3><h3 id="语法-1"><a class="header-anchor" href="#语法-1" aria-hidden="true">#</a> 语法</h3><h3 id="代码组织"><a class="header-anchor" href="#代码组织" aria-hidden="true">#</a> 代码组织</h3><h3 id="异步流控制"><a class="header-anchor" href="#异步流控制" aria-hidden="true">#</a> 异步流控制</h3><h3 id="集合"><a class="header-anchor" href="#集合" aria-hidden="true">#</a> 集合</h3><h3 id="新增api"><a class="header-anchor" href="#新增api" aria-hidden="true">#</a> 新增API</h3><h3 id="元编程"><a class="header-anchor" href="#元编程" aria-hidden="true">#</a> 元编程</h3><h3 id="es6之后"><a class="header-anchor" href="#es6之后" aria-hidden="true">#</a> ES6之后</h3></div></div><footer class="page-footer" data-v-7eddb2c4 data-v-fb8d84c6><div class="edit" data-v-fb8d84c6><div class="edit-link" data-v-fb8d84c6 data-v-1ed99556><a class="link" href="https://github.com/QiYoe/c-blog/edit/master/docs/books/you-dont-know-js.md" target="_blank" rel="noopener noreferrer" data-v-1ed99556>在 GitHub 上编辑此页 <svg class="icon outbound icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewbox="0 0 100 100" width="15" height="15" data-v-1ed99556><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path><polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></div></div><div class="updated" data-v-fb8d84c6><p class="last-updated" data-v-fb8d84c6 data-v-5797b537><span class="prefix" data-v-5797b537>最新更新时间:</span><span class="datetime" data-v-5797b537></span></p></div></footer><div class="next-and-prev-link" data-v-7eddb2c4 data-v-38ede35f><div class="container" data-v-38ede35f><div class="prev" data-v-38ede35f><!----></div><div class="next" data-v-38ede35f><a class="link" href="/books/js-advice" data-v-38ede35f><span class="text" data-v-38ede35f>JavaScript深入系列</span><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" class="icon icon-next" data-v-38ede35f><path d="M19.9,12.4c0.1-0.2,0.1-0.5,0-0.8c-0.1-0.1-0.1-0.2-0.2-0.3l-7-7c-0.4-0.4-1-0.4-1.4,0s-0.4,1,0,1.4l5.3,5.3H5c-0.6,0-1,0.4-1,1s0.4,1,1,1h11.6l-5.3,5.3c-0.4,0.4-0.4,1,0,1.4c0.2,0.2,0.5,0.3,0.7,0.3s0.5-0.1,0.7-0.3l7-7C19.8,12.6,19.9,12.5,19.9,12.4z"></path></svg></a></div></div></div><!--[--><!--]--></div></main></div><!----><!--]--></div>
+    <script>__VP_HASH_MAP__ = JSON.parse("{\"index.md\":\"53be5f26\",\"algorithm_index.md\":\"e112ec58\",\"algorithm_leetcode.md\":\"3ecf1bd5\",\"algorithm_lodash.md\":\"02b0fabe\",\"books_css-secrets.md\":\"ee68c0a4\",\"books_grokking-algorithms.md\":\"3e9bb2f0\",\"books_index.md\":\"e1af37bd\",\"books_js-advice.md\":\"d90a5eb0\",\"books_pro-git.md\":\"35463226\",\"books_you-dont-know-js.md\":\"6d0cfa16\",\"front-end_index.md\":\"dca7f910\",\"other_30-seconds-of-code.md\":\"eed81cce\",\"other_computer-tech.md\":\"b1c0ae2f\",\"other_index.md\":\"fbf98360\",\"other_smart-tools.md\":\"84f7621c\",\"other_vanillawebprojects.md\":\"b7427e36\",\"quotations_index.md\":\"4f39352a\",\"front-end_ast_index.md\":\"7fefa9c1\",\"front-end_blog-build_aliyun-domin.md\":\"7ff90248\",\"front-end_blog-build_baidu-include.md\":\"2c8ab499\",\"front-end_blog-build_index.md\":\"9e052e27\",\"front-end_blog-build_seo-optimize.md\":\"d885b1f0\",\"front-end_git_advance.md\":\"3a9675f2\",\"front-end_git_flight-rules.md\":\"94af2fb9\",\"front-end_git_index.md\":\"2d078561\",\"front-end_linux_docker.md\":\"96f94b04\",\"front-end_linux_index.md\":\"3a71a541\",\"front-end_linux_nginx.md\":\"4bf393a9\",\"front-end_swagger-hub_curl.md\":\"9dfde93d\",\"front-end_swagger-hub_index.md\":\"1fa00435\",\"front-end_vue_axios.md\":\"5df14baa\",\"front-end_vue_index.md\":\"8f32497e\",\"front-end_vue_nuxt.md\":\"f20781a2\",\"front-end_vue_sass.md\":\"25d01886\",\"front-end_vue_typescript.md\":\"f2bd0e83\",\"front-end_vue_vite.md\":\"e090b141\",\"front-end_vue_vue-router.md\":\"9bff834b\",\"front-end_web-container_index.md\":\"0a6ad40f\",\"front-end_websocket_index.md\":\"ff0cc9dc\"}")</script>
     <script type="module" async src="/assets/app.af15a0c3.js"></script>
   </body>
 </html>
