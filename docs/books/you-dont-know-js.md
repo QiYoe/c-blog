@@ -2409,9 +2409,816 @@ catch (err) {
 } 
 ```
 
+异步迭代生成器错失了很重要的两点：Promise 的可信任性和可组合性
 
+```js
+// 在运行 Ajax 例子中基于 Promise 的实现方法：
+function foo(x,y) { 
+  return request( 
+    "http://some.url.1/?x=" + x + "&y=" + y 
+  ); 
+} 
+foo( 11, 31 ) 
+.then( 
+  function(text){ 
+    console.log( text ); 
+  }, 
+  function(err){ 
+    console.error( err ); 
+  } 
+); 
+// foo(..) 没有返回值（undefined），并且我们的迭代器控制代码并不关心 yield 出来的值。
+
+
+function foo(x,y) { 
+  return request( 
+    "http://some.url.1/?x=" + x + "&y=" + y 
+  ); 
+} 
+function *main() { 
+  try { 
+    var text = yield foo( 11, 31 ); 
+    console.log( text ); 
+  } 
+  catch (err) { 
+    console.error( err ); 
+  } 
+} 
+var it = main(); 
+var p = it.next().value; 
+// 等待promise p决议
+p.then( 
+  function(text){ 
+    it.next( text ); 
+  }, 
+  function(err){ 
+    it.throw( err ); 
+  } 
+); 
+```
+
+```js
+function run(gen) { 
+  var args = [].slice.call( arguments, 1), it; 
+  // 在当前上下文中初始化生成器
+  it = gen.apply( this, args ); 
+  // 返回一个promise用于生成器完成
+  return Promise.resolve() 
+    .then( function handleNext(value){ 
+      // 对下一个yield出的值运行
+      var next = it.next( value ); 
+      return (function handleResult(next){ 
+        // 生成器运行完毕了吗？
+        if (next.done) { 
+          return next.value; 
+        } 
+        // 否则继续运行
+        else { 
+          return Promise.resolve( next.value ) 
+            .then( 
+              // 成功就恢复异步循环，把决议的值发回生成器
+              handleNext, 
+              // 如果value是被拒绝的 promise，
+              // 就把错误传回生成器进行出错处理
+              function handleErr(err) { 
+                return Promise.resolve( 
+                    it.throw( err )
+                  ) 
+                  .then( handleResult ); 
+              } 
+            ); 
+        } 
+      })(next); 
+    }); 
+}
+
+function *main() { 
+  // .. 
+} 
+run( main );
+// 它会自动异步运行你传给它的生成器，直到结束。
+```
+
+async 与 await
+
+```js
+function foo(x,y) { 
+  return request( 
+    "http://some.url.1/?x=" + x + "&y=" + y 
+  ); 
+} 
+async function main() { 
+  try { 
+    var text = await foo( 11, 31 ); 
+    console.log( text ); 
+  }
+  catch (err) { 
+    console.error( err ); 
+  } 
+} 
+main(); 
+```
+
+```js
+function *foo() { 
+  // 让两个请求"并行"
+  var p1 = request( "http://some.url.1" ); 
+  var p2 = request( "http://some.url.2" ); 
+  // 等待两个promise都决议
+  var r1 = yield p1; 
+  var r2 = yield p2; 
+  var r3 = yield request( 
+    "http://some.url.3/?v=" + r1 + "," + r2 
+  ); 
+  console.log( r3 ); 
+} 
+// 使用前面定义的工具run(..)
+run( foo );
+```
+
+观察一下 yield 的位置。p1 和 p2 是并发执行（即“并行”）的用于 Ajax 请求的 promise。哪一个先完成都无所谓，因为 promise 会按照需要在决议状态保持任意长时间。
+
+然后我们使用接下来的两个 yield 语句等待并取得 promise 的决议（分别写入 r1 和 r2）。如果 p1 先决议，那么 yield p1 就会先恢复执行，然后等待 yield p2 恢复。如果 p2 先决议，它就会耐心保持其决议值等待请求，但是 yield p1 将会先等待，直到 p1 决议。
+
+不管哪种情况，p1 和 p2 都会并发执行，无论完成顺序如何，两者都要全部完成，然后才会发出 r3 = yield request..Ajax 请求。
+
+```js
+function *foo() { 
+  // 让两个请求"并行"，并等待两个promise都决议
+  var results = yield Promise.all( [ 
+    request( "http://some.url.1" ), 
+    request( "http://some.url.2" ) 
+  ] ); 
+  var r1 = results[0]; 
+  var r2 = results[1]; 
+  var r3 = yield request( 
+    "http://some.url.3/?v=" + r1 + "," + r2 
+  ); 
+  console.log( r3 ); 
+} 
+// 使用前面定义的工具run(..) 
+run( foo ); 
+```
+
+```js
+// 注：普通函数，不是生成器
+function bar(url1,url2) { 
+  return Promise.all( [ 
+    request( url1 ), 
+    request( url2 ) 
+  ] ); 
+} 
+function *foo() { 
+  // 隐藏bar(..)内部基于Promise的并发细节
+  var results = yield bar( 
+    "http://some.url.1", 
+    "http://some.url.2" 
+  ); 
+  var r1 = results[0]; 
+  var r2 = results[1]; 
+  var r3 = yield request( 
+    "http://some.url.3/?v=" + r1 + "," + r2 
+  ); 
+  console.log( r3 ); 
+} 
+// 使用前面定义的工具run(..)
+run( foo ); 
+```
+
+在 *foo() 内部，我们所做的一切就是要求 bar(..) 给我们一些 results，并通过 yield来等待结果，这样更简洁也更清晰。我们不需要关心在底层是用 Promise.all([ .. ])Promise 组合来实现这一切。我们把异步，实际上是 Promise，作为一个实现细节看待
+
+从一个生成器调用另一个生成器，使用辅助函数 run(..)，就像这样：
+
+```js
+function *foo() { 
+  var r2 = yield request( "http://some.url.2" ); 
+  var r3 = yield request( "http://some.url.3/?v=" + r2 ); 
+  return r3; 
+} 
+function *bar() { 
+  var r1 = yield request( "http://some.url.1" ); 
+  // 通过 run(..) "委托"给*foo()
+  var r3 = yield run( foo ); 
+  console.log( r3 ); 
+} 
+run( bar );
+```
+
+通过 run(..) 工具从 *bar() 内部运行 *foo()。这里我们利用了如下事实：我们前面定义的 run(..) 返回一个 promise，这个 promise 在生成器运行结束时（或出错退出时）决议。因此，如果从一个 run(..) 调用中 yield 出来一个 promise 到另一个 run(..) 实例中，它会自动暂停 *bar()，直到 *foo() 结束。
+
+但其实还有一个更好的方法可以实现从 *bar() 调用 *foo()，称为 yield 委托。yield 委托的具体语法是：yield * __（注意多出来的 *）。在我们弄清它在前面的例子中的使用之前，先来看一个简单点的场景：
+
+```js
+function *foo() { 
+  console.log( "*foo() starting" ); 生成器 ｜ 263
+  yield 3; 
+  yield 4; 
+  console.log( "*foo() finished" ); 
+} 
+function *bar() { 
+  yield 1; 
+  yield 2; 
+  yield *foo(); // yield委托！
+  yield 5; 
+} 
+var it = bar(); 
+it.next().value; // 1 
+it.next().value; // 2 
+it.next().value; // *foo()启动
+                  // 3 
+it.next().value; // 4 
+it.next().value; // *foo()完成
+                  // 5
+```
+
+调用 foo() 创建一个迭代器。然后 yield * 把迭代器实例控制（当前 *bar() 生成器的）委托给 / 转移到了这另一个 *foo() 迭代器。
+
+所以，前面两个 it.next() 调用控制的是 *bar()。但当我们发出第三个 it.next() 调用时，*foo() 现在启动了，我们现在控制的是 *foo() 而不是 *bar()。这也是为什么这被称为委托：*bar() 把自己的迭代控制委托给了 *foo()。
+
+一旦 it 迭代器控制消耗了整个 *foo() 迭代器，it 就会自动转回控制 *bar()。
+
+```js
+function *foo() { 
+  var r2 = yield request( "http://some.url.2" ); 
+  var r3 = yield request( "http://some.url.3/?v=" + r2 ); 
+  return r3; 
+} 
+function *bar() { 
+  var r1 = yield request( "http://some.url.1" ); 264 ｜ 第 4 章
+  // 通过 yeild* "委托"给*foo()
+  var r3 = yield *foo(); 
+  console.log( r3 ); 
+} 
+run( bar ); 
+```
+
+这段代码和前面版本的唯一区别就在于使用了 yield *foo()，而不是前面的 yield run(foo)。
+
+yield * 暂停了迭代控制，而不是生成器控制。当你调用 *foo() 生成器时，现在 yield 委托到了它的迭代器。但实际上，你可以 yield 委托到任意iterable，yield *[1,2,3] 会消耗数组值 [1,2,3] 的默认迭代器。
+
+yield 委托的主要目的是代码组织，以达到与普通函数调用的对称。
+
+想像一下有两个模块分别提供了方法 foo() 和 bar()，其中 bar() 调用了 foo()。一般来说，把两者分开实现的原因是该程序的适当的代码组织要求它们位于不同的函数中。比如，可能有些情况下是单独调用 foo()，另外一些地方则由 bar() 调用 foo()。
+
+同样是出于这些原因，保持生成器分离有助于程序的可读性、可维护性和可调试性。在这一方面，yield * 是一个语法上的缩写，用于代替手工在 *foo() 的步骤上迭代，不过是在*bar() 内部。
+
+yield 委托是如何不只用于迭代器控制工作，也用于双向消息传递工作的呢。认真跟踪下面的通过 yield 委托实现的消息流出入：
+
+```js
+function *foo() { 
+  console.log( "inside *foo():", yield "B" ); 
+  console.log( "inside *foo():", yield "C" ); 
+  return "D"; 
+} 
+function *bar() { 生成器 ｜ 265
+  console.log( "inside *bar():", yield "A" ); 
+  // yield委托！
+  console.log( "inside *bar():", yield *foo() ); 
+  console.log( "inside *bar():", yield "E" ); 
+  return "F"; 
+} 
+var it = bar(); 
+console.log( "outside:", it.next().value ); 
+// outside: A 
+console.log( "outside:", it.next( 1 ).value ); 
+// inside *bar(): 1 
+// outside: B 
+console.log( "outside:", it.next( 2 ).value ); 
+// inside *foo(): 2 
+// outside: C 
+console.log( "outside:", it.next( 3 ).value ); 
+// inside *foo(): 3 
+// inside *bar(): D 
+// outside: E 
+console.log( "outside:", it.next( 4 ).value ); 
+// inside *bar(): 4 
+// outside: F 
+```
+
+要特别注意 it.next(3) 调用之后的执行步骤。
+
+1. 值 3（通过 *bar() 内部的 yield 委托）传入等待的 *foo() 内部的 yield "C" 表达式。
+2. 然后 *foo() 调用 return "D"，但是这个值并没有一直返回到外部的 it.next(3) 调用。
+3. 取而代之的是，值 "D" 作为 *bar() 内部等待的 yield*foo() 表达式的结果发出——这个yield 委托本质上在所有的 *foo() 完成之前是暂停的。所以 "D" 成为 *bar() 内部的最后结果，并被打印出来。
+4. yield "E" 在 *bar() 内部调用，值 "E" 作为 it.next(3) 调用的结果被 yield 发出。
+
+实际上，yield 委托甚至并不要求必须转到另一个生成器，它可以转到一个非生成器的一般 iterable。比如：
+
+```js
+function *bar() { 
+  console.log( "inside *bar():", yield "A" ); 266 ｜ 第 4 章
+  // yield委托给非生成器！
+  console.log( "inside *bar():", yield *[ "B", "C", "D" ] ); 
+  console.log( "inside *bar():", yield "E" ); 
+  return "F"; 
+} 
+var it = bar(); 
+console.log( "outside:", it.next().value ); 
+// outside: A 
+console.log( "outside:", it.next( 1 ).value ); 
+// inside *bar(): 1 
+// outside: B 
+console.log( "outside:", it.next( 2 ).value ); 
+// outside: C 
+console.log( "outside:", it.next( 3 ).value ); 
+// outside: D 
+console.log( "outside:", it.next( 4 ).value ); 
+// inside *bar(): undefined 
+// outside: E 
+console.log( "outside:", it.next( 5 ).value ); 
+// inside *bar(): 5 
+// outside: F 
+```
+
+注意这个例子和之前那个例子在消息接收位置和报告位置上的区别。最显著的是，默认的数组迭代器并不关心通过 next(..) 调用发送的任何消息，所以值 2、3 和 4 根本就被忽略了。还有，因为迭代器没有显式的返回值（和前面使用的 *foo() 不同），所以 yield * 表达式完成后得到的是一个 undefined。
+
+异常也被委托！和 yield 委托透明地双向传递消息的方式一样，错误和异常也是双向传递的：
+
+```js
+function *foo() { 
+  try { 
+    yield "B"; 
+  } 
+  catch (err) { 
+    console.log( "error caught inside *foo():", err ); 
+  } 
+  yield "C"; 
+  throw "D"; 
+}
+function *bar() { 
+ yield "A"; 
+ try { 
+  yield *foo(); 
+ } 
+ catch (err) { 
+  console.log( "error caught inside *bar():", err ); 
+ } 
+ yield "E"; 
+ yield *baz(); 
+ // 注：不会到达这里！
+ yield "G"; 
+} 
+function *baz() { 
+  throw "F"; 
+} 
+var it = bar(); 
+console.log( "outside:", it.next().value ); 
+// outside: A 
+console.log( "outside:", it.next( 1 ).value ); 
+// outside: B 
+console.log( "outside:", it.throw( 2 ).value ); 
+// error caught inside *foo(): 2 
+// outside: C 
+console.log( "outside:", it.next( 3 ).value ); 
+// error caught inside *bar(): D 
+// outside: E 
+try { 
+  console.log( "outside:", it.next( 4 ).value ); 
+} 
+catch (err) { 
+  console.log( "error caught outside:", err ); 
+} 
+// error caught outside: F 
+```
+
+这段代码中需要注意以下几点。
+1. 调用 it.throw(2) 时，它会发送错误消息 2 到 *bar()，它又将其委托给 *foo()，后者捕获并处理它。然后，yield "C" 把 "C" 发送回去作为 it.throw(2) 调用返回的 value。
+2. 接下来从 *foo() 内 throw 出来的值 "D" 传播到 *bar()，这个函数捕获并处理它。然后yield "E" 把 "E" 发送回去作为 it.next(3) 调用返回的 value。
+3. 然后，从 *baz() throw 出来的异常并没有在 *bar() 内被捕获——所以 *baz() 和 *bar()都被设置为完成状态。这段代码之后，就再也无法通过任何后续的 next(..) 调用得到值 "G"，next(..) 调用只会给 value 返回 undefined。
+
+我们终于回到前面的多个顺序 Ajax 请求的 yield 委托例子：
+```js
+function *foo() { 
+ var r2 = yield request( "http://some.url.2" ); 
+ var r3 = yield request( "http://some.url.3/?v=" + r2 ); 
+ return r3; 
+} 
+function *bar() { 
+ var r1 = yield request( "http://some.url.1" ); 
+ var r3 = yield *foo(); 
+ console.log( r3 ); 
+} 
+run( bar ); 
+```
+这里我们在 *bar() 内部没有调用 yield run(foo)，而是调用 yield *foo()。
+
+在这个例子之前的版本中，使用了 Promise 机制（通过 run(..) 控制）把值从 *foo() 内的return r3 传递给 *bar() 中的局部变量 r3。现在，这个值通过 yield * 机制直接返回。除此之外的行为非常相似。
+
+当然，yield 委托可以跟踪任意多委托步骤，只要你把它们连在一起。甚至可以使用 yield委托实现异步的生成器递归，即一个 yield 委托到它自身的生成器：
+```js
+function *foo(val) { 
+  if (val > 1) { 
+  // 生成器递归
+  val = yield *foo( val - 1 ); 
+  } 
+  return yield request( "http://some.url/?v=" + val ); 
+} 
+function *bar() { 
+  var r1 = yield *foo( 3 ); 
+  console.log( r1 ); 生成器 ｜ 269
+} 
+run( bar );
+```
+run(..) 工具可以通过 run( foo, 3 ) 调用，因为它支持额外的参数和生成器一起传入。但是，这里使用了没有参数的 *bar()，以展示 yield * 的灵活性。
+
+1. run(bar) 启动生成器 *bar()。
+2. foo(3) 创建了一个 *foo(..) 的迭代器，并传入 3 作为其参数 val。
+3. 因为 3 > 1，所以 foo(2) 创建了另一个迭代器，并传入 2 作为其参数 val。
+4. 因为 2 > 1，所以 foo(1) 又创建了一个新的迭代器，并传入 1 作为其参数 val。
+5. 因为 1 > 1 不成立，所以接下来以值 1 调用 request(..)，并从这第一个 Ajax 调用得到一个 promise。
+6. 这个 promise 通过 yield 传出，回到 *foo(2) 生成器实例。
+7. yield * 把这个 promise 传出回到 *foo(3) 生成器实例。另一个 yield * 把这个 promise传出回到 *bar() 生成器实例。再有一个 yield * 把这个 promise 传出回到 run(..) 工具，这个工具会等待这个 promsie（第一个 Ajax 请求）的处理。
+8. 这个 promise 决议后，它的完成消息会发送出来恢复 *bar()；后者通过 yield * 转入*foo(3) 实例；后者接着通过 yield * 转入 *foo(2) 生成器实例；后者再接着通过 yield *转入 *foo(3) 生成器实例内部的等待着的普通 yield。
+9. 第一个调用的 Ajax 响应现在立即从 *foo(3) 生成器实例中返回。这个实例把值作为*foo(2) 实例中 yield * 表达式的结果返回，赋给它的局部变量 val。
+10. 在 *foo(2) 中，通过 request(..) 发送了第二个 Ajax 请求。它的 promise 通过 yield发回给 *foo(1) 实例，然后通过 yield * 一路传递到 run(..)（再次进行步骤 7）。这个promise 决议后，第二个 Ajax 响应一路传播回到 *foo(2) 生成器实例，赋给它的局部变量 val。
+11. 最后，通过 request(..) 发出第三个 Ajax 请求，它的 promise 传出到 run(..)，然后它的决议值一路返回，然后 return 返回到 *bar() 中等待的 yield * 表达式。
+
+两个同时运行的进程可以合作式地交替运作，而很多时候这可以产生（双关，原文为 yield：既指产生又指 yield 关键字）非常强大的异步表示。
+```js
+// 首先，使用 Promise 手工实现：
+var it1 = reqData( "http://some.url.1" ); 
+var it2 = reqData( "http://some.url.2" ); 
+var p1 = it1.next(); 
+var p2 = it2.next(); 
+p1 
+.then( function(data){ 
+  it1.next( data ); 
+  return p2;
+} ) 
+.then( function(data){ 
+  it2.next( data ); 
+} ); 
+```
+*reqData(..) 的两个实例都被启动来发送它们的 Ajax 请求，然后通过 yield 暂停。然后我们选择在 p1 决议时恢复第一个实例，然后 p2 的决议会重启第二个实例。通过这种方式，我们使用 Promise 配置确保 res[0] 中会放置第一个响应，而 res[1] 中会放置第二个响应。
+```js
+// request(..)是一个支持Promise的Ajax工具
+var res = []; 
+function *reqData(url) { 
+  var data = yield request( url ); 
+  // 控制转移
+  yield; 
+  res.push( data ); 
+} 
+var it1 = reqData( "http://some.url.1" ); 
+var it2 = reqData( "http://some.url.2" ); 
+var p1 = it.next(); 
+var p2 = it.next(); 
+p1.then( function(data){ 
+  it1.next( data ); 
+} ); 
+p2.then( function(data){ 
+  it2.next( data ); 
+} ); 
+Promise.all( [p1,p2] ) 
+.then( function(){ 
+  it1.next(); 
+  it2.next(); 
+} ); 
+```
+
+在前面的代码中，第二个实例直到第一个实例完全结束才得到数据。但在这里，两个实例都是各自的响应一回来就取得了数据，然后每个实例再次 yield，用于控制传递的目的。
+然后我们在 Promise.all([ .. ]) 处理函数中选择它们的恢复顺序。
+
+可能不那么明显的是，因为对称性，这种方法以更简单的形式暗示了一种可重用的工具。还可以做得更好。来设想一下使用一个称为 runAll(..) 的工具：
+```js
+// request(..)是一个支持Promise的Ajax工具
+var res = []; 
+runAll( 
+  function*(){ 
+    var p1 = request( "http://some.url.1" ); 
+    // 控制转移
+    yield; 
+    res.push( yield p1 ); 
+  }, 
+  function*(){ 
+    var p2 = request( "http://some.url.2" ); 
+    // 控制转移
+    yield; 
+    res.push( yield p2 ); 
+  } 
+); 
+```
+以下是 runAll(..) 内部运行的过程。
+1. 第一个生成器从第一个来自于 "http://some.url.1" 的 Ajax 响应得到一个 promise，然后把控制 yield 回 runAll(..) 工具。
+2. 第二个生成器运行，对于 "http://some.url.2" 实现同样的操作，把控制 yield 回runAll(..) 工具。
+3. 第一个生成器恢复运行，通过 yield 传出其 promise p1。在这种情况下，runAll(..) 工具所做的和我们之前的 run(..) 一样，因为它会等待这个 promise 决议，然后恢复同一个生成器（没有控制转移！）。p1 决议后，runAll(..) 使用这个决议值再次恢复第一个生成器，然后 res[0] 得到了自己的值。接着，在第一个生成器完成的时候，有一个隐式的控制转移。
+4. 第二个生成器恢复运行，通过 yield 传出其 promise p2，并等待其决议。一旦决议，runAll(..) 就用这个值恢复第二个生成器，设置 res[1]。
+
+在这个例子的运行中，我们使用了一个名为 res 的外层变量来保存两个不同的 Ajax 响应结果，我们的并发协调使其成为可能。但是，如果继续扩展 runAll(..) 来提供一个内层的变量空间，以使多个生成器实例可以共享，将是非常有帮助的，比如下面这个称为 data 的空对象。还有，它可以接受 yield 的非Promise 值，并把它们传递到下一个生成器。
+```js
+// request(..)是一个支持Promise的Ajax工具
+runAll( 
+  function*(data){ 
+    data.res = []; 
+    // 控制转移（以及消息传递）
+    var url1 = yield "http://some.url.2"; 
+    var p1 = request( url1 ); // "http://some.url.1" 
+    // 控制转移
+    yield; 
+    data.res.push( yield p1 ); 
+  }, 
+  function*(data){ 
+    // 控制转移（以及消息传递）
+    var url2 = yield "http://some.url.1"; 
+    var p2 = request( url2 ); // "http://some.url.2" 
+    // 控制转移
+    yield; 
+    data.res.push( yield p2 ); 
+  } 
+); 
+```
+在这一方案中，实际上两个生成器不只是协调控制转移，还彼此通信，通过 data.res 和yield 的消息来交换 url1 和 url2 的值。真是极其强大！
+
+这样的实现也为被称作通信顺序进程（Communicating Sequential Processes，CSP）的更高级异步技术提供了一个概念基础。
+
+形实转换程序（thunk）：JavaScript 中的 thunk 是指一个用于调用另外一个函数的函数，没有任何参数。换句话说，你用一个函数定义封装函数调用，包括需要的任何参数，来定义这个调用的执行，那么这个封装函数就是一个形实转换程序。之后在执行这个 thunk 时，最终就是调用了原始的函数。
+```js
+// 同步的 thunk
+function foo(x,y) { 
+  return x + y; 
+} 
+function fooThunk() { 
+  return foo( 3, 4 ); 
+} 
+// 将来
+console.log( fooThunk() ); // 7
+
+// 异步的 thunk
+function foo(x,y,cb) { 
+  setTimeout( function(){ 
+    cb( x + y ); 
+  }, 1000 ); 
+} 
+function fooThunk(cb) { 
+  foo( 3, 4, cb ); 
+} 
+// 将来
+fooThunk( function(sum){ 
+  console.log( sum ); // 7 
+} ); 
+
+// 但是，你并不会想手工编写 thunk。所以，我们发明一个工具来做这部分封装工作
+function thunkify(fn) { 
+  var args = [].slice.call( arguments, 1 ); 
+  return function(cb) { 
+    args.push( cb ); 
+    return fn.apply( null, args ); 
+  }; 
+} 
+var fooThunk = thunkify( foo, 3, 4 ); 
+// 将来
+fooThunk( function(sum) { 
+  console.log( sum ); // 7 
+} );
+```
+thunkory（thunk+factory）。于是就有，thunkify(..) 生成一个 thunkory，然后 thunkory 生成 thunk。
+```js
+var fooThunkory = thunkify( foo ); 
+var fooThunk1 = fooThunkory( 3, 4 ); 
+var fooThunk2 = fooThunkory( 5, 6 ); 
+// 将来
+fooThunk1( function(sum) { 
+  console.log( sum ); // 7 
+} ); 
+fooThunk2( function(sum) { 
+  console.log( sum ); // 11 
+} );
+
+// 更简洁：
+var fooThunkory = thunkify( foo ); 
+var fooThunk1 = fooThunkory( 3, 4 ); 
+var fooThunk2 = fooThunkory( 5, 6 ); 
+// 而不是：生成器 ｜ 277
+var fooThunk1 = thunkify( foo, 3, 4 ); 
+var fooThunk2 = thunkify( foo, 5, 6 ); 
+```
+
+在第 3 章里我们定义了一个工具用于 promise 化一个函数，我们称之为Promise.wrap(..)，也可以将其称为 promisify(..) ！这个 Promise 封装工具并不产生Promise，它生成的是 promisory，而 promisory 则接着产生 Promise。这和现在讨论的thunkory 和 thunk 是完全对称的。
+
+为了说明这种对称性，我们要首先把前面的 foo(..) 例子修改一下，改成使用 error-first 风格的回调：
+
+```js
+function foo(x,y,cb) { 
+  setTimeout( function(){ 
+    // 假定cb(..)是error-first风格的
+    cb( null, x + y ); 
+  }, 1000 ); 
+} 
+```
+
+现在我们对比一下 thunkify(..) 和 promisify(..)（即第 3 章中的 Promise.wrap(..)）的使用：
+```js
+// 对称：构造问题提问者
+var fooThunkory = thunkify( foo ); 
+var fooPromisory = promisify( foo ); 
+// 对称：提问
+var fooThunk = fooThunkory( 3, 4 ); 
+var fooPromise = fooPromisory( 3, 4 ); 
+// 得到答案
+fooThunk( function(err,sum){ 
+  if (err) { 
+    console.error( err ); 
+  } 
+  else { 
+    console.log( sum ); // 7 278 ｜ 第 4 章
+  } 
+} ); 
+// 得到promise答案
+fooPromise 
+.then( 
+  function(sum){ 
+    console.log( sum ); // 7 
+  }, 
+  function(err){ 
+    console.error( err ); 
+  } 
+); 
+```
+
+```js
+// request(..)是一个支持Promise的Ajax工具
+function *foo(url) { 
+  try { 
+    console.log( "requesting:", url ); 
+    var val = yield request( url ); 
+    console.log( val ); 
+  } 
+  catch (err) { 
+    console.log( "Oops:", err ); 
+    return false; 
+  } 
+} 
+var it = foo( "http://some.url.1" );
+// 首先要观察到的是，我们仍然需要一个可以调用的普通函数 foo()，它仍然需要返回一个迭代器。因此，先把非生成器变换的轮廓刻画出来：
+function foo(url) { 
+  // .. 
+  // 构造并返回一个迭代器
+  return { 
+    next: function(v) { 
+    // .. 
+  }, 
+  throw: function(e) { 
+    // .. 
+  } 
+  }; 
+}
+var it = foo( "http://some.url.1" ); 
+
+// 接下来要观察到的是，生成器是通过暂停自己的作用域 / 状态实现它的“魔法”的。可以通过函数闭包来模拟这一点。为了理解这样的代码是如何编写的，我们先给生成器的各个部分标注上状态值
+// request(..)是一个支持Promise的Ajax工具
+function *foo(url) { 
+  // 状态1 
+  try { 
+    console.log( "requesting:", url ); 
+    var TMP1 = request( url ); 
+    // 状态2 
+    var val = yield TMP1; 
+    console.log( val ); 
+  } 
+  catch (err) { 
+    // 状态3 
+    console.log( "Oops:", err ); 
+    return false; 
+  } 
+} 
+// 1 是起始状态，2 是 request(..) 成功后的状态，3 是 request(..) 失败的状态。
+
+// 回到我们翻译的生成器，让我们在闭包中定义一个变量 state 用于跟踪状态：
+function foo(url) { 
+  // 管理生成器状态
+  var state; 
+  // .. 
+} 
+
+// 现在在闭包内定义一个内层函数，称为 process(..)，使用 switch 语句处理每个状态：
+// request(..)是一个支持Promise的Ajax工具 
+function foo(url) { 
+  // 管理生成器状态282 ｜ 第 4 章
+  var state; 
+  // 生成器范围变量声明
+  var val; 
+  function process(v) { 
+    switch (state) { 
+      case 1: 
+        console.log( "requesting:", url ); 
+        return request( url ); 
+      case 2: 
+        val = v; 
+        console.log( val ); 
+        return; 
+      case 3: 
+        var err = v; 
+        console.log( "Oops:", err ); 
+        return false; 
+    } 
+  } 
+  // .. 
+}
+// 对于每个生成器级的变量声明（val），我们都把它移动为 process(..) 外的一个 val 声明，这样它们就可以在多个 process(..) 调用之间存活。不过块作用域的变量 err 只在状态 3中需要使用，所以把它留在原来的位置。
+// 在状态 1，没有了 yield resolve(..)，我们所做的是 return resolve(..)。在终止状态 2，没有显式的 return，所以我们只做一个 return，这等价于 return undefined。在终止状态3，有一个 return false，因此就保留这一句。
+
+// 现在需要定义迭代器函数的代码，使这些函数正确调用 process(..)：
+function foo(url) { 
+  // 管理生成器状态
+  var state; 
+  // 生成器变量范围声明
+  var val; 
+  function process(v) { 
+    switch (state) { 
+      case 1: 
+        console.log( "requesting:", url ); 
+        return request( url ); 
+      case 2: 
+        val = v; 
+        console.log( val );
+        return; 
+      case 3: 
+        var err = v; 
+        console.log( "Oops:", err ); 
+        return false; 
+    } 
+  } 
+  // 构造并返回一个生成器
+  return { 
+    next: function(v) { 
+      // 初始状态
+      if (!state) { 
+        state = 1; 
+        return { 
+          done: false, 
+          value: process() 
+        }; 
+      } 
+      // yield成功恢复
+      else if (state == 1) { 
+        state = 2; 
+        return { 
+          done: true, 
+          value: process( v ) 
+        }; 
+      } 
+      // 生成器已经完成
+      else { 
+        return { 
+          done: true, 
+          value: undefined 
+        }; 
+      } 
+    }, 
+    "throw": function(e) { 
+      // 唯一的显式错误处理在状态1
+      if (state == 1) { 
+        state = 3; 
+        return { 
+          done: true, 
+          value: process( e ) 
+        }; 
+      } 
+      // 否则错误就不会处理，所以只把它抛回
+      else { 
+        throw e; 
+      } 
+    } 
+  }; 
+}
+```
+1. 对迭代器的 next() 的第一个调用会把生成器从未初始化状态转移到状态 1，然后调用process() 来处理这个状态。request(..) 的返回值是对应 Ajax 响应的 promise，作为value 属性从 next() 调用返回。
+2. 如果 Ajax 请求成功，第二个 next(..) 调用应该发送 Ajax 响应值进来，这会把状态转移到状态 2。再次调用 process(..)（这次包括传入的 Ajax 响应值），从 next(..) 返回的 value 属性将是 undefined。
+3. 然而，如果 Ajax 请求失败的话，就会使用错误调用 throw(..)，这会把状态从 1 转移到3（而非 2）。再次调用 process(..)，这一次包含错误值。这个 case 返回 false，被作为 throw(..) 调用返回的 value 属性。从外部来看（也就是说，只与迭代器交互），这个普通函数 foo(..) 与生成器 *foo(..) 的工作几乎完全一样。所以我们已经成功地把 ES6 生成器转为了前 ES6 兼容代码！然后就可以手工实例化生成器并控制它的迭代器了，调用 var it = foo("..") 和it.next(..) 等。甚至更好的是，我们可以把它传给前面定义的工具 run(..)，就像run(foo,"..")。
+
+如果使用 regenerator 来转换前面的生成器的话，以下是产生的代码（本书写作之时）：
+```js
+// request(..)是一个支持Promise的Ajax工具
+var foo = regeneratorRuntime.mark(function foo(url) { 
+  var val; 
+  return regeneratorRuntime.wrap(function foo$(context$1$0) { 
+    while (1) switch (context$1$0.prev = context$1$0.next) { 
+      case 0: 
+        context$1$0.prev = 0; 
+        console.log( "requesting:", url ); 生成器 ｜ 285
+        context$1$0.next = 4; 
+        return request( url ); 
+      case 4: 
+        val = context$1$0.sent; 
+        console.log( val ); 
+        context$1$0.next = 12; 
+        break; 
+      case 8: 
+        context$1$0.prev = 8; 
+        context$1$0.t0 = context$1$0.catch(0); 
+        console.log("Oops:", context$1$0.t0); 
+        return context$1$0.abrupt("return", false); 
+      case 12: 
+      case "end": 
+        return context$1$0.stop(); 
+    } 
+  }, foo, this, [[0, 8]]); 
+});
+```
 
 ### 程序性能
+
+---
 
 ### 性能测试与调优
 
