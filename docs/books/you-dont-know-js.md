@@ -3218,9 +3218,1330 @@ var foo = regeneratorRuntime.mark(function foo(url) {
 
 ### 程序性能
 
----
+Web Worker是浏览器（即宿主环境）的功能，实际上和 JavaScript 语言本身几乎没什么关系。也就是说，JavaScript 当前并没有任何支持多线程执行的功能。
+
+像浏览器这样的环境，很容易提供多个 JavaScript 引擎实例，各自运行在自己的线程上，这样你可以在每个线程上运行不同的程序。程序中每一个这样的独立的多线程部分被称为一个（Web）Worker。
+
+从 JavaScript 主程序（或另一个 Worker）中，可以这样实例化一个 Worker：
+```js
+var w1 = new Worker( "http://some.url.1/mycoolworker.js" );
+```
+这个 URL 应该指向一个 JavaScript 文件的位置（而不是一个 HTML 页面！），这个文件将被加载到一个 Worker 中。然后浏览器启动一个独立的线程，让这个文件在这个线程中作为独立的程序运行。
+
+:::warning 提醒
+除了提供一个指向外部文件的 URL，你还可以通过提供一个 Blob URL（另外一个 HTML5 特性）创建一个在线 Worker（Inline Worker)，本质上就是一个存储在单个（二进制）值中的在线文件。
+:::
+
+Worker 之间以及它们和主程序之间，不会共享任何作用域或资源。Worker w1 对象是一个事件侦听者和触发者，可以通过订阅它来获得这个 Worker 发出的事件以及发送事件给这个 Worker。
+
+```js
+// 以下是如何侦听事件（其实就是固定的 "message" 事件）：
+w1.addEventListener( "message", function(evt){ 
+ // evt.data 
+} ); 
+// 也可以发送 "message" 事件给这个 Worker：
+w1.postMessage( "something cool to say" ); 
+// 在这个 Worker 内部，收发消息是完全对称的：
+// "mycoolworker.js" 
+addEventListener( "message", function(evt){ 
+ // evt.data 
+} ); 
+postMessage( "a really cool reply" ); 
+```
+
+要在创建 Worker 的程序中终止 Worker，可以调用 Worker 对象（就像前面代码中的 w1）上的 terminate()。突然终止 Worker 线程不会给它任何机会完成它的工作或者清理任何资源。这就类似于通过关闭浏览器标签页来关闭页面。
+
+在 Worker 内部是无法访问主程序的任何资源的。这意味着你不能访问它的任何全局变量，也不能访问页面的 DOM 或者其他资源。记住，这是一个完全独立的线程。
+
+但是，你可以执行网络操作（Ajax、WebSockets）以及设定定时器。还有，Worker 可以访问几个重要的全局变量和功能的本地复本，包括 navigator、location、JSON 和applicationCache。
+
+你还可以通过 importScripts(..) 向 Worker 加载额外的 JavaScript 脚本：
+```js
+// 在Worker内部
+importScripts( "foo.js", "bar.js" ); 
+```
+这些脚本加载是同步的。也就是说，importScripts(..) 调用会阻塞余下 Worker 的执行，直到文件加载和执行完成
+
+下面是如何使用 postMessage(..)发送一个 Transferable 对象：
+```js
+// 比如foo是一个Uint8Array 
+postMessage( foo.buffer, [ foo.buffer ] ); 
+```
+第一个参数是一个原始缓冲区，第二个是一个要传输的内容的列表。
+
+不支持 Transferable 对象的浏览器就降级到结构化克隆，这会带来性能下降而不是彻底的
+功能失效。
+
+防止重复专用 Worker 来降低系统的资源使用，创建一个整个站点或 app 的所有页面实例都可以共享的中心 Worker。这称为 SharedWorker
+```js
+var w1 = new SharedWorker( "http://some.url.1/mycoolworker.js" ); 
+```
+因为共享 Worker 可以与站点的多个程序实例或多个页面连接，所以这个 Worker 需要通过某种方式来得知消息来自于哪个程序。这个唯一标识符称为端口（port），可以类比网络socket 的端口。因此，调用程序必须使用 Worker 的 port 对象用于通信：
+```js
+w1.port.addEventListener( "message", handleMessages ); 
+// .. 
+w1.port.postMessage( "something cool" );
+
+// 还有，端口连接必须要初始化，形式如下：
+w1.port.start(); 
+```
+在共享 Worker 内部，必须要处理额外的一个事件："connect"。这个事件为这个特定的连接提供了端口对象。保持多个连接独立的最简单办法就是使用 port 上的闭包，就像下面的代码一样，把这个链接上的事件侦听和传递定义在 "connect" 事件的处理函数内部：
+```js
+// 在共享Worker内部
+addEventListener( "connect", function(evt){ 
+  // 这个连接分配的端口
+  var port = evt.ports[0]; 
+  port.addEventListener( "message", function(evt){ 
+    // .. 
+    port.postMessage( .. ); 
+    // .. 
+  } ); 
+  // 初始化端口连接
+  port.start(); 
+} ); 
+```
+单指令多数据（SIMD）是一种数据并行（data parallelism）方式，与 Web Worker 的任务并行（task parallelism）相对，因为这里的重点实际上不再是把程序逻辑分成并行的块，而是并行处理数据的多个位。
+
+通过 SIMD，线程不再提供并行。取而代之的是，现代 CPU 通过数字“向量”（特定类型的数组），以及可以在所有这些数字上并行操作的指令，来提供 SIMD 功能。这是利用低级指令级并行的底层运算。
+
+SIMD JavaScript 计划向 JavaScript 代码暴露短向量类型和 API。在支持 SIMD 的那些系统中，这些运算将会直接映射到等价的 CPU 指令，而在非 SIMD 系统中就会退化回非并行化的运算。
+
+```js
+var v1 = SIMD.float32x4( 3.14159, 21.0, 32.3, 55.55 ); 
+var v2 = SIMD.float32x4( 2.1, 3.2, 4.3, 5.4 ); 
+var v3 = SIMD.int32x4( 10, 101, 1001, 10001 ); 
+var v4 = SIMD.int32x4( 10, 20, 30, 40 ); 
+SIMD.float32x4.mul( v1, v2 ); 
+ // [ 6.597339, 67.2, 138.89, 299.97 ] 
+SIMD.int32x4.add( v3, v4 ); 
+ // [ 20, 121, 1031, 10041 ] 
+```
 
 ### 性能测试与调优
+
+如果被问到如何测试某个运算的速度（执行时间），绝大多数 JavaScript 开发者都会从类似下面的代码开始：
+```js
+var start = (new Date()).getTime(); // 或者Date.now() 
+// 进行一些操作
+var end = (new Date()).getTime(); 
+console.log( "Duration:", (end - start) ); 
+```
+
+如果报告的时间是 0，可能你会认为它的执行时间小于 1ms。但是，这并不十分精确。有些平台的精度并没有达到 1ms，而是以更大的递增间隔更新定时器。比如，Windows（也就是 IE）的早期版本上的精度只有 15ms，这就意味着这个运算的运行时间至少需要这么长才不会被报告为 0 ！
+
+还有，不管报告的时长是多少，你能知道的唯一一点就是，这个运算的这次特定的运行消耗了大概这么长时间。而它是不是总是以这样的速度运行，你基本上一无所知。你不知道引擎或系统在这个时候有没有受到什么影响，以及其他时候这个运算会不会运行得更快。
+
+如果时长报告是 4 呢？你能更加确定它的运行需要大概 4ms 吗？不能。它消耗的时间可能要短一些，而且在获得 start 或 end 时间戳之间也可能有其他一些延误。
+
+更麻烦的是，你也不知道这个运算测试的环境是否过度优化了。有可能 JavaScript 引擎找到了什么方法来优化你这个独立的测试用例，但在更真实的程序中是无法进行这样的优化的，那么这个运算就会比测试时跑得慢。
+
+下面介绍应该如何使用 Benchmark.js 来运行一个快速的性能测试：
+```js
+function foo() { 
+ // 要测试的运算
+} 
+var bench = new Benchmark( 
+  "foo test", // 测试名称
+  foo, // 要测试的函数（也即内容）302 ｜ 第 6 章
+  { 
+  // .. // 可选的额外选项（参见文档）
+  } 
+); 
+bench.hz; // 每秒运算数
+bench.stats.moe; // 出错边界
+bench.stats.variance; // 样本方差
+// ..
+```
+Benchmark.js 当然可以用在浏览器中测试 JavaScript，它也可以在非浏览器环境中运行（Node.js 等）。
+
+有一点非常重要，一定要理解，setup 和 teardown 代码不会在每个测试迭代都运行。最好的理解方法是，想像有一个外层循环（一轮一轮循环）还有一个内层循环（一个测试一个测试循环）。setup 和 teardown 在每次外层循环（轮）的开始和结束处运行，而不是在内层循环中。
+```js
+a = a + "w"; 
+b = a.charAt( 1 ); 
+// 然后，你建立了测试 setup 如下：
+var a = "x"; 
+```
+你的目的可能是确保每个测试迭代开始的 a 值都是 "x"。但并不是这样！只有在每一轮测试开始时 a 值为 "x"，然后重复 + "w" 链接运算会使得 a 值越来越长，即使你只是访问了位置 1 处的字符 "w"。
+
+对某个东西，比如 DOM，执行产生副作用的操作的时候，比如附加一个子元素，常常会刺伤你。你可能认为你的父元素每次都清空了，但是，实际上它被附加了很多元素，这可能会严重影响测试结果。
+
+[性能测试jsPerf](https://github.com/jsperf/jsperf.com/tree/master)
+
+有时候编译器可能会决定执行与你所写的不同的代码，不只是顺序不同，实际内容也会不同。
+```js
+var foo = 41; 
+(function(){ 
+  (function(){ 
+    (function(baz){ 
+      var bar = foo + baz; 
+      // .. 
+    })(1);
+  })(); 
+})(); 
+```
+可能你会认为最内层函数中的引用 foo 需要进行三层作用域查找。事实上，编译器通常会缓存这样的查找结果，使得从不同的作用域引用 foo 实际上并没有任何额外的花费。
+
+尾调用优化：尾调用就是一个出现在另一个函数“结尾”处的函数调用。这个调用结束后就没有其余事情要做了（除了可能要返回结果值）。
+```js
+// 以下是一个非递归的尾调用：
+function foo(x) { 
+  return x; 
+} 
+function bar(y) { 
+  return foo( y + 1 ); // 尾调用
+} 
+function baz() { 
+  return 1 + bar( 40 ); // 非尾调用
+} 
+baz(); // 42 
+```
+调用一个新的函数需要额外的一块预留内存来管理调用栈，称为栈帧。所以前面的代码一般会同时需要为每个 baz()、bar(..) 和 foo(..) 保留一性能测试与调优 ｜ 317个栈帧。
+
+然而，如果支持 TCO 的引擎能够意识到 foo(y+1) 调用位于尾部，这意味着 bar(..) 基本上已经完成了，那么在调用 foo(..) 时，它就不需要创建一个新的栈帧，而是可以重用已有的 bar(..) 的栈帧。这样不仅速度更快，也更节省内存。
+
+在简单的代码片段中，这类优化算不了什么，但是在处理递归时，这就解决了大问题，特别是如果递归可能会导致成百上千个栈帧的时候。有了 TCO，引擎可以用同一个栈帧执行所有这类调用！
+
+递归是 JavaScript 中一个纷繁复杂的主题。因为如果没有 TCO 的话，引擎需要实现一个随意（还彼此不同！）的限制来界定递归栈的深度，达到了就得停止，以防止内存耗尽。有了 TCO，尾调用的递归函数本质上就可以任意运行，因为再也不需要使用额外的内存！
+```js
+// 考虑到前面递归的 factorial(..)，这次重写成 TCO 友好的：
+function factorial(n) { 
+  function fact(n,res) { 
+    if (n < 2) return res; 
+    return fact( n - 1, n * res ); 
+  } 
+  return fact( n, 1 ); 
+} 
+factorial( 5 ); // 120 
+// 这个版本的 factorial(..) 仍然是递归的，但它也是可以 TCO 优化的，因为内部的两次fact(..) 调用的位置都在结尾处。
+```
+:::warning 注意
+TCO 只用于有实际的尾调用的情况。如果你写了一个没有尾调用的递归函数，那么性能还是会回到普通栈帧分配的情形，引擎对这样的递归调用栈的限制也仍然有效。很多递归函数都可以改写，就像刚刚展示的 factorial(..) 那样，但是需要认真注意细节。
+:::
+
+[异步序列风格](https://github.com/getify/asynquence)
+
+如果一个函数表示序列中的一个普通步骤，那调用这个函数时第一个参数是 continuation回调，所有后续的参数都是从前一个步骤传递过来的消息。直到这个 continuation 回调被调用后，这个步骤才完成。一旦它被调用，传给它的所有参数将会作为消息传入序列中的下一个步骤。
+
+要向序列中添加额外的普通步骤，可以调用 then(..)（这本质上和 ASQ(..) 调用的语义完全相同）
+```js
+ASQ( 
+  // 步骤1 
+  function(done){ 
+    setTimeout( function(){ 
+      done( "Hello" ); 
+    }, 100 ); 
+  }, 
+  // 步骤2 
+  function(done,greeting) { 
+    setTimeout( function(){ 
+      done( greeting + " World" ); 
+    }, 100 ); 
+  } 
+) 
+// 步骤3 
+.then( function(done,msg){ 
+  setTimeout( function(){ 
+    done( msg.toUpperCase() ); 
+  }, 100 ); 
+} ) 
+// 步骤4 
+.then( function(done,msg){ 
+  console.log( msg ); // HELLO WORLD 
+} );
+```
+:::warning 提醒
+尽管 then(..) 和原生 Promise API 名称相同，但是这个 then(..) 是不一样的。你可以向 then(..) 传递任意多个函数或值，其中每一个都会作为一个独立步骤。其中并不涉及两个回调的完成 / 拒绝语义。
+:::
+和 Promise 不同的一点是：在 Promise 中，如果你要把一个 Promise 链接到下一个，需要创建这个 Promise 并通过 then(..) 完成回调函数返回这个 Promise；而使用 asynquence，你需要做的就是调用 continuation 回调——我一直称之为 done()，但你可以随便给它取什么名字——并可选择性将完成消息传递给它作为参数。
+
+通过 then(..) 定义的每个步骤都被假定为异步的。如果你有一个同步的步骤，那你可以直接调用 done(..)，也可以使用更简单的步骤辅助函数 val(..)。
+```js
+// 步骤1（同步）
+ASQ( function(done){ 
+  done( "Hello" ); // 手工同步
+} ) 
+// 步骤2（同步）
+.val( function(greeting){ 
+  return greeting + " World"; 
+} ) 
+// 步骤3（异步）
+.then( function(done,msg){ 
+  setTimeout( function(){ 
+    done( msg.toUpperCase() ); 
+  }, 100 ); 
+} ) 
+// 步骤4（同步）
+.val( function(msg){ 
+  console.log( msg ); 
+} ); 
+```
+可以看到，通过 val(..) 调用的步骤并不接受 continuation 回调，因为这一部分已经为你假定了，结果就是参数列表没那么凌乱！如果要给下一个步骤发送消息的话，只需要使用return。可以把 val(..) 看作一个表示同步的“只有值”的步骤，可以用于同步值运算、日志记录及其他类似的操作。
+
+asynquence 为注册一个序列错误通知处理函数提供了一个 or(..) 序列方法。这个方法还有一个别名，onerror(..)。你可以在序列的任何地方调用这个方法，也可以注册任意多个处理函数。这很容易实现多个不同的消费者在同一个序列上侦听，以得知它有没有失败。从这个角度来说，它有点类似错误事件处理函数。
+
+和使用 Promise 类似，所有的 JavaScript 异常都成为了序列错误，或者你也可以编写代码来发送一个序列错误信号：
+```js
+var sq = ASQ( function(done){ 
+  setTimeout( function(){ 
+    // 为序列发送出错信号
+    done.fail( "Oops" ); 
+  }, 100 ); 
+} ) 
+.then( function(done){ 
+  // 不会到达这里
+} ) 
+.or( function(err){ 
+  console.log( err ); // Oops 
+} ) 
+.then( function(done){ 
+  // 也不会到达这里
+} ); 
+// 之后
+sq.or( function(err){ 
+  console.log( err ); // Oops
+} ); 
+```
+asynquence 的错误处理和原生 Promise 还有一个非常重要的区别，就是默认状态下未处理异常的行为。没有注册拒绝处理函数的被拒绝 Promise 就会默默地持有（即吞掉）这个错误。你需要记得总要在链的尾端添加一个最后的 catch(..)。
+
+而在 asynquence 中，这个假定是相反的。如果一个序列中发生了错误，并且此时没有注册错误处理函数，那这个错误就会被报告到控制台。换句话说，未处理的拒绝在默认情况下总是会被报告，而不会被吞掉和错过。
+
+一旦你针对某个序列注册了错误处理函数，这个序列就不会产生这样的报告，从而避免了重复的噪音。
+
+实际上，可能在一些情况下你会想创建一个序列，这个序列可能会在你能够注册处理函数之前就进入了出错状态。这不常见，但偶尔也会发生。
+
+在这样的情况下，你可以选择通过对这个序列调用 defer() 来避免这个序列实例的错误报告。应该只有在确保你最终会处理这种错误的情况下才选择关闭错误报告：
+```js
+var sq1 = ASQ( function(done){ 
+  doesnt.Exist(); // 将会向终端抛出异常
+} ); 
+var sq2 = ASQ( function(done){ 
+  doesnt.Exist(); // 只抛出一个序列错误
+} ) 
+// 显式避免错误报告
+.defer(); 
+setTimeout( function(){ 
+  sq1.or( function(err){ 
+    console.log( err ); // ReferenceError 
+  } ); 
+  sq2.or( function(err){ 
+    console.log( err ); // ReferenceError 
+  } ); 
+}, 100 ); 
+// ReferenceError (from sq1) 
+```
+并非序列中的所有步骤都恰好执行一个（异步）任务。序列中的一个步骤中如果有多个子步骤并行执行则称为 gate(..)（还有一个别名 all(..)，如果你愿意用的话），和原生的Promise.all([..]) 直接对应。
+```js
+// 考虑：
+ASQ( function(done){ 
+  setTimeout( done, 100 ); 
+} ) 
+.gate( 
+  function(done){ 
+    setTimeout( function(){ 
+      done( "Hello" ); 
+    }, 100 ); 
+  }, 
+  function(done){ 
+    setTimeout( function(){ 
+      done( "World", "!" ); 
+    }, 100 ); 
+  } 
+) 
+.val( function(msg1,msg2){ 
+  console.log( msg1 ); // Hello 
+  console.log( msg2 ); // [ "World", "!" ] 
+} ); 
+// 出于展示说明的目的，我们把这个例子与原生 Promise 对比：
+new Promise( function(resolve,reject){ 
+  setTimeout( resolve, 100 ); 
+} ) 
+.then( function(){ 
+  return Promise.all( [ 
+    new Promise( function(resolve,reject){ 
+      setTimeout( function(){ 
+        resolve( "Hello" ); 
+      }, 100 ); 
+    } ), 
+    new Promise( function(resolve,reject){ 
+      setTimeout( function(){ 
+        // 注：这里需要一个[ ]数组
+        resolve( [ "World", "!" ] ); 
+      }, 100 ); 
+    } ) 
+  ] ); 
+} ) 
+.then( function(msgs){ 
+  console.log( msgs[0] ); // Hello 
+  console.log( msgs[1] ); // [ "World", "!" ] 
+} ); 
+```
+contrib 插件中提供了几个 asynquence 的 gate(..) 步骤类型的变体，非常实用。
+
+- any(..) 类似于 gate(..)，除了只需要一个子步骤最终成功就可以使得整个序列前进。
+- first(..) 类似于 any(..)，除了只要有任何步骤成功，主序列就会前进（忽略来自其
+他步骤的后续结果）。
+- race(..)（对应 Promise.race([..])）类似于 first(..)，除了只要任何步骤完成（成
+功或失败），主序列就会前进。
+- last(..) 类似于 any(..)，除了只有最后一个成功完成的步骤会将其消息发送给主序列。
+- none(..) 是 gate(..) 相反：只有所有的子步骤失败（所有的步骤出错消息被当作成功
+消息发送，反过来也是如此），主序列才前进。
+```js
+// 让我们先定义一些辅助函数，以便更清楚地进行说明：
+function success1(done) { 
+  setTimeout( function(){ 
+    done( 1 ); 
+  }, 100 ); 
+} 
+function success2(done) { 
+  setTimeout( function(){ 
+    done( 2 ); 
+  }, 100 ); 
+} 
+function failure3(done) { 
+  setTimeout( function(){ 
+    done.fail( 3 ); 
+  }, 100 ); 
+} 
+function output(msg) { 
+  console.log( msg ); 
+} 
+// 现在来说明这些 gate(..) 步骤变体的用法：
+ASQ().race( 
+  failure3, 
+  success1 
+) 
+.or( output ); // 3 
+ASQ().any( 
+  success1, 
+  failure3,
+  success2 
+) 
+.val( function(){ 
+  var args = [].slice.call( arguments ); 
+  console.log( 
+    args // [ 1, undefined, 2 ] 
+  ); 
+} ); 
+ASQ().first( 
+  failure3, 
+  success1, 
+  success2 
+) 
+.val( output ); // 1 
+ASQ().last( 
+  failure3, 
+  success1, 
+  success2 
+) 
+.val( output ); // 2 
+ASQ().none( 
+ failure3 
+) 
+.val( output ) // 3 
+.none( 
+  failure3 
+  success1 
+) 
+.or( output ); // 1 
+```
+另外一个步骤变体是 map(..)，它使你能够异步地把一个数组的元素映射到不同的值，然后直到所有映射过程都完成，这个步骤才能继续。map(..) 与 gate(..) 非常相似，除了它是从一个数组而不是从独立的特定函数中取得初始值，而且这也是因为你定义了一个回调函数来处理每个值：
+```js
+function double(x,done) { 
+  setTimeout( function(){ 
+    done( x * 2 ); 
+  }, 100 ); 
+} 
+ASQ().map( [1,2,3], double ) 
+.val( output ); // [2,4,6] 
+// map(..) 的参数（数组或回调）都可以从前一个步骤传入的消息中接收：
+function plusOne(x,done) { 
+  setTimeout( function(){ asynquence 库 ｜ 329
+    done( x + 1 ); 
+  }, 100 ); 
+} 
+ASQ( [1,2,3] ) 
+.map( double ) // 消息[1,2,3]传入
+.map( plusOne ) // 消息[2,4,6]传入
+.val( output ); // [3,5,7] 
+```
+另外一个变体是 waterfall(..)，这有点类似于 gate(..) 的消息收集特性和 then(..) 的顺序处理特性的混合。
+
+首先执行步骤 1，然后步骤 1 的成功消息发送给步骤 2，然后两个成功消息发送给步骤 3，然后三个成功消息都到达步骤 4，以此类推。这样，在某种程度上，这些消息集结和层叠下来就构成了“瀑布”（waterfall）。
+```js
+// 考虑：
+function double(done) { 
+  var args = [].slice.call( arguments, 1 ); 
+  console.log( args ); 
+  setTimeout( function(){ 
+    done( args[args.length - 1] * 2 ); 
+  }, 100 ); 
+} 
+ASQ( 3 ) 
+.waterfall( 
+  double, // [ 3 ] 
+  double, // [ 6 ] 
+  double, // [ 6, 12 ] 
+  double // [ 6, 12, 24 ] 
+) 
+.val( function(){ 
+  var args = [].slice.call( arguments ); 
+  console.log( args ); // [ 6, 12, 24, 48 ] 
+} ); 
+// 如果“瀑布”中的任何一点出错，整个序列就会立即进入出错状态。
+```
+try(..) 会试验执行一个步骤，如果成功的话，这个序列就和通常一样继续。如果这个步骤失败的话，失败就会被转化为一个成功消息，格式化为 { catch: .. } 的形式，用出错消息填充：
+```js
+ASQ() 
+.try( success1 ) 
+.val( output ) // 1 
+.try( failure3 ) 
+.val( output ) // { catch: 3 } 
+.or( function(err){ 
+  // 永远不会到达这里
+} );
+```
+也可以使用 until(..) 建立一个重试循环，它会试着执行这个步骤，如果失败的话就会在下一个事件循环 tick 重试这个步骤，以此类推。
+
+这个重试循环可以无限继续，但如果想要从循环中退出的话，可以在完成触发函数中调用标志 break()，触发函数会使主序列进入出错状态：
+```js
+var count = 0; 
+ASQ( 3 ) 
+.until( double ) 
+.val( output ) // 6 
+.until( function(done){ 
+  count++; 
+  setTimeout( function(){ 
+    if (count < 5) { 
+      done.fail(); 
+    } 
+    else { 
+      // 跳出until(..)重试循环
+      done.break( "Oops" ); 
+    } 
+  }, 100 ); 
+} ) 
+.or( output ); // Oops
+```
+如果你喜欢在序列使用类似于 Promise 的 then(..) 和 catch(..)（参见第 3 章）的 Promise风格语义，可以使用 pThen 和 pCatch 插件：
+```js
+ASQ( 21 ) 
+.pThen( function(msg){ 
+  return msg * 2; 
+} ) 
+.pThen( output ) // 42 
+.pThen( function(){ 
+  // 抛出异常
+  doesnt.Exist(); 
+} ) 
+.pCatch( function(err){ 
+  // 捕获异常（拒绝）
+  console.log( err ); // ReferenceError asynquence 库 ｜ 331
+} ) 
+.val( function(){ 
+  // 主序列以成功状态返回，
+  // 因为之前的异常被 pCatch(..)捕获了 
+} ); 
+```
+pThen(..) 和 pCatch(..) 是设计用来运行在序列中的，但其行为方式就像是在一个普通的 Promise 链中。因此，可以从传给 pThen(..) 的完成处理函数决议真正的 Promise 或asynquence 序列
+
+关于 Promise，有一个可能会非常有用的特性，那就是可以附加多个 then(..) 处理函数注册到同一个 promise；在这个 promise 处有效地实现了分叉流程控制：
+```js
+var p = Promise.resolve( 21 ); 
+// 分叉1（来自p）
+p.then( function(msg){ 
+  return msg * 2; 
+} ) 
+.then( function(msg){ 
+  console.log( msg ); // 42 
+} ) 
+// 分叉2 （来自p）
+p.then( function(msg){ 
+  console.log( msg ); // 21 
+} ); 
+// 在 asynquence 里可使用 fork() 实现同样的分叉：
+var sq = ASQ(..).then(..).then(..); 
+var sq2 = sq.fork(); 
+// 分叉1 
+sq.then(..)..; 
+// 分叉2 
+sq2.then(..)..; 
+```
+如果要实现 fork() 的逆操作，可以使用实例方法 seq(..)，通过把一个序列归入另一个序列来合并这两个序列：
+```js
+var sq = ASQ( function(done){ 
+  setTimeout( function(){ 332 ｜ 附录 A
+    done( "Hello World" ); 
+  }, 200 ); 
+} ); 
+ASQ( function(done){ 
+  setTimeout( done, 100 ); 
+} ) 
+// 将sq序列纳入这个序列
+.seq( sq ) 
+.val( function(msg){ 
+  console.log( msg ); // Hello World 
+} )
+```
+正如这里展示的，seq(..) 可以接受一个序列本身，或者一个函数。如果它接收一个函数，那么就要求这个函数被调用时会返回一个序列。因此，前面的代码可以这样实现：
+```js
+// .. 
+.seq( function(){ 
+  return sq; 
+} ) 
+// .. 
+// 这个步骤也可以通过 pipe(..) 来完成：
+// .. 
+.then( function(done){ 
+  // 把sq加入done continuation回调
+  sq.pipe( done ); 
+} ) 
+// .. 
+// 如果一个序列被包含，那么它的成功消息流和出错流都会输入进来。
+```
+```js
+// 如果序列的某个步骤只是一个普通的值，这个值就映射为这个步骤的完成消息：
+var sq = ASQ( 42 ); 
+sq.val( function(msg){ 
+  console.log( msg ); // 42 
+} ); 
+// 如果你想要构建一个自动出错的序列：a
+var sq = ASQ.failed( "Oops" ); 
+ASQ() 
+.seq( sq ) 
+.val( function(msg){ 
+  // 不会到达这里
+} ) 
+.or( function(err){ 
+  console.log( err ); // Oops 
+} ); 
+// 也有可能你想自动创建一个延时值或者延时出错的序列。使用 contrib 插件 after 和failAfter，很容易实现：
+var sq1 = ASQ.after( 100, "Hello", "World" ); 
+var sq2 = ASQ.failAfter( 100, "Oops" ); 
+sq1.val( function(msg1,msg2){ 
+  console.log( msg1, msg2 ); // Hello World 
+} ); 
+sq2.or( function(err){ 
+  console.log( err ); // Oops
+} ); 
+// 也可以使用 after(..) 在序列中插入一个延时：
+ASQ( 42 ) 
+// 在序列中插入一个延时
+.after( 100 ) 
+.val( function(msg){ 
+  console.log( msg ); // 42 
+} );
+```
+```js
+// 通过实例方法 promise(..) 很容易把一个 promise（比如一个 thenable，参见第 3 章）归入到一个序列中：
+var p = Promise.resolve( 42 ); 
+ASQ() 
+.promise( p ) // 也可以： function(){ return p; } 
+.val( function(msg){ 
+  console.log( msg ); // 42 
+} );
+
+// 要实现相反的操作以及从一个序列中的某个步骤分叉 / 剔出一个 promise，可以通过 contrib插件 toPromise 实现：
+var sq = ASQ.after( 100, "Hello World" ); 
+sq.toPromise() 
+// 现在这是一个标准promise链
+.then( function(msg){ 
+  return msg.toUpperCase(); 
+} ) 
+.then( function(msg){ 
+  console.log( msg ); // HELLO WORLD 
+} ); 
+
+// 有几个辅助工具可以让 asynquence 与使用回调的系统适配。要从序列中自动生成一个error-first 风格回调以连入到面向回调的工具，可以使用 errfcb：
+var sq = ASQ( function(done){ 
+  // 注：期望"error-first风格"回调
+  someAsyncFuncWithCB( 1, 2, done.errfcb ) 
+} ) 
+.val( function(msg){ 
+  // .. 
+} ) 
+.or( function(err){ 
+  // .. 
+} ); 
+// 注：期望"error-first风格"回调
+anotherAsyncFuncWithCB( 1, 2, sq.errfcb() ); 
+
+// 你还可能想要为某个工具创建一个序列封装的版本，类似于第 3 章的 promisory 和第 4 章的 thunkory，asynquence 为此提供了 ASQ.wrap(..)：
+var coolUtility = ASQ.wrap( someAsyncFuncWithCB ); 
+coolUtility( 1, 2 ) 
+.val( function(msg){ 
+  // .. 
+} ) 
+.or( function(err){ 
+  // .. 
+} ); 
+```
+不幸的是，有时候需要实现对 Promise 或步骤的外部控制，这会导致棘手的 capability extraction 问题。
+```js
+// 考虑这个 Promise 例子：
+var domready = new Promise( function(resolve,reject){ 
+  // 不需把这个放在这里，因为逻辑上这属于另一部分代码
+  document.addEventListener( "DOMContentLoaded", resolve ); 
+} ); 
+// .. 
+domready.then( function(){ 
+  // DOM就绪！
+} ); 
+
+// 使用 Promise 的 capability extraction 反模式看起来类似如下：
+var ready; 
+var domready = new Promise( function(resolve,reject){ 
+  // 提取resolve()功能
+  ready = resolve; 
+} ); 
+// .. 
+domready.then( function(){ 
+  // DOM就绪！
+} ); 
+// .. 
+document.addEventListener( "DOMContentLoaded", ready ); 
+```
+asynquence 提供了一个反转的序列类型，我称之为可迭代序列，它把控制能力外部化了（对于像 domready 这样的用例非常有用）：
+```js
+// 注：这里的domready是一个控制这个序列的迭代器
+var domready = ASQ.iterable(); 
+// .. 
+domready.val( function(){ 
+  // DOM就绪
+} ); 
+// .. 
+document.addEventListener( "DOMContentLoaded", domready.next );
+```
+在第 4 章中我们推导出了一个名为 run(..) 的工具。这个工具可以运行生成器到结束，侦听 yield 出来的 Promise，并使用它们来异步恢复生成器。asynquence 也内建有这样的工具，叫作 runner(..)。
+```js
+// 为了展示，我们首先构建一些辅助函数：
+function doublePr(x) { 
+  return new Promise( function(resolve,reject){ 
+    setTimeout( function(){ 
+      resolve( x * 2 ); 
+    }, 100 ); 
+  } ); 
+} 
+function doubleSeq(x) { 
+  return ASQ( function(done){ 
+    setTimeout( function(){ 
+      done( x * 2) 
+    }, 100 ); 
+  } ); 
+} 
+
+// 现在，可以使用 runner(..) 作为序列中的一个步骤：
+ASQ( 10, 11 ) 
+.runner( function*(token){ 
+  var x = token.messages[0] + token.messages[1]; 
+  // yield一个真正的promise 
+  x = yield doublePr( x ); 
+  // yield一个序列
+  x = yield doubleSeq( x );
+  return x; 
+} ) 
+.val( function(msg){ 
+  console.log( msg ); // 84 
+} ); 
+```
+你也可以创建一个自封装的生成器，也就是说，通过 ASQ.wrap(..) 包装实现一个运行指定生成器的普通函数，完成后返回一个序列：
+```js
+var foo = ASQ.wrap( function*(token){ 
+  var x = token.messages[0] + token.messages[1]; 
+  // yield一个真正的promise 
+  x = yield doublePr( x ); 
+  // yield一个序列
+  x = yield doubleSeq( x ); 
+  return x; 
+}, { gen: true } ); 
+// .. 
+foo( 8, 9 ) 
+.val( function(msg){ 
+  console.log( msg ); // 68
+})
+```
+
+```js
+// 回忆一下：
+var domready = ASQ.iterable(); 
+// .. 
+domready.val( function(){ 
+  // DOM就绪
+} ); 
+// .. 
+document.addEventListener( "DOMContentLoaded", domready.next ); 
+
+// 现在，让我们把一个多步骤序列定义为可迭代序列：
+var steps = ASQ.iterable();
+steps 
+.then( function STEP1(x){ 
+  return x * 2; 
+} ) 
+.steps( function STEP2(x){ 
+  return x + 3; 
+} ) 
+.steps( function STEP3(x){ 
+  return x * 4; 
+} ); 
+steps.next( 8 ).value; // 16 
+steps.next( 16 ).value; // 19 
+steps.next( 19 ).value; // 76 
+steps.next().done; // true 
+```
+可以看到，可迭代序列是一个符合标准的迭代器（参见第 4 章）。因此，可通过 ES6 的for..of 循环迭代，就像生成器（或其他任何 iterable）一样：
+```js
+var steps = ASQ.iterable(); 
+steps 
+.then( function STEP1(){ return 2; } ) 
+.then( function STEP2(){ return 4; } ) 
+.then( function STEP3(){ return 6; } ) 
+.then( function STEP4(){ return 8; } ) 
+.then( function STEP5(){ return 10; } ); 
+for (var v of steps) { 
+  console.log( v ); 
+} 
+// 2 4 6 8 10
+```
+请考虑一个多 Ajax 请求的例子。我们在第 3 章和第 4 章中已经看到过同样的场景，分别通过 Promise 链和生成器实现的。用可迭代序列来表达：
+```js
+// 支持序列的ajax 
+var request = ASQ.wrap( ajax ); 
+ASQ( "http://some.url.1" ) 
+.runner( 
+  ASQ.iterable() 
+  .then( function STEP1(token){ 
+    var url = token.messages[0]; 
+    return request( url ); 
+  } ) 
+  .then( function STEP2(resp){
+    return ASQ().gate( 
+    request( "http://some.url.2/?v=" + resp ), 
+    request( "http://some.url.3/?v=" + resp ) 
+    ); 
+  } ) 
+  .then( function STEP3(r1,r2){ return r1 + r2; } ) 
+) 
+.val( function(msg){ 
+  console.log( msg ); 
+} ); 
+```
+可迭代序列本质上和生成器的行为方式一样。这个事实值得注意，原因如下。
+
+首先，可迭代序列是 ES6 生成器某个子集的某种前 ES6 等价物。也就是说，你可以直接编写它们（在任意环境运行），或者你也可以编写 ES6 生成器，并将其重编译或转化为可迭代序列（就此而言，也可以是 Promise 链！）。
+
+把“异步完整运行”的生成器看作是 Promise 链的语法糖，对于认识它们的同构关系是很重要的。
+```js
+// 在继续之前，我们应该注意到，前面的代码片段可以用 asynquence 重写如下：
+ASQ( "http://some.url.1" ) 
+.seq( /*STEP 1*/ request ) 
+.seq( function STEP2(resp){ 
+  return ASQ().gate( 
+    request( "http://some.url.2/?v=" + resp ), 
+    request( "http://some.url.3/?v=" + resp ) 
+  ); 
+} ) 
+.val( function STEP3(r1,r2){ return r1 + r2; } ) 
+.val( function(msg){ 
+  console.log( msg ); 
+} ); 
+
+// 而且，步骤 2 也可以这样写：
+.gate( 
+  function STEP2a(done,resp) { 
+    request( "http://some.url.2/?v=" + resp ) 
+    .pipe( done ); 
+  }, 
+  function STEP2b(done,resp) { 
+    request( "http://some.url.3/?v=" + resp )
+    .pipe( done ); 
+  } 
+) 
+```
+可迭代序列是惰性求值（lazily evaluated），这意味着在可迭代序列的执行过程中，如果需要的话可以用更多的步骤扩展这个序列。只能在可迭代序列的末尾添加步骤，不能插入序列的中间。
+
+首先，让我们通过一个简单点的（同步）例子来熟悉一下这个功能：
+
+```js
+function double(x) { 
+  x *= 2; 
+  // 应该继续扩展吗？
+  if (x < 500) { 
+    isq.then( double ); 
+  } 
+  return x; 
+} 
+// 建立单步迭代序列
+var isq = ASQ.iterable().then( double ); 
+for (var v = 10, ret; 
+  (ret = isq.next( v )) && !ret.done; 
+) { 
+  v = ret.value; 
+  console.log( v ); 
+} 
+```
+一开始这个可迭代序列只定义了一个步骤（isq.then(double)），但这个可迭代序列在某种条件下（x < 500）会持续扩展自己。
+
+尽管这个例子很平常，也可以通过一个生成器中的 while 循环表达，但我们会考虑到更复杂的情况。
+
+举例来说，可以查看 Ajax 请求的响应，如果它指出还需要更多的数据，就有条件地向可迭代序列中插入更多的步骤来发出更多的请求。或者你也可以有条件地在 Ajax 处理结尾处增加一个值格式化的步骤。
+```js
+var steps = ASQ.iterable() 
+.then( function STEP1(token){ 
+  var url = token.messages[0].url; 
+  // 提供了额外的格式化步骤了吗？
+  if (token.messages[0].format) { 
+    steps.then( token.messages[0].format ); 
+  } 
+  return request( url ); 
+} ) 
+.then( function STEP2(resp){ 
+  // 向区列中添加一个Ajax请求吗？
+  if (/x1/.test( resp )) { 
+    steps.then( function STEP5(text){ 
+      return request( 
+      "http://some.url.4/?v=" + text 
+      ); 
+    } ); 
+  } 
+  return ASQ().gate( 
+    request( "http://some.url.2/?v=" + resp ), 
+    request( "http://some.url.3/?v=" + resp ) 
+  ); 
+} ) 
+.then( function STEP3(r1,r2){ return r1 + r2; } );
+```
+你可以看到，在两个不同的位置处，我们有条件地使用 steps.then(..) 扩展了 steps。要运行这个可迭代序列 steps，只需要通过 ASQ#runner(..) 把它链入我们的带有 asynquence序列（这里称为 main）的主程序流程：
+```js
+var main = ASQ( { 
+  url: "http://some.url.1", 
+  format: function STEP4(text){ 
+    return text.toUpperCase(); 
+  }
+} ) 
+.runner( steps ) 
+.val( function(msg){ 
+  console.log( msg ); 
+} );
+```
+可迭代序列 steps 的这一灵活性（有条件行为）可以用生成器表达吗？算是可以吧，但我们不得不以一种有点笨拙的方式重新安排这个逻辑：
+```js
+function *steps(token) { 
+  // 步骤1 
+  var resp = yield request( token.messages[0].url ); 
+  // 步骤2 
+  var rvals = yield ASQ().gate( 
+    request( "http://some.url.2/?v=" + resp ), 
+    request( "http://some.url.3/?v=" + resp ) 
+  ); 
+  // 步骤3 
+  var text = rvals[0] + rvals[1]; 
+  // 步骤4 
+  //提供了额外的格式化步骤了吗？
+  if (token.messages[0].format) { 
+    text = yield token.messages[0].format( text ); 
+  } 
+  // 步骤5 
+  // 需要向序列中再添加一个Ajax请求吗？
+  if (/foobar/.test( resp )) { 
+    text = yield request( 
+      "http://some.url.4/?v=" + text 
+    ); 
+  } 
+  return text; 
+} 
+// 注意：*steps()可以和前面的steps一样被同一个ASQ序列运行
+```
+除了已经确认的生成器的顺序、看似同步的语法的好处（参见第 4 章），要模拟可扩展可迭代序列 steps 的动态特性，steps 的逻辑也需要以 *steps() 生成器形式重新安排。
+
+而如果要通过 Promise 或序列来实现这个功能会怎样呢？你可以这么做：
+```js
+var steps = something( .. ) 
+.then( .. ) 
+.then( function(..){ 
+  // .. 
+  // 扩展链是吧？
+  steps = steps.then( .. ); 高级异步模式 ｜ 345
+  // .. 
+}) 
+.then( .. ); 
+```
+其中的问题捕捉起来比较微妙，但是很重要。所以，考虑要把我们的 steps Promise 链链入主程序流程。这次使用 Promise 来表达，而不是 asynquence：
+```js
+var main = Promise.resolve( { 
+  url: "http://some.url.1", 
+  format: function STEP4(text){ 
+    return text.toUpperCase(); 
+  } 
+} ) 
+.then( function(..){ 
+  return steps; // hint！
+} ) 
+.val( function(msg){ 
+  console.log( msg ); 
+} ); 
+```
+序列步骤排序有一个竞态条件。在你返回 steps 的时候，steps 这时可能是之前定义的Promise 链，也可能是现在通过 steps = steps.then(..) 调用指向扩展后的 Promise 链。根据执行顺序的不同，结果可能不同。
+
+以下是两个可能的结果。
+
+- 如果 steps 仍然是原来的 Promise 链，一旦之后它通过 steps = steps.then(..) 被“扩展”，在链结尾处扩展之后的 promise 就不会被 main 流程考虑，因为它已经连到了steps 链。很遗憾，这就是及早求值的局限性。
+- 如果 steps 已经是扩展后的 Promise 链，它就会按预期工作，因为 main 连接的是扩展后的 promise。
+
+有一点应该是显而易见的，Promise 是异步工具箱中一个非常强大的工具。但是，因为 Promise 只能决议一次，它们的功能有一个很明显的缺憾就是处理事件流的能力。坦白地说，简单 asynquence 序列恰巧也有同样的弱点。
+
+考虑这样一个场景，你想要在每次某个事件触发时都启动一系列步骤。单个 Promise 或序列不能代表一个事件的所有发生。因此，你不得不在每次事件发生时创建一整个新的Promise 链（或序列），就像这样：
+```js
+listener.on( "foobar", function(data){ 
+  // 构造一个新的事件处理promise链
+  new Promise( function(resolve,reject){ 
+    // .. 
+  } ) 
+  .then( .. ) 
+  .then( .. ); 
+} ); 
+```
+设想一下，把这个范式的反转恢复一下，就像这样：
+```js
+var observable = listener.on( "foobar" ); 
+// 将来
+observable 
+.then( .. ) 
+.then( .. ); 
+// 还有
+observable 
+.then( .. ) 
+.then( .. ); 
+```
+值 observable 并不完全是一个 Promise，但你可以像查看 Promise 一样查看它，所以它们是紧密相关的。实际上，它可以被查看多次，并且每次它的事件（"foobar"）发生的时候都会发出通知。
+
+ES7 提案提出了一个称为 Observable 的新数据类型，这类 Observable 的概念是这样的：“订阅”到一个流的事件的方式是传入一个生成器——实际上其中有用的部分是迭代器——事件每次发生都会调用迭代器的 next(..) 方法。你可以把它想象成类似这样：
+```js
+// someEventStream是一个事件流，比如来自鼠标点击或其他
+var observer = new Observer( someEventStream, function*(){ 
+  while (var evt = yield) { 
+    console.log( evt ); 
+  } 
+} ); 
+```
+传入的生成器将会 yield 暂停那个 while 循环，等待下一个事件。每次 someEventStream 发布一个新事件，都会调用到附加到生成器实例上的迭代器的 next(..)，因此事件数据会用evt 数据恢复生成器 / 迭代器。
+
+在这里的对事件的订阅功能中，重要的是迭代器部分，而不是生成器部分。所以，从概念上说，实际上你可以传入任何 iterable，包括 ASQ.iterable() 可迭代序列。
+
+有趣的是，也有关于适配器的提案来简化从某些流类型构造 Observable，比如用于 DOM事件的 fromEvent(..)。如果你查看前面给出链接的 ES7 提案中建议的 fromEvent(..) 实现，你会发现它看起来和我们在下一节将要看到的 ASQ.react(..) 惊人的相似。
+
+“响应式序列”:
+```js
+// 首先，让我们从如何使用名为 react(..) 的 asynquence 插件工具创建一个 Observable 开始：
+var observable = ASQ.react( function setup(next){ 
+  listener.on( "foobar", next ); 
+} ); 
+
+// 现在，来看看如何定义一个能“响应”这个 observable 的序列（在 F/RP 中，这通常称为“订阅”）：
+observable 
+.seq( .. ) 
+.then( .. ) 
+.val( .. ); 
+```
+在 F/RP 中，事件流通常从一系列函数变换中穿过，比如 scan(..)、map(..)、reduce(..)，等等。
+```js
+ASQ.react( function setup(next){ 
+  document.getElementById( "mybtn" ) 
+  .addEventListener( "click", next, false ); 
+} ) 
+.seq( function(evt){ 
+  var btnID = evt.target.id; 
+  return request( 
+    "http://some.url.1/?id=" + btnID 
+  ); 
+} ) 
+.val( function(text){ 
+  console.log( text ); 
+} ); 
+```
+这个响应序列的“响应”部分来自于分配了一个或多个事件处理函数来调用事件触发器（调用 next(..)）。
+
+响应序列的“序列”部分就和我们已经研究过的序列完全一样：每个步骤可以使用任意合理的异步技术，从 continuation 到 Promise 再到生成器。
+
+一旦建立起响应序列，只要事件持续触发，它就会持续启动序列实例。如果想要停止响应序列，可以调用 stop()。高级异步模式 ｜ 349
+
+如果响应序列调用了 stop()，停止了，那你很可能希望事件处理函数也被注销。可以注册一个 teardown 处理函数来实现这个目的：
+```js
+var sq = ASQ.react( function setup(next,registerTeardown){ 
+  var btn = document.getElementById( "mybtn" ); 
+  btn.addEventListener( "click", next, false ); 
+  // 一旦sq.stop()被调用就会调用
+  registerTeardown( function(){ 
+    btn.removeEventListener( "click", next, false ); 
+  } ); 
+} ) 
+.seq( .. ) 
+.then( .. ) 
+.val( .. ); 
+// 将来
+sq.stop(); 
+```
+这里是一个来自 Node.js 世界的例子，使用了响应序列来处理到来的 HTTP 请求：
+```js
+var server = http.createServer(); 
+server.listen(8000); 
+// 响应式observer 
+var request = ASQ.react( function setup(next,registerTeardown){ 
+  server.addListener( "request", next ); 
+  server.addListener( "close", this.stop ); 
+  registerTeardown( function(){ 
+    server.removeListener( "request", next ); 
+    server.removeListener( "close", request.stop ); 
+  } ); 
+}); 
+// 响应请求
+request 
+.seq( pullFromDatabase ) 
+.val( function(data,res){ 
+  res.end( data ); 
+} ); 
+// 节点清除
+process.on( "SIGINT", request.stop ); 
+
+// 使用 onStream(..) 和 unStream(..)，触发器 next(..) 也很容易适配节点流：
+ASQ.react( function setup(next){ 
+  var fstream = fs.createReadStream( "/some/file" ); 
+  // 把流的"data"事件传给next(..) 
+  next.onStream( fstream ); 
+  // 侦听流结尾
+  fstream.on( "end", function(){ 
+    next.unStream( fstream ); 
+  } ); 
+} ) 
+.seq( .. ) 
+.then( .. ) 
+.val( .. ); 
+
+// 也可以通过序列合并来组合多个响应序列流：
+var sq1 = ASQ.react( .. ).seq( .. ).then( .. ); 
+var sq2 = ASQ.react( .. ).seq( .. ).then( .. ); 
+var sq3 = ASQ.react(..) 
+.gate( 
+  sq1, 
+  sq2 
+) 
+.then( .. ); 
+```
+设想一个工具 runAll(..)，它能接受两个或更多的生成器，并且并发地执行它们，让它们依次进行合作式 yield 控制，并支持可选的消息传递。
+
+除了可以运行单个生成器到结束之外，我们在附录 A 讨论的 ASQ#runner(..) 是 runAll(..)概念的一个相似实现，后者可以并发运行多个生成器到结束。
+
+因此，让我们来看看如何实现第 4 章中并发 Ajax 的场景：
+```js
+ASQ( 
+ "http://some.url.2" 
+) 
+.runner( 
+  function*(token){ 
+    // 传递控制
+    yield token; 
+    var url1 = token.messages[0]; // "http://some.url.1" 
+    // 清空消息，重新开始
+    token.messages = []; 
+    var p1 = request( url1 ); 
+    // 传递控制
+    yield token; 
+    token.messages.push( yield p1 ); 
+  }, 
+  function*(token){ 
+    var url2 = token.messages[0]; // "http://some.url.2" 
+    // 传递消息并传递控制
+    token.messages[0] = "http://some.url.1"; 
+    yield token; 
+    var p2 = request( url2 ); 
+    // 传递控制
+    yield token; 
+    token.messages.push( yield p2 ); 
+    // 把结果传给下一个序列步骤
+    return token.messages; 
+  } 
+) 
+.val( function(res){ 
+  // res[0]来自"http://some.url.1" 
+  // res[1]来自"http://some.url.2" 
+} ); 
+```
+ASQ#runner(..) 和 runAll(..) 之间的主要区别如下。
+
+- 每个生成器（协程）都被提供了一个叫作 token 的参数。这是一个特殊的值，想要显式把控制传递到下一个协程的时候就 yield 这个值。
+- token.messages 是一个数组，其中保存了从前面一个序列步骤传入的所有消息。它也是一个你可以用来在协程之间共享消息的数据结构。
+- yield一个Promise（或序列）值不会传递控制，而是暂停这个协程处理，直到这个值准备好。
+- 从协程处理运行最后 return 的或 yield 的值将会被传递到序列中的下一个步骤。
+
+状态机：让我们来设想这样一个工具。我们将其称为 state(..)，并给它传入两个参数：一个状态值和一个处理这个状态的生成器。创建和返回要传递给 ASQ#runner(..) 的适配器生成器这样的苦活将由 state(..) 负责。
+```js
+function state(val,handler) { 
+  // 为这个状态构造一个协程处理函数
+  return function*(token) { 
+    // 状态转移处理函数
+    function transition(to) { 
+      token.messages[0] = to; 
+    } 
+    // 设定初始状态（如果还未设定的话）
+    if (token.messages.length < 1) { 
+      token.messages[0] = val; 
+    } 
+    // 继续，直到到达最终状态（false）
+    while (token.messages[0] !== false) { 
+      // 当前状态与这个处理函数匹配吗？
+      if (token.messages[0] === val) { 
+        // 委托给状态处理函数
+        yield *handler( transition ); 
+      } 
+      // 还是把控制转移到另一个状态处理函数？
+      if (token.messages[0] !== false) { 
+        yield token; 
+      } 
+    } 
+  }; 
+} 
+```
+如果仔细观察的话，可以看到 state(..) 返回了一个接受一个 token 的生成器，然后它建立了一个 while 循环，该循环将持续运行，直到状态机到达终止状态（这里我们随机设定为值 false）。这正是我们想要传给 ASQ#runner(..) 的那一类生成器！
+
+我们还随意保留了 token.messages[0] 槽位作为放置状态机当前状态的位置，用于追踪，这意味着我们甚至可以把初始状态值作为种子从序列中的前一个步骤传入。
+
+如何将辅助函数 state(..) 与 ASQ#runner(..) 配合使用呢？
+```js
+var prevState; 
+ASQ( 
+  /*可选：初始状态值 */ 
+  2 
+) 
+// 运行状态机
+// 转移: 2 -> 3 -> 1 -> 3 -> false 
+.runner( 
+  // 状态1处理函数
+  state( 1, function *stateOne(transition){ 
+    console.log( "in state 1" ); 
+    prevState = 1; 
+    yield transition( 3 ); // 转移到状态3 
+  } ), 
+  // 状态2处理函数
+  state( 2, function *stateTwo(transition){ 
+    console.log( "in state 2" ); 
+    prevState = 2; 
+    yield transition( 3 ); // 转移到状态3 
+  } ), 
+  // 状态3处理函数
+  state( 3, function *stateThree(transition){ 
+    console.log( "in state 3" ); 
+    if (prevState === 2) { 
+      prevState = 3; 
+      yield transition( 1 ); // 转移到状态1 
+    } 
+    // 完毕! 
+    else { 
+      yield "That’s all folks!"; 
+      prevState = 3; 
+      yield transition( false ); // 最终状态
+    } 
+  } ) 
+) 
+// 状态机完毕，继续
+.val( function(msg){ 
+  console.log( msg ); // 就这些！
+} ); 
+```
+有很重要的一点需要指出，生成器 *stateOne(..)、*stateTwo(..) 和 *stateThree(..) 三者本身在每次进入状态时都会被再次调用，而在你通过 transition(..) 转移到其他值时就会结束。尽管这里没有展示，但这些状态生成器处理函数显然可以通过 yield Promise/ 序列 /thunk 来异步暂停。
+
+底层隐藏的由辅助函数 state(..) 产生并实际上传给 ASQ#runner(..) 的生成器是在整个状态机生存期都持续并发运行的，它们中的每一个都会把协作式 yield 控制传递到下一个，以此类推。
+
+两个或更多并发运行的生成器可以彼此之间用看似同步的形式进行消息传递，同时保持系统的异步本性，因为每个生成器的代码都被暂停（阻塞）了，等待一个异步动作来恢复。
+
+这是如何工作的呢？
+
+设想一个名为 A 的生成器（“进程”），想要发送一个消息给生成器 B。首先 A yield 要发给 B 的这个消息（因此暂停了 A），等 B 就绪并拿到这个消息时，A 就会被恢复（解除阻塞）。
+
+对称地，设想 A 要接收一个来自 B 的消息。A yield 它对来自于 B 的这个消息的请求（因此暂停 A）。而一旦 B 发送了一个消息，A 就拿到消息并恢复执行。这种 CSP 消息传递的一个更流行的实现来自 ClojureScript 的 core.async 库，还有 go 语言。这些 CSP 实现通过开放在进程间的称为通道（channel）的管道实现了前面描述的通信语义。
+
+:::warning 注意
+使用术语通道的部分原因是，在一些模式中可以一次发送多个值到通道的缓冲区，这可能类似于你对流的认识。这里我们并不深入探讨，但要了解，对于管理数据流来说，它可以是非常强大的技术。在最简单的 CSP 概念中，我们在 A 和 B 之间创建的通道会有一个名为 take(..) 的方法用于阻塞接收一个值，还有一个名为 put(..) 的方法用于阻塞发送一个值。
+:::
+
+这看起来可能类似于：
+```js
+var ch = channel(); 
+function *foo() { 
+  var msg = yield take( ch ); 
+  console.log( msg ); 
+} 
+function *bar() { 
+  yield put( ch, "Hello World" ); 
+  console.log( "message sent" ); 
+} 
+run( foo ); 
+run( bar ); 
+// Hello World 
+// "message sent"
+```
+比较这个结构化的、（看似）同步的消息传递交互和 ASQ#runner(..) 通过数组 token.messages 及合作式 yield 提供的非正式非结构化的消息共享机制。本质上，yield put(..)是一个既发送了值也暂停了执行来传递控制的单个操作，而在前面我们给出的例子中这两者是分开的步骤。
+
+另外，CSP 强调你并不真正显式地传递控制，而是设计并发例程来阻塞等待来自于通道的值或阻塞等待试图发送值到这个通道。协调顺序和协程之间行为的方式就是通过接收和发送消息的阻塞。
+
+由于我们这里一直讨论的异步模式都是在我的 asynquence 库的大背景下进行的，因此你可能有兴趣看到我们可以相当轻松地在 ASQ#runner(..) 生成器处理上添加一个模拟层，作为CSP API 和特性的近乎完美的移植。这个模拟层作为 asynquence-contrib 包的一个可选部分与 asynquence 一起发布。
+
+与前面的辅助函数 state(..) 非 常 相 似，ASQ.csp.go(..) 接 受 一 个 生 成 器 —— 在 go/core.async 术语中，它被称为 goroutine——并通过返回一个新的生成器将其适配为可与ASQ#runner(..) 合作。
+
+goroutine 接收一个最初创建好的通道（ch），而不是被传入一个 token，一次运行中的所有goroutien 都会共享这个通道。你可以通过 ASQ.csp.chan(..) 创建更多的通道（这常常会极其有用！）。
+
+在 CSP 中，我们把所有的异步都用通道消息上的阻塞来建模，而不是阻塞等待 Promise/ 序列 /thunk 完成。
+
+因此，不是把从 request(..) 返回的 Promise yield 出来，而是 request(..) 应该返回一个通道，从中你可以 take(..)（拿到）值。换句话说，这种环境和用法下单值通道大致等价于 Promise 或序列。
+
+我们先来构造一个支持通道的 request(..) 版本：
+```js
+function request(url) { 
+  var ch = ASQ.csp.channel(); 
+  ajax( url ).then( function(content){ 
+    // putAsync(..)的put(..)的一个变异版本，这个版本
+    // 可以在生成器之外使用。返回一个运算完毕promise。
+    // 这里我们没有使用这个promise，但是如果当值被
+    // take(..)之后我们需要得到通知的话，可以使用这个promise。
+    ASQ.csp.putAsync( ch, content ); 
+  } ); 
+  return ch; 
+}
+```
+由第 3 章可知，promisory 是生产 Promise 的工具；第 4 章里的 thunkory 是生产 thunk 的工具；以及最后在附录 A 中，我们发明了 sequory 来表示生产序列的工具。
+
+很自然地，我们要再次构造一个类似的术语以表示生产通道的工具。我们就称之为chanory（channel+factory）吧。作为留给你的练习，请试着定义一个类似于 Promise.wrap(..)/promisify(..)（第 3 章）、thunkify(..)（第 4 章）和 ASQ.wrap(..)（附录 A）的channelify(..) 工具。
+
+现在考虑使用 asynquence 风格的 CSP 实现的并发 Ajax 的例子：
+```js
+ASQ() 
+.runner( 
+  ASQ.csp.go( function*(ch){ 
+    yield ASQ.csp.put( ch, "http://some.url.2" ); 
+    var url1 = yield ASQ.csp.take( ch ); 
+    // "http://some.url.1" 
+    var res1 = yield ASQ.csp.take( request( url1 ) ); 
+    yield ASQ.csp.put( ch, res1 ); 
+  } ), 
+  ASQ.csp.go( function*(ch){ 
+    var url2 = yield ASQ.csp.take( ch ); 
+    // "http://some.url.2" 
+    yield ASQ.csp.put( ch, "http://some.url.1" ); 
+    var res2 = yield ASQ.csp.take( request( url2 ) ); 
+    var res1 = yield ASQ.csp.take( ch ); 
+    // 把结果传递到下一个序列步骤
+    ch.buffer_size = 2; 
+    ASQ.csp.put( ch, res1 ); 
+    ASQ.csp.put( ch, res2 );
+  } ) 
+) 
+.val( function(res1,res2){ 
+  // res1来自"http://some.url.1" 
+  // res2来自"http://some.url.2" 
+} ); 
+```
+在两个 goroutine 之间交换 URL 字符串的消息传递过程是非常直接的。第一个 goroutine 构造一个到第一个 URL 的 Ajax 请求，响应放到通道 ch 中。第二个 goroutine 构造一个到第二个 URL 的 Ajax 请求，然后从通道 ch 拿到第一个响应 res1。这时，两个响应 res1 和res2 便都已经完成就绪了。
+
+如果在 goroutine 运行结束时，通道 ch 中还有任何剩下的值，那它们就会被传递到序列的下一个步骤。所以，要从最后的 goroutine 传出消息，可以通过 put(..) 将其放入 ch 中。如上所示，为了避免这些最后的 put(..) 阻塞，我们通过将 ch 的 buffer_size 设置为 2（默认：0）而将 ch 切换为缓冲模式。
+
+[asynquence 风格的 CSP 的示例](https://gist.github.com/getify/e0d04f1f5aa24b1947ae)
 
 ## 起步上路
 
