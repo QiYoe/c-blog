@@ -1,6 +1,6 @@
-# c-blog
-
 [![Build Status](https://www.travis-ci.org/QiYoe/c-blog.svg?branch=master)](https://www.travis-ci.org/QiYoe/c-blog)
+
+## c-blog
 
 [在线地址](https://qiyoe.github.io/c-blog)
 
