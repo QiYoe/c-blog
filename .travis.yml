@@ -2,7 +2,7 @@ sudo: required
 language: node_js
 node_js: 
   - 12
-script: bash ./deploy.sh
+# script: bash ./deploy.sh
 branches:
   only:
   - master
