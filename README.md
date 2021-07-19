@@ -1,4 +1,4 @@
-[![Build Status](https://www.travis-ci.org/QiYoe/c-blog.svg?branch=master)](https://www.travis-ci.org/QiYoe/c-blog)
+[![Build Status](https://www.travis-ci.com/QiYoe/c-blog.svg?branch=master)](https://www.travis-ci.com/QiYoe/c-blog)
 
 ## c-blog
 
