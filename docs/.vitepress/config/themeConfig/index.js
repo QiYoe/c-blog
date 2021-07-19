@@ -31,6 +31,7 @@ module.exports = {
         {text: 'CSS揭秘', link: '/books/css-secrets' },
         {text: '算法图解', link: '/books/grokking-algorithms' },
         {text: 'Pro-Git', link: '/books/pro-git' },
+        {text: 'Docker-从入门到实践', link: '/books/docker-practice' },
       ]
     },
     {
@@ -39,6 +40,13 @@ module.exports = {
       items: [
         {text: 'LeetCode', link: '/algorithm/leetcode' },
         {text: 'Lodash', link: '/algorithm/lodash' },
+      ]
+    },
+    {
+      text: 'DevOps',
+      ariaLabel: 'DevOps',
+      items: [
+        {text: 'Jira', link: '/devops/jira' },
       ]
     },
     {
@@ -64,7 +72,7 @@ module.exports = {
     '/books/': getBooksSidebar(),
     '/other/': getOtherSidebar(),
     '/algorithm/': getAlgorithmSidebar(),
-    // '/quotations/': getQuotationsSidebar(),
+    '/devops/': getDevOpsSidebar(),
   }
 }
 
@@ -145,7 +153,7 @@ function getBooksSidebar() {
         { text: 'CSS揭秘', link: '/books/css-secrets' },
         { text: '算法图解', link: '/books/grokking-algorithms' },
         { text: 'Pro-Git', link: '/books/pro-git' },
-        
+        { text: 'Docker-从入门到实践', link: '/books/docker-practice' },
       ]
     }
   ]
@@ -177,15 +185,13 @@ function getAlgorithmSidebar() {
   ]
 }
 
-// function getQuotationsSidebar() {
-//   return [
-//     {
-//       text: '摘抄语录',
-//       children: [
-//         // { text: '', link: '/algorithm/' },
-//         { text: 'LeetCode', link: '/algorithm/leetcode' },
-//         { text: 'Lodash', link: '/algorithm/lodash' },
-//       ]
-//     }
-//   ]
-// }
+function getDevOpsSidebar() {
+  return [
+    {
+      text: 'DevOps',
+      children: [
+        { text: 'Jira', link: '/devops/jira' },
+      ]
+    }
+  ]
+}
