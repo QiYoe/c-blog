@@ -20,7 +20,7 @@
   "scripts": {
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
-    "serve": "vitepress serve docs"
+    "test": "vitepress serve docs"
   },
   "devDependencies": {
     "markdown-it-ins": "^3.0.1",
