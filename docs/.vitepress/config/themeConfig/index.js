@@ -17,6 +17,7 @@ module.exports = {
         { text: 'Linux相关', link: '/front-end/linux/' },
         { text: 'Vue', link: '/front-end/vue/' },
         { text: 'AST', link: '/front-end/ast/' },
+        { text: 'CSS', link: '/front-end/css/' },
         { text: 'Git', link: '/front-end/git/' },
         { text: 'WebSocket', link: '/front-end/websocket/' },
         { text: 'WebContainer', link: '/front-end/web-container/' },
@@ -111,13 +112,20 @@ function getFrontEndSidebar() {
         { text: 'TS学习笔记', link: '/front-end/vue/typescript' },
         { text: 'Vite学习笔记', link: '/front-end/vue/vite' },
         { text: 'Nuxt学习笔记', link: '/front-end/vue/nuxt' },
-        { text: 'Sass学习笔记', link: '/front-end/vue/sass' },
       ]
     },
     {
       text: 'AST',
       children: [
         { text: 'AST详解', link: '/front-end/ast/' }
+      ]
+    },
+    {
+      text: 'CSS',
+      children: [
+        { text: 'PostCSS', link: '/front-end/css/' },
+        { text: 'TailWind', link: '/front-end/css/TailWind' },
+        { text: 'Sass', link: '/front-end/css/sass' },
       ]
     },
     {
