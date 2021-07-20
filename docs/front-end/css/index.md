@@ -180,8 +180,20 @@ Recap:
 `@extend extend_name;`
 - `@import` 引用外部 CSS 文件，特别是有助于使用局部
 
-## Roll Your Own Preprocessor
+## Shortcuts and Shorthand
 
+- 每天做一些小的编码任务看起来不像是单独的，但是它们加起来总共会花费大量的时间，所以缩短它们是值得的
+- 这个postcss-alias插件可以让你创建自己的速记属性
+- 这个postcss-crip插件有数以百计的预定义属性
+- 这个postcss-font-magician让你使用自定义字体，好像它们是默认字体，自动生成@font-face你的代码
+- 这个postcss-circle及postcss-triangle插件使得创建 CSS 圆形和三角形变得直观和直观
+- 这个postcss-all-link-colors插件可以让你一次输出所有链接状态的颜色
+- 这个postcss-center插件提供垂直和水平中心与top: center; and 及left: center;
+- 这个postcss-clearfix插件可以让你输出 clearfix 代码与clear: fix;
+- 这个postcss-position插件允许你添加你的top, right, bottom and 及left设置为您使用的一部分position属性
+- 这个postcss-size插件可以让你一次设置宽度和高度
+- 这个postcss-verthorz插件允许水平间距和垂直间距与单一规则输出
+- 这个postcss-color-short插件使你能够使用一个和两个数字六码，和其他颜色快捷方式
 
 
 
