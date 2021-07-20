@@ -23,8 +23,8 @@ jobs:
       - 
         name: Install and Build
         run: |
-          yarn
-          yarn build
+          yarn install
+          yarn run build
       - 
         name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
