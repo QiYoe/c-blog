@@ -1,8 +1,8 @@
-## c-blog  [![Build Status](https://www.travis-ci.com/QiYoe/c-blog.svg?branch=master)](https://www.travis-ci.com/QiYoe/c-blog)
+# c-blog  [![Build Status](https://www.travis-ci.com/QiYoe/c-blog.svg?branch=master)](https://www.travis-ci.com/QiYoe/c-blog)
 
 [在线地址](https://qiyoe.github.io/c-blog)
 
-## Development
+# Development
 
 ```bash
 # clone the project
