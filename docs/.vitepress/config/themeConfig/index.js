@@ -124,7 +124,7 @@ function getFrontEndSidebar() {
       text: 'CSS',
       children: [
         { text: 'PostCSS', link: '/front-end/css/' },
-        { text: 'TailWind', link: '/front-end/css/TailWind' },
+        { text: 'TailWind', link: '/front-end/css/tailwind' },
         { text: 'Sass', link: '/front-end/css/sass' },
       ]
     },
