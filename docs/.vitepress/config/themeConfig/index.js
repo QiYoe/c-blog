@@ -27,12 +27,13 @@ module.exports = {
       text: '书籍',
       ariaLabel: '书籍',
       items: [
-        {text: '你不知道的JavaScript', link: '/books/you-dont-know-js' },
-        {text: 'JavaScript深入系列', link: '/books/js-advice' },
-        {text: 'CSS揭秘', link: '/books/css-secrets' },
-        {text: '算法图解', link: '/books/grokking-algorithms' },
-        {text: 'Pro-Git', link: '/books/pro-git' },
-        {text: 'Docker-从入门到实践', link: '/books/docker-practice' },
+        { text: '你不知道的JavaScript', link: '/books/you-dont-know-js' },
+        { text: 'JavaScript深入系列', link: '/books/js-advice' },
+        { text: 'CSS揭秘', link: '/books/css-secrets' },
+        { text: '算法图解', link: '/books/grokking-algorithms' },
+        { text: 'Pro-Git', link: '/books/pro-git' },
+        { text: 'Docker-从入门到实践', link: '/books/docker-practice' },
+        { text: 'Everything Curl', link: '/books/everything-curl' },
       ]
     },
     {
@@ -154,7 +155,7 @@ function getFrontEndSidebar() {
 function getBooksSidebar() {
   return [
     {
-      text: '前端书籍',
+      text: '书籍',
       children: [
         { text: '你不知道的JavaScript', link: '/books/you-dont-know-js' },
         { text: 'JavaScript深入系列', link: '/books/js-advice' },
@@ -162,6 +163,7 @@ function getBooksSidebar() {
         { text: '算法图解', link: '/books/grokking-algorithms' },
         { text: 'Pro-Git', link: '/books/pro-git' },
         { text: 'Docker-从入门到实践', link: '/books/docker-practice' },
+        { text: 'Everything Curl', link: '/books/everything-curl' },
       ]
     }
   ]

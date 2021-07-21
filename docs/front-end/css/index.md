@@ -77,7 +77,7 @@ Autoprefixer plugin的成功导致了人们对 PostCSS 的普遍看法，即你�
 
 ## Instant Setup Options
 
-- 为了让你的 PostCSS 脚湿，尝试 CodePen 或 Prepros 的即时设置
+- 为了让你的 PostCSS 实时展示，尝试 CodePen 或 Prepros 的即时设置
 - 提供了10款你可以使用的插件/包
 - 在 CodePen 的 CSS 设置中激活 PostCSS，然后使用@规则来启用特定的插件
 - 提供了 Autoprefixer 插件和 cssnext 包
@@ -91,7 +91,7 @@ Autoprefixer plugin的成功导致了人们对 PostCSS 的普遍看法，即你�
 - 安装 gulp-postcss 插件
 - 设置 Gulpfile 来加载 gulp 和 gulp-postcss 插件
 - 创建一个 gulp 任务来编译 CSS
-- 在任务中，设置一个processors数组，通过管道你的源代码 CSS 通过postcss()函数，使用processors作为参数传递的数组
+- 在任务中，设置一个processors数组，pipe你的源代码 CSS 通过postcss()函数，使用processors作为参数传递的数组
 
 从这里，你可以按照相同的基本步骤在你的项目中启用任何 PostCSS 插件:
 - 在你的项目中安装插件

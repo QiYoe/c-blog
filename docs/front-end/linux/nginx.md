@@ -11,10 +11,6 @@ head:
 
 ## 为什么Nginx？
 
-[Nginx官网](http://nginx.org/en/)
-
-[Nginx文档官网](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-open-source/)
-
 官方版：Nginx时轻量级Web服务器，它不仅时一个高性能的HTTP和反向代理服务器，同时也是一个IMAP/POPS/SMTP代理服务器。
 
 通俗版：轻量、简单、流行
@@ -185,7 +181,7 @@ nginx
 
 ### 在Docker上运行NGINX
 
-```docker
+```bash
 # 启动运行在容器中的 NGINX 实例，使用缺省的 NGINX 配置，并执行以下命令
 docker run --name mynginx1 -p 80:80 -d nginx
 # mynginx1 是基于 NGINX 映像创建的容器的名称
@@ -201,9 +197,9 @@ docker ps
 
 - 在Doker主机上维护内容和配置文件
 
-在创建容器时，可以将 Docker 主机上的本地目录挂载到容器中的目录中。NGINX 映像使用默认的 NGINX 配置，它使用/usr/share/NGINX/html 作为容器的根目录，并将配置文件放入/etc/NGINX 中。对于Docker主机内容在本地目录/var/www 中、配置文件在/var/nginx/conf 中的 Docker 主机，运行以下命令：
+在创建容器时，可以将 Docker 主机上的本地目录挂载到容器中的目录中。NGINX 映像使用默认的 NGINX 配置，它使用/usr/share/nginx/html 作为容器的根目录，并将配置文件放入/etc/nginx 中。对于Docker主机内容在本地目录/var/www 中、配置文件在/var/nginx/conf 中的 Docker 主机，运行以下命令：
 
-```docker
+```bash
 docker run --name mynginx2 --mount type=bind,source=/var/www,target=/usr/share/nginx/html,readonly --mount source=/var/nginx/conf,target=/etc/nginx/conf,readonly -p 80:80 -d nginx
 ```
 
@@ -215,9 +211,9 @@ docker run --name mynginx2 --mount type=bind,source=/var/www,target=/usr/share/n
 
 复制文件的一个简单方法是创建一个 Dockerfile，其中包含在基于 NGINX 映像生成新的 Docker 映像期间运行的命令。对于 Dockerfile 中的 file-COPY (COPY)命令，本地目录路径相对于 Dockerfile 所在的构建上下文。
 
-假设内容目录是`content`，配置文件目录是 `conf`，这两个子目录都是 Dockerfile 所在的目录。NGINX 映像在`/etc/NGINX/conf.d` 目录中有缺省的 NGINX 配置文件，包括 `default.conf`。要只使用 Docker 主机上的配置文件，请使用 RUN 命令删除默认文件:
+假设内容目录是`content`，配置文件目录是 `conf`，这两个子目录都是 Dockerfile 所在的目录。NGINX 映像在`/etc/nginx/conf.d` 目录中有缺省的 NGINX 配置文件，包括 `default.conf`。要只使用 Docker 主机上的配置文件，请使用 RUN 命令删除默认文件:
 
-```docker
+```bash
 FROM nginx
 RUN rm /etc/nginx/conf.d/default.conf
 COPY content /usr/share/nginx/html
@@ -226,13 +222,13 @@ COPY conf /etc/nginx
 
 通过在 Dockerfile 所在的目录中运行命令创建 NGINX 映像。句号(".")在命令的末尾将工作目录文件定义为构建上下文，其中包含 Dockerfile 和要复制的目录:
 
-```docker
+```bash
 docker build -t mynginx_image1 .
 ```
 
 基于 mynginx image1映像创建一个容器 mynginx3:
 
-```docker
+```bash
 docker run --name mynginx3 -p 80:80 -d mynginx_image1
 ```
 
@@ -240,7 +236,7 @@ docker run --name mynginx3 -p 80:80 -d mynginx_image1
 
 由于 SSH 不能用于访问 NGINX 容器，因此要直接编辑内容或配置文件，您需要创建一个具有 shell 访问权限的辅助容器。要让 helper 容器能够访问这些文件，创建一个新的映像，其中包含为映像定义的适当的 Docker 数据卷:
 
-```docker
+```bash
 # 复制 nginx 内容和配置文件，用 Dockerfile 定义映像的音量:
 FROM nginx
 COPY content /usr/share/nginx/html
@@ -276,13 +272,13 @@ docker attach mynginx4_files
 
 默认情况下，NGINX 映像配置为向 Docker 日志收集器发送 NGINX 访问日志和错误日志。这是通过将它们链接到 stdout 和 stderr 来实现的: 然后将来自这两个日志的所有消息写入文件/var/lib/docker/containers/container-ID/container-ID-json。登录 Docker 主机。Container-ID 是创建容器时返回的长形式 ID。要显示长表单 ID，请运行以下命令:
 
-```docker
+```bash
 docker inspect --format '{{ .Id }}' container-name
 ```
 
 可以使用 Docker 命令行和 Docker 引擎 API 提取日志消息:
 
-```docker
+```bash
 # 要从命令行提取日志消息，请运行以下命令:
 docker logs container-name
 
@@ -295,7 +291,7 @@ curl --unix-sock /var/run/docker-sock http://localhost/containers/container-name
 
 如果希望为某些配置块(如服务器{}和位置{})以不同的方式配置日志记录，请为容器中存储日志文件的目录定义 Docker 卷，创建一个帮助容器来访问日志文件，并使用任何日志记录工具。要实现这一点，请创建一个新映像，其中包含日志文件的卷或卷。
 
-```docker
+```bash
 # 例如，为了配置 NGINX 将日志文件存储在/var/log/NGINX/log 中，在 Dockerfile 中添加该目录的 VOLUME 定义(前提是内容和配置文件在容器中进行管理) :
 FROM nginx
 COPY content /usr/share/nginx/html
@@ -308,7 +304,7 @@ VOLUME /var/log/nginx/log
 
 由于不能直接访问 NGINX 容器的命令行，因此不能直接将 NGINX 命令发送到容器。相反，信号可以通过 Docker kill 命令发送到容器
 
-```docker
+```bash
 # 要重新加载 NGINX 配置，请向 Docker 发送 HUP 信号:
 docker kill -s HUP container-name
 
@@ -324,7 +320,7 @@ NGINX 有一个主进程和一个或多个辅助进程。如果启用了缓存�
 
 主进程的主要目的是读取和评估配置文件，以及维护辅助进程。
 
-辅助进程执行请求的实际处理。NGINX 依靠依赖于操作系统的机制在工作进程之间有效地分配请求。辅助进程的数量由 nginx.conf 配置文件中的 worker _ processes 指令定义，可以设置为固定数量，也可以配置为自动调整可用 CPU 内核的数量。
+辅助进程执行请求的实际处理。NGINX 依靠依赖于操作系统的机制在工作进程之间有效地分配请求。辅助进程的数量由 nginx.conf 配置文件中的 worker_processes 指令定义，可以设置为固定数量，也可以配置为自动调整可用 CPU 内核的数量。
 
 ### 控制 NGINX 命令
 
@@ -334,7 +330,7 @@ NGINX 有一个主进程和一个或多个辅助进程。如果启用了缓存�
 nginx -s <SIGNAL>
 ```
 
-其中 < signal > 可以是以下任何一个:
+其中 `<signal>` 可以是以下任何一个:
 
 - quit – 优雅关闭
 - reload – 重新加载配置文件
@@ -345,7 +341,7 @@ Kill 实用程序也可用于直接向主进程发送信号。默认情况下，
 
 ### 创建 NGINX 配置文件
 
-默认情况下，配置文件名为 NGINX.conf。它通常是/usr/local/nginx/conf、/etc/nginx 或/usr/local/etc/nginx 之一
+默认情况下，配置文件名为 nginx.conf。它通常是/usr/local/nginx/conf、/etc/nginx 或/usr/local/etc/nginx 之一
 
 - Directives
 
@@ -1176,3 +1172,7 @@ server {
 ```
 
 [可视化配置 nginx 提供了多个基础模板](https://github.com/digitalocean/nginxconfig.io)
+
+:::warning 提示
+上述内容过程在[**<u>Nginx文档官网</u>**](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-open-source/)可查看。更多内容请看[**<u>Nginx官网</u>**](http://nginx.org/en/)
+:::
