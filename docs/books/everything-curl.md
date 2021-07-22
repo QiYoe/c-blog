@@ -9,5 +9,12 @@ head:
       content: Everything Curl
 ---
 
-[Everything Curl](https://everything.curl.dev/)
+:::tip 提示
+以下内容源于[**<u>Everything Curl</u>**](https://everything.curl.dev/)官方文档
+:::
 
+## The cURl project
+
+### The name
+
+cURl: client + url(url客户端)
