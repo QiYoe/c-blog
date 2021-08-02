@@ -28,9 +28,9 @@ head:
 $ curl https://www.baidu.com
 ```
 
-上面命令向www.baidu.com发出 GET 请求，服务器返回的内容会在命令行输出。
+上面命令向`www.baidu.com`发出 GET 请求，服务器返回的内容会在命令行输出。
 
-## -A(--user-agent)
+## -A(--user-agent `<name>`)
 
 > 要发送到服务器的 User-Agent
 
@@ -126,6 +126,10 @@ curl -c cookies.txt https://www.google.com
 
 > 创建必要的本地目录层次结构
 
+### --create-file-mode `<mode>`
+
+> 创建文件的文件模式(八进制)
+
 ### --crlf
 
 > 在上传时将 LF 转写为 CRLF
@@ -133,6 +137,10 @@ curl -c cookies.txt https://www.google.com
 ### --crlfile FILE
 
 > 从指定的文件获得PEM格式CRL列表
+
+### --curves `<algorithm list>`
+
+> (EC) TLS密钥交换算法请求
 
 ## -D(--dump-header FILE)
 
@@ -145,6 +153,18 @@ curl -c cookies.txt https://www.google.com
 ### --engine ENGINGE
 
 > 加密引擎 (SSL). "--engine list" 指定列表
+
+### --etag-compare `<file>`
+
+> 从文件中传递一个ETag作为自定义头
+
+### --etag-save `<file>`
+
+> 从请求中解析ETag并将其保存到一个文件中
+
+### --expect100-timeout `<seconds>`
+
+> 100-continue要等多久
 
 ## -d(--data DATA)
 
@@ -192,17 +212,13 @@ curl --data-urlencode 'comment=hello world' https://google.com/login
 
 > GSS-API 委托权限
 
-### --digest`
+### --digest
 
 > 使用数字身份验证
 
-### --disable-eprt
+### --data-raw `<data>`
 
-> 禁止使用 EPRT 或 LPRT
-
-### --disable-epsv
-
-> 禁止使用 EPSV
+> HTTP POST数据，`@`允许
 
 ## -E(--cert CERT[:PASSWD])
 
@@ -212,6 +228,10 @@ curl --data-urlencode 'comment=hello world' https://google.com/login
 
 > 证书文件类型 (DER/PEM/ENG)
 
+### --cert-status
+
+> 通过OCSP-staple验证服务器证书状态
+
 ### --ciphers LIST
 
 > SSL 秘钥
@@ -219,6 +239,10 @@ curl --data-urlencode 'comment=hello world' https://google.com/login
 ### --compressed
 
 > 请求压缩 (使用 deflate 或 gzip)
+
+### --compressed-ssh
+
+> 开启SSH压缩
 
 ## -e(--referer)
 
@@ -294,6 +318,18 @@ curl -F 'file=@photo.png;filename=me.png' https://google.com/profile
 
 > 连接失败时不显示HTTP错误信息
 
+### --fail-early
+
+> 第一次传输错误失败，不要继续
+
+### --fail-with-body
+
+> HTTP错误失败，但保存正文
+
+### --false-start
+
+> 启用TLS False启动
+
 ## -G(--get)
 
 > 使用 HTTP GET 方法发送 -d 数据
@@ -315,6 +351,14 @@ curl -G --data-urlencode 'comment=hello world' https://www.example.com
 ## -g(--globoff)
 
 > 禁用的 URL 队列 及范围使用 {} 和 []
+
+### --happy-eyeballs-timeout-ms `<milliseconds>`
+
+> 在尝试IPv4之前，考虑IPv6的时间
+
+### --haproxy-protocol
+
+> 发送HAProxy代理协议v1报头
 
 ## -H(--header LINE)
 
@@ -343,6 +387,18 @@ curl -d '{"login": "emma", "pass": "123"}' -H 'Content-Type: application/json' h
 ## -h(--help)
 
 > 显示帮助
+
+### --hostpubmd5 `<md5>`
+
+> 主机公钥可接受的MD5哈希值
+
+### --hsts `<file name>`
+
+> 使用此缓存文件启用HSTS
+
+### --http0.9
+
+> 允许HTTP 0.9响应
 
 ## -I(--head)
 
@@ -414,6 +470,10 @@ curl -i https://www.example.com
 
 > 连接超时设置
 
+### --connect-to `<HOST1:PORT1:HOST2:PORT2>`
+
+> 连接到主机
+
 ## -k(--insecure)
 
 > 允许连接到 SSL 站点，而不使用证书
@@ -444,6 +504,26 @@ curl -L -d 'tweet=hi' https://api.twitter.com/tweet
 
 > 类似 --location 并发送验证信息到其它主机
 
+### --login-options `<options>`
+
+> 服务器登录选项
+
+### --mail-auth `<address>`
+
+> 原始电子邮件的发起人地址
+
+### --mail-from `<address>`
+
+> 来自这个地址的邮件
+
+### --mail-rcpt `<address>`
+
+> 寄到这个地址
+
+### --mail-rcpt-allowfails
+
+> 对于某些收件人，允许RCPT TO命令失败
+
 ## -l(--list-only)
 
 > 只列出FTP目录的名称
@@ -463,18 +543,6 @@ curl --limit-rate 200k https://google.com
 ## -M(--manual)
 
 > 显示全手动
-
-### --mail-from FROM
-
-> 从这个地址发送邮件
-
-### --mail-rcpt TO
-
-> 发送邮件到这个接收人(s)
-
-### --mail-auth AUTH
-
-> 原始电子邮件的起始地址
 
 ### --max-filesize BYTES
 
@@ -496,37 +564,53 @@ curl --limit-rate 200k https://google.com
 
 > 使用 HTTP Negotiate 认证
 
-## -N(--netrc)
+## -N(--no-buffer)
 
-> 必须从 .netrc 文件读取用户名和密码
-
-### --netrc-optional
-
-> 使用 .netrc 或 URL; 将重写 -n 参数
-
-### --netrc-file FILE
-
-> 设置要使用的 netrc 文件名
-
-## -n(--no-buffer)
-
-> 禁用输出流的缓存
+> 禁用输出流的缓冲
 
 ### --no-keepalive
 
-> 禁用 connection 的 keepalive
+> 禁用TCP保持连接
+
+### --no-npn
+
+> 禁用NPN TLS扩展
+
+### --no-progress-meter
+
+> 不显示进度表
 
 ### --no-sessionid
 
-> 禁止重复使用 SSL session-ID (SSL)
+> 禁用SSL会话id重用
 
-### --noproxy
+### --noproxy `<no-proxy-list>`
 
 > 不使用代理的主机列表
 
 ### --ntlm
 
-> 使用 HTTP NTLM 认证
+> 使用HTTP NTLM认证
+
+### --ntlm-wb
+
+> 使用winbind的HTTP NTLM认证
+
+### --oauth2-bearer `<token>`
+
+> OAuth 2承载令牌
+
+## -n(--netrc)
+
+> 必须读取.netrc文件作为用户名和密码
+
+### --netrc-file `<filename>`
+
+> 为netrc指定FILE
+
+### --netrc-optional
+
+> 使用.netrc文件或URL
 
 ## -O(--remote-name)
 
@@ -556,23 +640,11 @@ curl -o example.html https://www.example.com
 
 上面命令将www.example.com保存成example.html。
 
-### --pass PASS
+### --output-dir `<dir>`
 
-> 传递给私钥的短语 (SSL/SSH)
+> 保存文件的目录
 
-### --post301
-
-> 在 301 重定向后不要切换为 GET 请求
-
-### --post302
-
-> 在 302 重定向后不要切换为 GET 请求
-
-### --post303
-
-> 在 303 重定向后不要切换为 GET 请求
-
-## -P(--ftp-port ADR)
+## -P(--ftp-port `<address>`)
 
 > 使用指定 PORT 及地址替换 PASV
 
@@ -612,9 +684,49 @@ curl -o example.html https://www.example.com
 
 > 读取随机数据的文件 (SSL)
 
-## -q(--data)
+## -q(--disable)
 
-> .curlrc 如果作为第一个参数无效
+> 禁用.curlr
+
+### --disable-eprt
+
+> 禁止使用EPRT或LPRT
+
+### --disable-epsv
+
+> 禁止使用EPSV
+
+### --disallow-username-in-url
+
+> 在url中禁止用户名
+
+### --dns-interface `<interface>`
+
+> 用于DNS请求的接口
+
+### --dns-ipv4-addr `<address>`
+
+> 用于DNS请求的IPv4地址
+
+### --dns-ipv6-addr `<address>`
+
+> 用于DNS请求的IPv6地址
+
+### --dns-servers `<addresses>`
+
+> DNS服务器addrs使用
+
+### --doh-cert-status
+
+> 通过OCSP-staple验证DoH服务器证书的状态
+
+### --doh-insecure
+
+> 允许不安全的DoH服务器连接
+
+### --doh-url `<URL>`
+
+> 通过DoH解析主机名
 
 ## -R(--remote-time)
 
@@ -670,6 +782,10 @@ curl -s -o /dev/null https://google.com
 
 > 在指定的 host + port 上使用 SOCKS5 代理
 
+### --socks5-basic
+
+> 启用SOCKS5代理的用户名/密码认证
+
 ### --socks5-hostname HOST[:PORT]
 
 > SOCKS5 代理，指定用户名、密码
@@ -677,6 +793,10 @@ curl -s -o /dev/null https://google.com
 ### --socks5-gssapi-service NAME
 
 > SOCKS5 代理，指定用户名、密码
+
+### --socks5-gssapi
+
+> 为SOCKS5代理启用GSS-API认证
 
 ### --socks5-gssapi-nec
 
@@ -697,6 +817,10 @@ curl -s -o /dev/null https://google.com
 ### --tftp-blksize VALUE
 
 > 设备 TFTP BLKSIZE 选项 (必须 >512)
+
+### --tftp-no-options
+
+> 不发送任何TFTP选项
 
 ## -U(--proxy-user USER[:PASSWORD])
 
@@ -731,22 +855,6 @@ curl -u 'bob' https://google.com/login
 ```
 
 上面命令只设置了用户名，执行后，curl 会提示用户输入密码。
-
-### --tlsuser USER
-
-> TLS 用户名
-
-### --tlspassword STRING
-
-> TLS 密码
-
-### --tlsauthtype STRING
-
-> TLS 认证类型 (默认 SRP)
-
-### --unix-socket FILE
-
-> 通过这个 UNIX socket 域连接
 
 ## -V(--version)
 
@@ -788,6 +896,10 @@ curl -X POST https://www.example.com
 
 上面命令对https://www.example.com发出 POST 请求。
 
+### --request-target `<path>`
+
+> 指定此请求的目标
+
 ### --resolve HOST:PORT:ADDRESS
 
 > 将 HOST:PORT 强制解析到 ADDRESS
@@ -796,6 +908,14 @@ curl -X POST https://www.example.com
 
 > 出现问题时的重试次数
 
+### --retry-all-errors
+
+> 重试所有错误(与——Retry一起使用)
+
+### --retry-connrefused
+
+> 连接被拒绝时重试(与--Retry一起使用)
+
 ### --retry-delay SECONDS
 
 > 重试时的延时时长
@@ -803,6 +923,18 @@ curl -X POST https://www.example.com
 ### --retry-max-time SECONDS
 
 > 仅在指定时间段内重试
+
+### --sasl-authzid `<identity>`
+
+> SASL PLAIN身份验证的标识
+
+### --sasl-ir
+
+> 启用SASL认证的初始响应
+
+### --service-name `<name>`
+
+> SPNEGO服务名称
 
 ## -x(--proxy [PROTOCOL://]HOST[:PORT])
 
@@ -832,9 +964,49 @@ curl -x james:cats@myproxy.com:8080 https://www.example.com
 
 > 在代理上使用 Basic 认证 
 
+### --proxy-cacert `<file>`
+
+> 用于验证代理的对等体的CA证书
+
+### --proxy-capath `<dir>`
+
+> 为代理验证对等的CA目录
+
+### --proxy-cert `<cert[:passwd]>`
+
+> 设置代理客户端证书
+
+### --proxy-cert-type `<type>`
+
+> HTTPS代理的客户端证书类型
+
+### --proxy-ciphers `<list>`
+
+> 用于代理的SSL密码
+
+### --proxy-crlfile `<file>`
+
+> 设置代理的CRL列表
+
 ### --proxy-digest
 
 > 在代理上使用 Digest 认证
+
+### --proxy-header `<header/@file>`
+
+> 将自定义头传递给代理
+
+### --proxy-insecure
+
+> HTTPS代理连接不验证代理
+
+### --proxy-key `<key>`
+
+> HTTPS代理的私钥
+
+### --proxy-key-type `<type>`
+
+> 代理的私钥文件类型
 
 ### --proxy-negotiate
 
@@ -843,6 +1015,46 @@ curl -x james:cats@myproxy.com:8080 https://www.example.com
 ### --proxy-ntlm
 
 > 在代理上使用 NTLM 认证
+
+### --proxy-pass `<phrase>`
+
+> HTTPS代理私钥的Pass短语
+
+### --proxy-pinnedpubkey `<hashes>`
+
+> 用于验证代理的文件/哈希公钥
+
+### --proxy-service-name `<name>`
+
+> SPNEGO代理服务名称
+
+### --proxy-ssl-allow-beast
+
+> 允许HTTPS代理的互操作存在安全缺陷
+
+### --proxy-ssl-auto-client-cert
+
+> 为代理(通道)使用自动客户端证书
+
+### --proxy-tls13-ciphers `<ciphersuite list>`
+
+> TLS 1.3代理加密套件
+
+### --proxy-tlsauthtype `<type>`
+
+> HTTPS代理的TLS认证类型
+
+### --proxy-tlspassword `<string>`
+
+> HTTPS代理的TLS密码
+
+### --proxy-tlsuser `<name>`
+
+> HTTPS代理的TLS用户名
+
+### --proxy-tlsv1
+
+> HTTPS代理使用TLSv1协议
 
 ## -Y(--speed-limit RATE)
 
@@ -856,13 +1068,89 @@ curl -x james:cats@myproxy.com:8080 https://www.example.com
 
 > 尝试 SSL/TLS (FTP, IMAP, POP3, SMTP)
 
+### --ssl-allow-beast
+
+> 允许安全漏洞提高互操作性
+
+### --ssl-auto-client-cert
+
+> 使用自动客户端证书(通道)
+
+### --ssl-no-revoke
+
+> 禁用证书撤销检查(通道)
+
+### --ssl-revoke-best-effort
+
+> 忽略丢失/脱机证书CRL dist点
+
 ### --ssl-reqd
 
 > 需要 SSL/TLS (FTP, IMAP, POP3, SMTP)
 
+## -Z(--parallel)
+
+> 并行执行传输
+
+### --parallel-immediate
+
+> 不等待多路复用(使用 --parallel)
+
+### --parallel-max `<num>`
+
+> 并行传输的最大并发性
+
+### --pass `<phrase>`
+
+> 私钥的口令
+
+### --path-as-is
+
+> 不要挤压 .. URL路径中的序列
+
+### --pinnedpubkey `<hashes>`
+
+> 用于验证对等体的FILE/HASHS公钥
+
+### --post301
+
+> 在301后不会转为GET请求
+
+### --post302
+
+> 在302后不会转为GET请求
+
+### --post303
+
+> 在303后不会转为GET请求
+
+### --preproxy [protocol://]host[:port]
+
+> 首先使用这个代理
+
 ## -z(--time-cond TIME)
 
 > 基于时间条件的传输
+
+### --tls-max `<VERSION>`
+
+> 设置允许使用的最大TLS版本
+
+### --tls13-ciphers `<ciphersuite list>`
+
+> 使用TLS 1.3加密套件
+
+### --tlsauthtype `<type>`
+
+> TLS验证类型
+
+### --tlspassword `<string>`
+
+> TLS密码
+
+### --tlsuser `<name>`
+
+> TLS用户名
 
 ## -#(--progress-bar)
 
@@ -871,6 +1159,10 @@ curl -x james:cats@myproxy.com:8080 https://www.example.com
 ### --proto PROTOCOLS
 
 > 启用/禁用 指定的协议
+
+### --proto-default `<protocol>`
+
+> 对任何缺少方案的URL使用协议
 
 ### --proto-redir PROTOCOLS
 
@@ -908,6 +1200,10 @@ curl -x james:cats@myproxy.com:8080 https://www.example.com
 
 > 请求压缩传输编码
 
+### --unix-socket `<path>`
+
+> 通过这个Unix域套接字连接
+
 ## -2(--sslv2)
 
 > 使用 SSLv2 (SSL)
@@ -916,14 +1212,30 @@ curl -x james:cats@myproxy.com:8080 https://www.example.com
 
 > 使用 SSLv3 (SSL)
 
-### --ssl-allow-beast
-
-> 允许的安全漏洞，提高互操作性(SSL)
-
 ### --stderr FILE
 
 > 重定向 stderr 的文件位置. - means stdout
 
+### --styled-output
+
+> 为HTTP头启用样式输出
+
+### --suppress-connect-headers
+
+> 抑制代理CONNECT响应头
+
+### --tcp-fastopen
+
+> 使用TCP快速打开
+
 ### --tcp-nodelay
 
 > 使用 TCP_NODELAY 选项
+
+## -4(--ipv4)
+
+> 将名称解析为IPv4地址
+
+## -6(--ipv6)
+
+> 将名称解析为IPv6地址
