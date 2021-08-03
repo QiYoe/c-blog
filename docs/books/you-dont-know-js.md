@@ -148,7 +148,7 @@ baz(); // <-- baz 的调用位置
 
 ### 对象
 
-6中基本类型：string、number、boolean、null、undefined、object
+8中基本类型：string、number、boolean、null、undefined、object、`symbol(es6)`、`bigInt(es10)`
 
 语言bug：typeof null === 'object'`在JS中二进制的前三位为0判为object，而null全是0，所以会返回'object'`
 
@@ -262,9 +262,9 @@ for..of 循环首先会向被访问对象请求一个迭代器对象，然后通
 2. 如果在 [[Prototype]] 链上层存在 foo，但是它被标记为只读（writable:false），那么无法修改已有属性或者在 myObject 上创建屏蔽属性。如果运行在严格模式下，代码会抛出一个错误。否则，这条赋值语句会被忽略。总之，不会发生屏蔽。
 3. 如果在 [[Prototype]] 链上层存在 foo 并且它是一个 setter，那就一定会调用这个 setter。foo 不会被添加到（或者说屏蔽于）myObject，也不会重新定义 foo 这个 setter。
 
-> - **__proto__：读作“dunder proto”,就是[[Prototype]], 由一个对象指向一个对象`即指向他们的原型对象`——终点：null**
-> - **prototype：函数独有，由一个函数指向一个对象，是函数的原型对象，即函数所创建的实例的原型对象——终点：Object.prototype**
-> - **constructor：一个对象指向一个函数，即指向该对象的构造函数——终点：Function()**
+> - **`__proto__`：读作“dunder proto”,就是[[Prototype]], 由一个对象指向一个对象`即指向他们的原型对象`——终点：null**
+> - **`prototype`：函数独有，由一个函数指向一个对象，是函数的原型对象，即函数所创建的实例的原型对象——终点：Object.prototype**
+> - **`constructor`：一个对象指向一个函数，即指向该对象的构造函数——终点：Function()**
 
 ```js
 var anotherObject = {
@@ -272,7 +272,7 @@ var anotherObject = {
 };
 var myObject = Object.create( anotherObject );
 anotherObject.a; // 2
-myObject.a; // 2146 ｜ 第 5 章
+myObject.a; // 2
 anotherObject.hasOwnProperty( "a" ); // true
 myObject.hasOwnProperty( "a" ); // false
 myObject.a++; // 隐式屏蔽！
@@ -300,12 +300,14 @@ a1.constructor === Foo; // false!
 a1.constructor === Object; // true!
 ```
 
-> 函数不是构造函数，但是当且仅当使用 new 时，函数调用会变成“构造函数调用”
+> 函数不是构造函数，但是当且仅当使用 new 时，函数调用会变成“构造函数调用”;
+>
 > 实例的.constructor引用被委托给了Foo.prototype，而Foo.prototype.constructor默认指向Foo（Foo声明时的默认属性）
 
 **a.constructor === Foo 为真意味着 a 确实有一个指向 Foo 的 .constructor 属性，但是事实不是这样。`实际上，.constructor 引用同样被委托给了 Foo.prototype，而Foo.prototype.constructor 默认指向 Foo`。举例来说，Foo.prototype 的 .constructor 属性只是 Foo 函数在声明时的默认属性。如果你创建了一个新对象并替换了函数默认的 .prototype 对象引用，那么新对象并不会自动获得 .constructor 属性。constructor 并不表示被构造**
 
 > a instanceof Foo：在 a 的整条 [[Prototype]] 链中是否有指向 Foo.prototype 的对象？（只能处理对象和函数关系）**使用isPrototypeOf和getPrototypeOf代替**
+> 
 > Foo.prototype.isPrototypeOf( a )：在 a 的整条 [[Prototype]] 链中是否出现过 Foo.prototype
 
 ### 行为委托
@@ -344,7 +346,7 @@ Bar.speak = function() {
 };
 var b1 = Object.create( Bar );
 b1.init( "b1" );
-var b2 = Object.create( Bar );行为委托 ｜ 171
+var b2 = Object.create( Bar );
 b2.init( "b2" );
 b1.speak();
 b2.speak();
@@ -662,7 +664,7 @@ typeof a; // "object"
 typeof b; // "string"
 ```
 
-**`Symnol`可以用作属性名，但无论是在代码还是开发控制台中都无法查看和访问它的值，符号可以用作属性名，但无论是在代码还是开发控制台中都无法查看和访问它的值**
+**`Symbol`可以用作属性名，但无论是在代码还是开发控制台中都无法查看和访问它的值**
 
 ```js
 // Function.prototype 是一个函数，RegExp.prototype 是一个正则表达式，而 Array.prototype 是一个数组。
@@ -677,7 +679,7 @@ function isThisCool(vals = Array.prototype, fn = Function.prototype, rx = RegExp
     vals.map( fn ).join( "" )
   ); 
 }
-isThisCool(); // true原生函数 ｜ 45
+isThisCool(); // true
 isThisCool(
   ["a","b","c"],
   function(v){ return v.toUpperCase(); },
@@ -695,8 +697,7 @@ ToString:
 **JSON.stringify(..) 在将 JSON 对象序列化为字符串时也用到了 ToString**
 
 :::warning 提醒
-对大多数简单值来说，JSON 字符串化和 toString() 的效果基本相同，只不过序列化的结
-果总是字符串：
+对大多数简单值来说，JSON 字符串化和 toString() 的效果基本相同，只不过序列化的结果总是字符串：
 
 ```js
 JSON.stringify( 42 ); // "42"
@@ -779,7 +780,7 @@ JSON.stringify( a, function(k,v){
 **如果 replacer 是函数，它的参数 k 在第一次调用时为 undefined（就是对对象本身调用的那次）。if 语句将属性 "c" 排除掉。由于字符串化是递归的，因此数组 [1,2,3] 中的每个元素都会通过参数 v 传递给 replacer，即 1、2 和 3，参数 k 是它们的索引值，即 0、1 和 2。**
 :::
 
-JSON.string 还有一个可选参数 space，用来指定输出的缩进格式。space 为正整数时是指定每一级缩进的字符数，它还可以是字符串，此时最前面的十个字符被用于每一级的缩进
+JSON.stringify 还有一个可选参数 space，用来指定输出的缩进格式。space 为正整数时是指定每一级缩进的字符数，它还可以是字符串，此时最前面的十个字符被用于每一级的缩进
 
 ---
 
@@ -789,7 +790,7 @@ true 转换为 1，false 转换为 0。undefined 转换为 NaN，null 转换为 
 
 对象（包括数组）会首先被转换为相应的基本类型值，如果返回的是非数字的基本类型值，则再遵循以上规则将其强制转换为数字。
 
-为了将值转换为相应的基本类型值，抽象操作 ToPrimitive 会首先（通过内部操作 DefaultValue 节）检查该值是否有 valueOf() 方法。如果有并且返回基本类型值，就使用该值进行强制类型转换。如果没有就使用 toString()的返回值（如果存在）来进行强制类型转换。如果 valueOf() 和 toString() 均不返回基本类型值，会产生 TypeError 错误(返回 NaN)。
+为了将值转换为相应的基本类型值，抽象操作 ToPrimitive 会首先（通过内部操作 [[DefaultValue]] ）检查该值是否有 valueOf() 方法。如果有并且返回基本类型值，就使用该值进行强制类型转换。如果没有就使用 toString()的返回值（如果存在）来进行强制类型转换。如果 valueOf() 和 toString() 均不返回基本类型值，会产生 TypeError 错误(返回 NaN)。
 
 ```js
 var a = {
