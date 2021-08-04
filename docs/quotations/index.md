@@ -23,7 +23,7 @@ head:
 
 <cite>[-- PanJiaChen](https://panjiachen.github.io/awesome-bookmarks/blog/other.html#%E5%8A%AA%E5%8A%9B%E6%98%AF%E6%B2%A1%E6%9C%89%E7%94%A8%E7%9A%84)</cite>
 
-## 顺序大脑
+## 顺序的大脑
 
 我非常确定大多数人都听到过别人自称“能一心多用”。人们试图让自己成为多任务执行者的努力有各种方式，包括从搞笑（比如小孩玩的拍脑袋然后揉肚子这样声东击西的游戏招数）到日常生活（边走路边嚼口香糖），再到十分危险的行为（边开车边发短信）。
 

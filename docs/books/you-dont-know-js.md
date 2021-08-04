@@ -827,8 +827,7 @@ ToBoolean:
   - ""
 - 真值：假值之外都是真值
 
-字符串和数字之间的转换是通过 String(..) 和 Number(..) 这两个内建函数（原生构造函
-数，参见第 3 章）来实现的，请注意它们前面没有 new 关键字，并不创建封装对象。
+字符串和数字之间的转换是通过 String(..) 和 Number(..) 这两个内建函数（[原生构造函数](#原生函数（内置函数）)）来实现的，请注意它们前面没有 new 关键字，并不创建封装对象。
 ```js
 var a = 42;
 var b = String( a );
@@ -1010,8 +1009,8 @@ a == b; // true
 Object().valueOf()  // {}
 Object().toString() // "[object Object]"
 
-[] == {}            // false
-{} == []            // SynyaxError
+[] == {}            // false  "" == "[object Object]"
+{} == []            // SynyaxError  独立空代码块 == ""
 [] + {};            // "[object Object]"  "[object Object]" + ""
 {} + [];            // 0  独立空代码块 + '' -> 独立空代码块 + 0
 
@@ -1026,37 +1025,38 @@ var e = undefined;
 var f = Object( e ); // 和Object()一样
 e == f; // false
 var g = NaN; 
-var h = Object( g ); // 和new Number( e )一样
+var h = Object( g ); // new Number(NaN) -> NaN
 g == h; // false
 // 因为没有对应的封装对象，所以 null 和 undefined 不能够被封装（boxed），Object(null)和 Object() 均返回一个常规对象。NaN 能够被封装为数字封装对象，但拆封之后 NaN == NaN 返回 false，因为 NaN 不等于 NaN
 
 "0" == null; // false
 "0" == undefined; // false
-"0" == false; // true -- 晕！
+"0" == false; // true
 "0" == NaN; // false
 "0" == 0; // true
-"0" == ""; // false
+"0" == ""; // false  当类型相同时停止隐式转换
+0 == ""; // true
 false == null; // false
 false == undefined; // false
 false == NaN; // false
-false == 0; // true -- 晕！
-false == ""; // true -- 晕！
+false == 0; // true
+false == ""; // true
 false == []; // true -- 晕！
 false == {}; // false
 "" == null; // false
 "" == undefined; // false
 "" == NaN; // false
-"" == 0; // true -- 晕！
-"" == []; // true -- 晕！
+"" == 0; // true
+"" == []; // true
 "" == {}; // false
 0 == null; // false
 0 == undefined; // false
 0 == NaN; // false
-0 == []; // true -- 晕！
+0 == []; // true
 0 == {}; // false
 [] == ![] // true
-"" == [null]; // true
-0 == "\n"; // true  ""、"\n"（或者 " " 等其他空格组合）等空字符串被 ToNumber 强制类型转换为 0。
+"" == [null]; // true  [null].toString() -> ""
+0 == "\n"; // true -- 晕！ ""、"\n"（或者 " " 等其他空格组合）等空字符串被 ToNumber 强制类型转换为 0。
 ```
 :::
 
@@ -1087,7 +1087,7 @@ false == {}; // false
 >> a <= b; // true !(a > b)
 >> a >= b; // true !(a < b)
 >> // a 和 b 并没有被转换为数字，因为 ToPrimitive 返回的是字符串，所以这里比较的是 "42" 和 "043" 两个字符串，它们分别以 "4" 和 "0" 开头。因为 "0" 在字母顺序上小于 "4"，所以最后结果为 false。
->> // 实际上 JavaScript 中 <= 是“不大于”的意思（即 !(a > b)，处理为 !(b < a)）。同理 a >= b 处理为 b <= a。
+>> // 实际上 JavaScript 中 <= 是“不大于”的意思（即 !(a > b)）。同理 a >= b 处理为 !(a < b>)。
 >> var a = [ 42 ];
 >> var b = "043";
 >> a < b; // false -- 字符串比较！ "42" < "042"
@@ -1129,12 +1129,12 @@ var a = b = 42  // 创建全局变量b
 
 function vowels(str) {
   var matches;
-    if (str) {
-      // 提取所有元音字母
-      matches = str.match( /[aeiou]/g );
-      if (matches) {
-        return matches;
-      } 
+  if (str) {
+    // 提取所有元音字母
+    matches = str.match( /[aeiou]/g );
+    if (matches) {
+      return matches;
+    } 
   }
 }
 vowels( "Hello World" ); // ["e","o","o"]
@@ -1143,7 +1143,7 @@ function vowels(str) {
   var matches;
   // 提取所有元音字母
   if (str && (matches = str.match( /[aeiou]/g ))) {
-    return matches;语法 ｜ 99
+    return matches;
   }
 }
 vowels( "Hello World" ); // ["e","o","o"]
@@ -1175,7 +1175,7 @@ foo: for (var i=0; i<4; i++) {
 // 3 2
 ```
 
-带标签的循环跳转一个更大的用处在于，和 break __ 一起使用可以实现从内层循环跳转到外层循环。没有它们的话实现起来有时会非常麻烦：
+带标签的循环跳转一个更大的用处在于，和 break 一起使用可以实现从内层循环跳转到外层循环。没有它们的话实现起来有时会非常麻烦：
 
 ```js
 // 标签为foo的循环
@@ -1198,7 +1198,7 @@ foo: for (var i=0; i<4; i++) {
 // 停止！ 1 3
 ```
 
-标签也能用于非循环代码块，但只有 break 才可以。我们可以对带标签的代码块使用break ___，但是不能对带标签的非循环代码块使用 continue ___，也不能对不带标签的代码块使用 break：
+标签也能用于非循环代码块，但只有 break 才可以。我们可以对带标签的代码块使用 break ，但是不能对带标签的非循环代码块使用 continue ，也不能对不带标签的代码块使用 break：
 
 ```js
 // 标签为bar的代码块
@@ -1216,7 +1216,7 @@ foo();
 ```
 
 :::warning 提醒
-标签不允许使用双引号，如控制台中输入 {"a":42} 会报错
+标签不允许使用双引号，如控制台中输入 {"a":42} 会报错`因为带上双引号的话就是对象键值对了`
 
 JSON 的确是 JavaScript 语法的一个子集，但是 JSON 本身并不是合法的 JavaScript 语法。
 
@@ -1232,7 +1232,7 @@ true || false && false; // true
 (true || false) && false; // false
 true || (false && false); // true
 
-// &&、|| > ?: > =
+// && > || > ?: > =
 a ? b : c ? d : e;  //  a ? b : (c ? d : e)  ? : 是右关联
 
 a && b || c ? c || b ? a : c && b : a;  // ((a && b) || c) ? ((c || b) ? a : (c && b)) : a
@@ -1269,7 +1269,7 @@ function foo() {
   finally {
     console.log( "Hello" );
   }
-    console.log( "never runs" );
+  console.log( "never runs" );
 }
 console.log( foo() );
 // Hello
@@ -1306,12 +1306,12 @@ console.log( foo() );
 
 // continue 和 break 等控制语句也是如此：
 for (var i=0; i<10; i++) {
- try {
- continue; 
- }
- finally {
- console.log( i );
- }
+  try {
+    continue; 
+  }
+  finally {
+    console.log( i );
+  }
 }
 // 0 1 2 3 4 5 6 7 8 9
 // continue 在每次循环之后，会在 i++ 执行之前执行 console.log(i)，所以结果是 0..9 而非1..10。
@@ -1357,7 +1357,7 @@ function foo() {
       break bar;
     }
   }
-  console.log( "Crazy" );120 ｜ 第 5 章
+  console.log( "Crazy" );
   return "Hello";
 }
 console.log( foo() );
@@ -1425,7 +1425,7 @@ var answer = now();
 setTimeout( later, 1000 );
 ```
 
-- 现在：
+- 将来：
 ```js
 answer = answer * 2;
 console.log( "Meaning of life:", answer );
@@ -1597,7 +1597,7 @@ console.log( a + b ); // 42
 
 ### 回调
 
-[顺序的大脑](/quotations/)
+[顺序的大脑](/quotations/#顺序的大脑)
 
 回调地狱(毁灭金字塔)：
 
