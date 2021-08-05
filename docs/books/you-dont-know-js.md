@@ -1626,7 +1626,7 @@ listen( "click", function handler(evt){
 
 ```js
 doA( function(){ 
-  doB(); 回调 ｜ 167
+  doB();
   doC( function(){ 
     doD(); 
   } ) 
@@ -1644,7 +1644,7 @@ doF();
 
 ### Promise
 
-不足用p instanceof Promise 以作为检查方法，原因有许多。其中最主要的是，Promise 值可能是从其他浏览器窗口（iframe 等）接收到的。这个浏览器窗口自己的 Promise 可能和当前窗口 /frame 的不同，因此这样的检查无法识别 Promise实例。还有，库或框架可能会选择实现自己的 Promise，而不是使用原生 ES6 Promise 实现。实际上，很有可能你是在早期根本没有 Promise 实现的浏览器中使用由库提供的 Promise。
+不足以用p instanceof Promise 以作为检查方法，原因有许多。其中最主要的是，Promise 值可能是从其他浏览器窗口（iframe 等）接收到的。这个浏览器窗口自己的 Promise 可能和当前窗口 /frame 的不同，因此这样的检查无法识别 Promise实例。还有，库或框架可能会选择实现自己的 Promise，而不是使用原生 ES6 Promise 实现。实际上，很有可能你是在早期根本没有 Promise 实现的浏览器中使用由库提供的 Promise。
 
 - 鸭子类型：“如果它看起来像只鸭子，叫起来像只鸭子，那它一定就是只鸭子”
 
@@ -1721,7 +1721,7 @@ p.then(
 ); 
 ```
 
-如果向 Promise.resolve(..) 传递一个非 Promise、非 thenable 的立即值，就会得到一个用这个值填充的 promise。下面这种情况下，promise p1 和 promise p2 的行为是完全一样的：
+- 如果向 Promise.resolve(..) 传递一个非 Promise、非 thenable 的立即值，就会得到一个用这个值填充的 promise。下面这种情况下，promise p1 和 promise p2 的行为是完全一样的：
 
 ```js
 var p1 = new Promise( function(resolve,reject){ 
@@ -1730,14 +1730,14 @@ var p1 = new Promise( function(resolve,reject){
 var p2 = Promise.resolve( 42 );
 ```
 
-而如果向 Promise.resolve(..) 传递一个真正的 Promise，就只会返回同一个 promise：
+- 如果向 Promise.resolve(..) 传递一个真正的 Promise，就只会返回同一个 promise：
 
 ```js
 var p1 = Promise.resolve( 42 ); 
 var p2 = Promise.resolve( p1 );
 p1 === p2; // true
 ```
-更重要的是，如果向 Promise.resolve(..) 传递了一个非 Promise 的 thenable 值，前者就会试图展开这个值，而且展开过程会持续到提取出一个具体的非类 Promise 的最终值。
+- 如果向 Promise.resolve(..) 传递了一个非 Promise 的 thenable 值，前者就会试图展开这个值，而且展开过程会持续到提取出一个具体的非类 Promise 的最终值。
 
 ```js
 var p = { 
@@ -1851,7 +1851,7 @@ p.then( function(v){
 ```js
 var p = Promise.resolve( 21 ); 
 p.then( function(v){ 
-  console.log( v ); // 21 200 ｜ 第 3 章
+  console.log( v ); // 21
   // 创建一个promise并返回
   return new Promise( function(resolve,reject){ 
     // 引入异步！
@@ -1910,7 +1910,7 @@ rejectedPr.then(
     // 永远不会到达这里
   }, 
   function rejected(err){ 
-    console.log( err ); // "Oops" 206 ｜ 第 3 章
+    console.log( err ); // "Oops"
   } 
 ); 
 ```
@@ -1925,7 +1925,7 @@ function foo() {
     baz.bar(); 
   }, 100 ); 
 } 
-try { Promise ｜ 207
+try {
   foo(); 
   // 后面从 `baz.bar()` 抛出全局错误
 } 
@@ -2607,11 +2607,11 @@ run( bar );
 
 通过 run(..) 工具从 *bar() 内部运行 *foo()。这里我们利用了如下事实：我们前面定义的 run(..) 返回一个 promise，这个 promise 在生成器运行结束时（或出错退出时）决议。因此，如果从一个 run(..) 调用中 yield 出来一个 promise 到另一个 run(..) 实例中，它会自动暂停 *bar()，直到 *foo() 结束。
 
-但其实还有一个更好的方法可以实现从 *bar() 调用 *foo()，称为 yield 委托。yield 委托的具体语法是：yield * __（注意多出来的 *）。在我们弄清它在前面的例子中的使用之前，先来看一个简单点的场景：
+但其实还有一个更好的方法可以实现从 *bar() 调用 *foo()，称为 yield 委托。yield 委托的具体语法是：yield *  （注意多出来的 *）。在我们弄清它在前面的例子中的使用之前，先来看一个简单点的场景：
 
 ```js
 function *foo() { 
-  console.log( "*foo() starting" ); 生成器 ｜ 263
+  console.log( "*foo() starting" );
   yield 3; 
   yield 4; 
   console.log( "*foo() finished" ); 
@@ -2645,7 +2645,7 @@ function *foo() {
   return r3; 
 } 
 function *bar() { 
-  var r1 = yield request( "http://some.url.1" ); 264 ｜ 第 4 章
+  var r1 = yield request( "http://some.url.1" );
   // 通过 yeild* "委托"给*foo()
   var r3 = yield *foo(); 
   console.log( r3 ); 
@@ -2671,7 +2671,7 @@ function *foo() {
   console.log( "inside *foo():", yield "C" ); 
   return "D"; 
 } 
-function *bar() { 生成器 ｜ 265
+function *bar() {
   console.log( "inside *bar():", yield "A" ); 
   // yield委托！
   console.log( "inside *bar():", yield *foo() ); 
@@ -2707,7 +2707,7 @@ console.log( "outside:", it.next( 4 ).value );
 
 ```js
 function *bar() { 
-  console.log( "inside *bar():", yield "A" ); 266 ｜ 第 4 章
+  console.log( "inside *bar():", yield "A" );
   // yield委托给非生成器！
   console.log( "inside *bar():", yield *[ "B", "C", "D" ] ); 
   console.log( "inside *bar():", yield "E" ); 
@@ -2816,7 +2816,7 @@ function *foo(val) {
 } 
 function *bar() { 
   var r1 = yield *foo( 3 ); 
-  console.log( r1 ); 生成器 ｜ 269
+  console.log( r1 );
 } 
 run( bar );
 ```
@@ -2989,7 +2989,7 @@ fooThunk2( function(sum) {
 var fooThunkory = thunkify( foo ); 
 var fooThunk1 = fooThunkory( 3, 4 ); 
 var fooThunk2 = fooThunkory( 5, 6 ); 
-// 而不是：生成器 ｜ 277
+// 而不是：
 var fooThunk1 = thunkify( foo, 3, 4 ); 
 var fooThunk2 = thunkify( foo, 5, 6 ); 
 ```
@@ -3021,7 +3021,7 @@ fooThunk( function(err,sum){
     console.error( err ); 
   } 
   else { 
-    console.log( sum ); // 7 278 ｜ 第 4 章
+    console.log( sum ); // 7
   } 
 } ); 
 // 得到promise答案
