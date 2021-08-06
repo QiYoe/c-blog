@@ -101,7 +101,9 @@ function getFrontEndSidebar() {
       children: [
         { text: 'Linux启动Nginx服务', link: '/front-end/linux/' },
         { text: 'Nginx', link: '/front-end/linux/nginx' },
-        { text: 'Docker', link: '/front-end/linux/docker' }
+        { text: 'Docker', link: '/front-end/linux/docker' },
+        { text: 'Jenkins', link: '/front-end/linux/jenkins' },
+        { text: 'Kubernetes', link: '/front-end/linux/kubernetes' },
       ]
     },
     {
