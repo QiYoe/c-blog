@@ -5793,12 +5793,2165 @@ y instanceof Foo; // true
 
 ### 异步流控制
 
+JavaScript管理异步的主要机制一直以来都是函数回调。
 
+- 如果调用 reject(..)，这个 promise 被拒绝，如果有任何值传给 reject(..)，这个值就被设置为拒绝的原因值。
+- 如果调用 resolve(..) 且没有值传入，或者传入任何非 promise 值，这个 promise 就完成。
+- 如果调用 resove(..) 并传入另外一个 promise，这个 promise 就会采用传入的 promise的状态（要么实现要么拒绝）——不管是立即还是最终。
+
+```js
+step1() 
+.then( 
+  step2, 
+  step2Failed 
+) 
+.then( 
+  function(msg) { 
+    return Promise.all( [ 
+      step3a( msg ), 
+      step3b( msg ), 
+      step3c( msg ) 
+    ] ) 
+  } 
+) 
+.then(step4);
+```
+
+生成器可以 yield 一个 promise，然后这个 promise 可以被绑定，用其完成值来恢复这个生成器的运行。
+
+```js
+function *main() { 
+  var ret = yield step1(); 
+  try { 
+    ret = yield step2( ret ); 
+  } 
+  catch (err) { 
+    ret = yield step2Failed( err ); 
+  } 
+  // 特别是由于 try..catch 出错处理可以跨过这些隐藏的异步边界。
+  ret = yield Promise.all( [ 
+    step3a( ret ), 
+    step3b( ret ), 
+    step3c( ret ) 
+  ] ); 
+  yield step4( ret ); 
+}
+
+
+run( main ) 
+.then( 
+  function fulfilled(){ 
+    // *main()成功完成
+  }, 
+  function rejected(reason){ 
+    // 哎呀，出错了
+  } 
+);
+```
+
+这种“yield 一个 promise 来恢复生成器”的模式将会成为一个常用模式，这个模式非常强大，下一个版本的 JavaScript 几乎肯定会引入一个新的函数类型来自动执行这种模式而无需 run 工具: async function
 
 ### 集合
 
+- Map 就像是一个对象（键 / 值对），但是键值并非只能为字符串，而是可以使用任何值——甚至是另一个对象或 map ！
+- Set 与数组（值的序列）类似，但是其中的值是唯一的；如果新增的值是重复的，就会被忽略。
+- 相应的弱（与内存 / 垃圾回收相关）版本：WeakMap 和 WeakSet。
+
+介绍：
+
+- TypedArray
+
+把称为“类型数组”这样的特性想象为一个特定类型的值构成的数组，比如一个只有字符串构成的数组
+
+但实际上带类型的数组更多是为了使用类数组语义（索引访问等）结构化访问二进制数据。名称中的“type( 类型 )”是指看待一组位序列的“视图”，本质上就是一个映射，比如是把这些位序列映射为 8 位有符号整型数组还是 16 位有符号整型数组，等等。
+
+如何构建这样的位集合呢？这称为一个“buffer”，最直接的方法是通过 ArrayBuffer(..)构造器来构造：
+
+```js
+var buf = new ArrayBuffer( 32 ); 
+buf.byteLength; // 32
+```
+
+现在 buf 就是一个二进制 buffer，长为 32 字节（256 位），预先初始化全部为 0。一个buffer 本身除了查看它的 byteLength 属性外，并不真正支持任何其他交互。
+
+而在这个数组 buffer 之上，可以放置一个“视图”，这个视图以类型数组的形式存在。考虑：
+
+```js
+var arr = new Uint16Array( buf ); 
+arr.length; // 16
+```
+
+arr 是在这个 256 位 buf 上映射的一个 16 位无符号整型的类型数组，也就是说你得到了 16个元素。
+
+理解下面这点很重要：arr 的映射是按照运行 JavaScript 的平台的大小端设置（大端或小端）进行的。如果二进制数据的构造是基于某个大小端配置，而解释平台的大小端配置正相反，那么这就成了一个问题。
+
+大小端的意思是多字节数字（比如前面代码片段中创建的 16 位无符号整型）中的低字节（8 位）位于这个数字字节表示中的右侧还是左侧。
+
+举个例子，设想一个十进制数字 3085，我们需要用 16 位来表示它。如果只是用一个 16 位数字容器，不管大小端配置如何，它会被表示为二进制 0000110000001101（十六进制 0c0d）。
+
+但是如果用两个 8 位数组表示数字 3085，那么大小端设置就会明显影响它在内存中的存储表示：
+
+- 0000110000001101 / 0c0d（大端）
+- 0000110100001100 / 0d0c ( 小端）
+
+如果接收到一个来自于小端系统的表示 3085 的位序列 0000110100001100，而在大端系统中为其建立视图，得到的值将是 3340（十进制）或者 0d0c（十六进制）。
+
+目前 Web 上最常用的是小端表示方式，但是肯定存在不采用这种方式的浏览器。了解一块二进制数据生产方和消费方的大小端属性是很重要的。
+
+根据 MDN，这里有一个快速检测 JavaScript 大小端的方法：
+
+```js
+var littleEndian = (function() { 
+  var buffer = new ArrayBuffer( 2 ); 
+  new DataView( buffer ).setInt16( 0, 256, true ); 
+  return new Int16Array( buffer )[0] === 256; 
+})();
+```
+
+littleEndian 的结果可能是 true 也可能是 false，对于多数浏览器来说，它应该会返回true。这个测试方法使用了 DataView(..)，此方法比在 buffer 上建立的视图访问（getting/setting）位提供了更底层、更小粒度的控制方法。前面代码片段中 setInt16(..) 方法的第三个参数是用来通知 DataView 要使用哪种大小端配置来操作。
+
+> 不要把数组 buffer 的底层二进制存储的大小端和给定数字在 JavaScript 程序中如何表示搞混。比如，(3085).toString(2) 返回 "110000001101"，加上前面 4 个隐去的 "0" 看起来似乎是大端表示。实际上，这个表示法是基于 16位视图，而不是两个 8 位字节的表示。要确定 JavaScript 环境的大小端，最好的方法就是前面的 DataView 测试。
+
+单个 buffer 可以关联多个视图，比如：
+
+```js
+var buf = new ArrayBuffer( 2 ); 
+var view8 = new Uint8Array( buf ); 
+var view16 = new Uint16Array( buf ); 
+view16[0] = 3085; 
+view8[0]; // 13 
+view8[1]; // 12 
+view8[0].toString( 16 ); // "d" 
+view8[1].toString( 16 ); // "c" 
+// 交换（就像大小端变换一样！）
+var tmp = view8[0]; 
+view8[0] = view8[1]; 
+view8[1] = tmp; 
+view16[0]; // 3340
+```
+
+这个带类数组构造器有多个签名变体。目前我们展示的情况都是传入已经存在的 buffer。然而这种形式还接受两个额外参数：byteOffset 和 length。换句话说，可以从非 0 的位置开始带类型数组视图，也可以不消耗整个 buffer 长度。
+
+如果二进制数据的 buffer 包含的数据格式大小 / 位置不均匀，这种技术是非常有用的。
+
+举例来说，考虑一个二进制 buffer，在它的起始位置有一个 2 字节数字（也就是“字”），接着是两个 1 字节数字，然后是一个 32 位浮点数。这展示了如何通过在同一个 buffer 建立多个视图，从不同的位置，以不同长度访问这个数据：
+
+```js
+var first = new Uint16Array( buf, 0, 2 )[0], 
+  second = new Uint8Array( buf, 2, 1 )[0], 
+  third = new Uint8Array( buf, 3, 1 )[0], 
+  fourth = new Float32Array( buf, 4, 4 )[0];
+```
+
+除了前面一节中展示的 (buffer,[offset, [length]]) 形式，带类数组构造器还支持以下这些形式。
+
+- [constructor\](length)：在一个新的长度为 length 字节的 buffer 上创建一个新的视图。
+- [constructor\](typedArr)：创建一个新的视图和 buffer，把 typeArr 视图的内容复制进去。
+- [constructor\](obj)：创建一个新的视图和 buffer，并在类数组或对象 obj 上迭代复制其内容。
+
+ES6 提供了下面这些带类数组构造器：
+
+- Int8Array（8 位有符号整型），Uint8Array（8 位无符号整型）——Uint8ClampedArray（8 位无符号整型，每个值会被强制设置为在 0-255 内）；
+- Int16Array（16 位有符号整型）, Uint16Array（16 位无符号整型）；
+- Int32Array（32 位有符号整型）, Uint32Array（32 位无符号整型）；
+- Float32Array（32 位浮点数， IEEE-754）；
+- Float64Array（64 位浮点数， IEEE-754）。
+
+带类数组构造器的实例几乎和普通原生数组完全一样。一些区别包括具有固定的长度以及值都属于某种“类型”。然而，它们的 prototype 方法几乎完全一样。因此，很可能可以把它们当作普通数组使用而无需转换。
+
+```js
+var a = new Int32Array( 3 ); 
+a[0] = 10; 
+a[1] = 20; 
+a[2] = 30; 
+a.map( function(v){ 
+ console.log( v ); 
+} ); 
+// 10 20 30 
+a.join( "-" ); 
+// "10-20-30"
+```
+
+> 不能对 TypedArray 使用不合理的 Array.prototype 方 法， 比 如 修 改 器(splice(..)、push(..) 等）和 concat(..)。
+
+要清楚 TypedArray 中的元素是限制在声明的位数大小中的。如果视图给一个 Uint8Array的某个元素赋值为大于 8 位的值，这个值会被折回（wrap around）来适应其位宽。
+
+这可能会引起问题，比如，如果你要把 TypedArray 中的值平方。考虑：
+
+```js
+var a = new Uint8Array( 3 ); 
+a[0] = 10; 
+a[1] = 20; 
+a[2] = 30; 
+var b = a.map( function(v){ 
+ return v * v; 
+} ); 
+b; // [100, 144, 132]
+```
+
+对于值 20 和 30，平方值就会溢出。要解决这样的局限，可以使用 TypedArray#from(..)函数：
+
+```js
+var a = new Uint8Array( 3 ); 
+a[0] = 10; 
+a[1] = 20; 
+a[2] = 30; 
+var b = Uint16Array.from( a, function(v){ 
+ return v * v; 
+} ); 
+b; // [100, 400, 900]
+```
+
+还有很有趣的一点要考虑，与普通数组一样，TypedArray 也有一个 sort(..) 方法，但是这个方法默认使用数字排序方法，而不是强制转换为字符串之后进行字母序比较 。举例来说：
+
+```js
+var a = [ 10, 1, 2, ]; 
+a.sort(); // [1,10,2] 
+var b = new Uint8Array( [ 10, 1, 2 ] ); 
+b.sort(); // [1,2,10]
+```
+
+就像 Array#sort(..) 一样，TypedArray#sort(..) 接受了一个可选比较函数参数，它们的工作方式也是完全一样的。
+
+TypedArray 提供了对二进制数据 buffer 的各种整型类型“视图”，比如 8 位无符号整型和32 位浮点型。对二进制数据的数组访问使得运算更容易表达和维护，从而可以更容易操纵视频、音频、canvas 数据等这样的复杂数据。
+
+- Map
+
+```js
+var m = {}; 
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+m[x] = "foo"; 
+m[y] = "bar"; 
+m[x]; // "bar" 
+m[y]; // "bar"
+```
+
+x 和 y 两个对象字符串化都是 "[object Object]"，所以 m 中只设置了一个键。
+
+```js
+var m = new Map(): 
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+m.set( x, "foo" ); 
+m.set( y, "bar" ); 
+m.get( x ); // "foo" 
+m.get( y ); // "bar"
+```
+
+这里唯一的缺点就是不能使用方括号 [ ] 语法设置和获取值，但完全可以使用 get(..) 和set(..) 方法完美代替。
+
+要从 map 中删除一个元素，不要使用 delete 运算符，而是要使用 delete() 方法：
+
+```js
+m.set( x, "foo" ); 
+m.set( y, "bar" ); 
+m.delete( y );
+```
+
+你可以通过 clear() 清除整个 map 的内容。要得到 map 的长度（也就是键的个数），可以使用 size 属性（而不是 length）：
+
+```js
+m.set( x, "foo" ); 
+m.set( y, "bar" ); 
+m.size; // 2 
+m.clear(); 
+m.size; // 0
+```
+
+Map(..) 构造器也可以接受一个 iterable（参见 3.1 节），这个迭代器必须产生一列数组，每个数组的第一个元素是键，第二个元素是值。这种迭代的形式和 entries() 方法产生的形式是完全一样的，下一小节将会介绍。这使得创建一个 map 的副本很容易：
+
+```js
+var m2 = new Map( m.entries() ); 
+// 等价于：
+var m2 = new Map( m );
+```
+
+因为 map 的实例是一个 iterable，它的默认迭代器与 entries() 相同，所以我们更推荐使用后面这个简短的形式。
+
+当然，也可以在 Map(..) 构造器中手动指定一个项目（entry）列表（键 / 值数组的数组）：
+
+```js
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+var m = new Map( [ 
+  [ x, "foo" ], 
+  [ y, "bar" ] 
+] ); 
+m.get( x ); // "foo" 
+m.get( y ); // "bar
+```
+
+要从 map 中得到一列值，可以使用 values(..)，它会返回一个迭代器。比如 spread 运算符 ... 和for..of 循环。另外，我们将会详细介绍 Array.from(..) 方法。考虑：
+
+```js
+var m = new Map(); 
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+m.set( x, "foo" ); 
+m.set( y, "bar" ); 
+var vals = [ ...m.values() ]; 
+vals; // ["foo","bar"] 
+Array.from( m.values() ); // ["foo","bar"]
+```
+
+前面一小节介绍过，可以在一个 map 的项目上使用 entries() 迭代（或者默认 map 迭代器）。考虑：
+
+```js
+var m = new Map(); 
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+m.set( x, "foo" ); 
+m.set( y, "bar" ); 
+var vals = [ ...m.entries() ]; 
+vals[0][0] === x; // true 
+vals[0][1]; // "foo" 
+vals[1][0] === y; // true 
+vals[1][1]; // "bar"
+```
+
+要得到一列键，可以使用 keys()，它会返回 map 中键上的迭代器：
+
+```js
+var m = new Map(); 
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+m.set( x, "foo" ); 
+m.set( y, "bar" ); 
+var keys = [ ...m.keys() ]; 
+keys[0] === x; // true 
+keys[1] === y; // true
+```
+
+要确定一个 map 中是否有给定的键，可以使用 has(..) 方法：
+
+```js
+var m = new Map(); 
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+m.set( x, "foo" ); 
+m.has( x ); // true 
+m.has( y ); // false
+```
+
+map 的本质是允许你把某些额外的信息（值）关联到一个对象（键）上，而无需把这个信息放入对象本身。
+
+对于 map 来说，尽管可以使用任意类型的值作为键，但通常我们会使用对象，因为字符串或者其他基本类型已经可以作为普通对象的键使用。换句话说，除非某些或者全部键需要是对象，否则可以继续使用普通对象作为影射，这种情况下 map 才更加合适。
+
+> 如果使用对象作为映射的键，这个对象后来被丢弃（所有的引用解除），试图让垃圾回收（GC）回收其内存，那么 map 本身仍会保持其项目。你需要从 map 中移除这个项目来支持 GC。在下一小节中，我们将会介绍作为对象键和 GC 的更好选择——WeakMap。
+
+Map 是键 - 值对，其中的键不只是字符串 / 原生类型，也可以是对象。
+
+- WeakMap
+
+WeakMap 是 map 的变体，二者的多数外部行为特性都是一样的，区别在于内部内存分配（特别是其 GC）的工作方式。
+
+WeakMap（只）接受对象作为键。这些对象是被弱持有的，也就是说如果对象本身被垃圾回收的话，在 WeakMap 中的这个项目也会被移除。然而我们无法观测到这一点，因为对象被垃圾回收的唯一方式是没有对它的引用了。但是一旦不再有引用，你也就没有对象引用来查看它是否还存在于这个 WeakMap 中了。
+
+除此之外，WeakMap 的 API 是类似的，尽管要更少一些：
+
+```js
+var m = new WeakMap(); 
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+m.set( x, "foo" ); 
+m.has( x ); // true 
+m.has( y ); // false
+```
+
+WeakMap 没有 size 属性或 clear() 方法，也不会暴露任何键、值或项目上的迭代器。所以即使你解除了对 x 的引用，它将会因 GC 时这个条目被从 m 中移除，也没有办法确定这一事实。所以你就相信 JavaScript 所声明的吧！
+
+和 Map 一样，通过 WeakMap 可以把信息与一个对象软关联起来。而在对这个对象没有完全控制权的时候，这个功能特别有用，比如 DOM 元素。如果作为映射键的对象可以被删除，并支持垃圾回收，那么 WeakMap 就更是合适的选择了
+
+需要注意的是，WeakMap 只是弱持有它的键，而不是值。考虑：
+
+```js
+var m = new WeakMap(); 
+var x = { id: 1 }, 
+  y = { id: 2 }, 
+  z = { id: 3 }, 
+  w = { id: 4 }; 
+m.set( x, y ); 
+x = null; // { id: 1 } 可GC 
+y = null; // { id: 2 } 可GC 
+ // 只因 { id: 1 } 可GC 
+m.set( z, w ); 
+w = null; // { id: 4 } 不可GC
+```
+
+因此，我认为 WeakMap 更应该叫作“Weak-KeyMap”。
+
+WeakMap 也是 map，其中的键（对象）是弱持有的，因此当它是对这个对象的最后一个引用的时候，GC（垃圾回收）可以回收这个项目。
+
+- Set
+
+set 是一个值的集合，其中的值唯一（重复会被忽略）。
+
+set 的 API 和 map 类似。只是 add(..) 方法代替了 set(..) 方法（某种程度上说有点讽刺），没有 get(..) 方法。
+
+```js
+var s = new Set(); 
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+s.add( x ); 
+s.add( y ); 
+s.add( x ); 
+s.size; // 2 
+s.delete( y ); 
+s.size; // 1 
+s.clear(); 
+s.size; // 0
+```
+
+Set(..) 构造器形式和 Map(..) 类似，都可以接受一个 iterable，比如另外一个 set 或者仅仅是一个值的数组。但是，和 Map(..) 接受项目（entry）列表（键 / 值数组的数组）不同，Set(..) 接受的是值（value）列表（值的数组）：
+
+```js
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+var s = new Set( [x,y] );
+```
+
+set 不需要 get(..) 是因为不会从集合中取一个值，而是使用 has(..) 测试一个值是否存在：
+
+```js
+var s = new Set(); 
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+s.add( x ); 
+s.has( x ); // true 
+s.has( y ); // false
+```
+
+除了会把 -0 和 0 当作是一样的而不加区别之外，has(..) 中的比较算法和Object.is(..) 几乎一样
+
+set 的迭代器方法和 map 一样。对于 set 来说，二者行为特性不同，但它和 map 迭代器的行为是对称的。考虑：
+
+```js
+var s = new Set(); 
+var x = { id: 1 }, 
+  y = { id: 2 }; 
+s.add( x ).add( y ); 
+var keys = [ ...s.keys() ], 
+  vals = [ ...s.values() ], 
+  entries = [ ...s.entries() ]; 
+keys[0] === x; 
+keys[1] === y; 
+vals[0] === x; 
+vals[1] === y; 
+entries[0][0] === x; 
+entries[0][1] === x; 
+entries[1][0] === y; 
+entries[1][1] === y;
+```
+
+keys() 和 values() 迭代器都从 set 中 yield 出一列不重复的值。entries() 迭代器 yield 出一列项目数组，其中的数组的两个项目都是唯一 set 值。set 默认的迭代器是它的 values()迭代器。
+
+set 固有的唯一性是它最有用的特性。举例来说：
+
+```js
+var s = new Set( [1,2,3,4,"1",2,4,"5"] ), 
+  uniques = [ ...s ]; 
+uniques; // [1,2,3,4,"1","5"]
+```
+
+set 的唯一性不允许强制转换，所以 1 和 "1" 被认为是不同的值。
+
+Set 是成员值（任意类型）唯一的列表。
+
+- WeakSet
+
+就像 WeakMap 弱持有它的键（对其值是强持有的）一样，WeakSet 对其值也是弱持有的（这里并没有键）：
+
+```js
+var s = new WeakSet(); 
+var x = { id: 1 }, 
+ y = { id: 2 }; 
+s.add( x ); 
+s.add( y ); 
+x = null; // x可GC 
+y = null; // y可GC
+```
+
+> WeakSet 的值必须是对象，而并不像 set 一样可以是原生类型值。
+
+WeakSet 也是 set，其中的值是弱持有的，也就是说如果其中的项目是对这个对象最后一个引用的时候，GC 可以移除它。
+
 ### 新增API
+
+- Array
+
+Array.of(..) 取代了 Array(..) 成为数组的推荐函数形式构造器，因为 Array.of(..) 并没有这个特殊的单个数字参数的问题。考虑：
+
+```js
+var a = Array( 3 ); 
+a.length; // 3 
+a[0]; // undefined 
+var b = Array.of( 3 ); 
+b.length; // 1 
+b[0]; // 3 
+var c = Array.of( 1, 2, 3 ); 
+c.length; // 3 
+c; // [1,2,3]
+```
+
+- 如果你有一个回调函数需要传入的参数封装为数组，Array.of(..) 可以完美解决这个需求。
+- 如果你构建 Array 的子类，并且想要在你的子类实例中创建和初始化元素，
+
+```js
+class MyCoolArray extends Array { 
+  sum() { 
+    return this.reduce( function reducer(acc,curr){ 
+      return acc + curr; 
+    }, 0 ); 
+  } 
+} 
+var x = new MyCoolArray( 3 ); 
+x.length; // 3--oops! 
+x.sum(); // 0--oops! 
+var y = [3]; // Array, 而不是MyCoolArray 
+y.length; // 1 
+y.sum(); // sum不是一个函数
+var z = MyCoolArray.of( 3 ); 
+z.length; // 1 
+z.sum(); // 3
+```
+
+你不能（简单地）只是为 MyCoolArray 创建一个构造器来覆盖 Array 父构造器的行为，因为那个构造器对于实际构造一个行为符合规范的数组值（初始化 this）是必要的。MyCoolArray 子类“继承来的”静态 of(..) 方法提供了很好的解决方案。
+
+```js
+// 类数组转换为真正的数组
+// 类数组对象
+var arrLike = { 
+  length: 3, 
+  0: "foo", 
+  1: "bar" 
+}; 
+var arr = Array.prototype.slice.call( arrLike );
+
+// 另外一个常见的任务是使用 slice(..) 来复制产生一个真正的数组：
+var arr2 = arr.slice();
+
+// 两种情况下，新的 ES6 Array.from(..) 方法都是更好理解、更优雅、更简洁的替代方法：
+var arr = Array.from( arrLike ); 
+var arrCopy = Array.from( arr );
+```
+
+Array.from(..) 检查第一个参数是否为 iterable（参见 3.1 节），如果是的话，就使用迭代器来产生值并“复制”进入返回的数组。因为真正的数组有一个这些值之上的迭代器，所以会自动使用这个迭代器。
+
+而如果你把类数组对象作为第一个参数传给 Array.from(..)，它的行为方式和 slice()（没有参数）或者 apply(..) 是一样的，就是简单地按照数字命名的属性从 0 开始直到length 值在这些值上循环。
+
+```js
+var arrLike = { 
+  length: 4, 
+  2: "foo" 
+}; 
+Array.from( arrLike ); 
+// [ undefined, undefined, "foo", undefined ]
+```
+
+因为位置 0、1 和 3 在 arrLike 上并不存在，所以在这些位置上是 undefined 值。
+
+```js
+var emptySlotsArr = []; 
+emptySlotsArr.length = 4; 
+emptySlotsArr[2] = "foo"; 
+Array.from( emptySlotsArr ); 
+// [ undefined, undefined, "foo", undefined ]
+```
+
+前面代码中的 emptySlotArr 和 Array.from(..) 调用的结果有一个微妙但重要的区别。也就是 Array.from(..) 永远不会产生空槽位。
+
+```js
+// 在 ES6 之前，如果你想要产生一个初始化为某个长度，在每个槽位上都是真正的undefined 值（不是空槽位！）的数组，不得不做额外的工作：
+var a = Array( 4 ); 
+// 4个空槽位！
+var b = Array.apply( null, { length: 4 } ); 
+// 4个undefined值
+
+// 而现在 Array.from(..) 使其简单了很多：
+var c = Array.from( { length: 4 } ); 
+// 4个undefined值
+```
+
+Array.from(..) 工具还有另外一个有用的技巧。如果提供了的话，第二个参数是一个映射回调（和一般的 Array#map(..) 所期望的几乎一样），这个函数会被调用，来把来自于源的每个值映射 / 转换到返回值。
+
+```js
+var arrLike = { 
+  length: 4, 
+  2: "foo" 
+}; 
+Array.from( arrLike, function mapper(val,idx){ 
+  if (typeof val == "string") { 
+    return val.toUpperCase(); 
+  } 
+  else { 
+    return idx; 
+  } 
+} ); 
+// [ 0, 1, "FOO", 3 ]
+```
+
+> 和其他接收回调的数组方法一样，Array.from(..) 接收一个可选的第三个参数，如果设置了的话，这个参数为作为第二个参数传入的回调指定 this 绑定。否则，this 将会是 undefined。
+
+```js
+class MyCoolArray extends Array { 
+  .. 
+} 
+MyCoolArray.from( [1, 2] ) instanceof MyCoolArray; // true 
+Array.from( 
+  MyCoolArray.from( [1, 2] ) 
+) instanceof MyCoolArray; // false
+```
+
+of(..) 和 from(..) 都使用访问它们的构造器来构造数组。所以如果使用基类 Array.of(..)，那么得到的就是 Array 实例；如果使用 MyCoolArray.of(..)，那么得到的就是MyCoolArray 实例。
+
+我们介绍了 @@species 设置，所有的内置类（比如 Array）都有定义，任何创建新实例的原型方法都会使用它。slice(..) 是一个很好的例子：
+
+```js
+var x = new MyCoolArray( 1, 2, 3 ); 
+x.slice( 1 ) instanceof MyCoolArray; // true
+```
+
+一般来说，默认的行为方式很可能就是需要的，但就像我们在第 3 章中介绍的，必要的话也可以覆盖它：
+
+```js
+class MyCoolArray extends Array { 
+  // 强制species为父构造器
+  static get [Symbol.species]() { return Array; } 
+} 
+var x = new MyCoolArray( 1, 2, 3 ); 
+x.slice( 1 ) instanceof MyCoolArray; // false 
+x.slice( 1 ) instanceof Array; // true
+```
+
+需要注意的是，@@species 设置只用于像 slice(..) 这样的原型方法。of(..) 和 from(..)不会使用它；它们都只使用 this 绑定（由使用的构造器来构造其引用）。
+
+```js
+class MyCoolArray extends Array { 
+  // 强制species为父构造器
+  static get [Symbol.species]() { return Array; } 
+} 
+var x = new MyCoolArray( 1, 2, 3 ); 
+MyCoolArray.from( x ) instanceof MyCoolArray; // true 
+MyCoolArray.of( [2, 3] ) instanceof MyCoolArray; // true
+```
+
+Array#copyWithin(..) 是一个新的修改器方法，所有数组都支持。copyWithin(..) 从一个数组中复制一部分到同一个数组的另一个位置，覆盖这个位置所有原来的值。
+
+参数是 target（要复制到的索引）、start（开始复制的源索引，包括在内）以及可选的 end（复制结束的不包含索引）。如果任何一个参数是负数，就被当作是相对于数组结束的相对值。
+
+```js
+[1,2,3,4,5].copyWithin( 3, 0 ); // [1,2,3,1,2] 
+[1,2,3,4,5].copyWithin( 3, 0, 1 ); // [1,2,3,1,5] 
+[1,2,3,4,5].copyWithin( 0, -2 ); // [4,5,3,4,5] 
+[1,2,3,4,5].copyWithin( 0, -2, -1 ); // [4,2,3,4,5]
+```
+
+就像前面代码片段展示的，copyWithin(..) 方法不会增加数组的长度。到达数组结尾复制就会停止。
+
+与你想象的正相反，复制并非总是从左到右（索引递增）进行的。如果源范围和目标范围重叠的话，可能会出现重复复制已经复制的值，而这可能并非你想要的结果。所以，内部算法通过反向复制避免了这种情况。
+
+```js
+[1,2,3,4,5].copyWithin( 2, 1 ); // ???
+```
+
+如果算法严格按照从左到右来移动，那么 2 应该被复制来覆盖 3，然后这个被复制的 2 应该被复制来覆盖 4，然后这个被复制的 2 应该被复制来覆盖 5，而你最终会得到 [1,2,2,2,2]。
+
+而实际上，复制算法会反向进行，复制 4 来覆盖 5，然后复制 3 来覆盖 4，然后复制 2 来覆盖 3，最后的结果是 [1,2,2,3,4]。根据期望来说，这可能是更“正确”的结果，但如果只考虑简单的从左到右方式的复制算法，你可能会觉得很迷惑。
+
+可以通过 ES6 原生支持的方法 Array#fill(..) 用指定值完全（或部分）填充已存在的数组：
+
+```js
+var a = Array( 4 ).fill( undefined ); 
+a; 
+// [undefined,undefined,undefined,undefined]
+```
+
+fill(..) 可选地接收参数 start 和 end，它们指定了数组要填充的子集位置，比如：
+
+```js
+var a = [ null, null, null, null ].fill( 42, 1, 3 ); 
+a; // [null,42,42,null]
+```
+
+一般来说，在数组中搜索一个值的最常用方法一直是 indexOf(..) 方法，这个方法返回找到值的索引，如果没有找到就返回 -1：
+
+```js
+var a = [1,2,3,4,5]; 
+(a.indexOf( 3 ) != -1); // true 
+(a.indexOf( 7 ) != -1); // false 
+(a.indexOf( "2" ) != -1); // false
+```
+
+相比之下，indexOf(..) 需要严格匹配 ===，所以搜索 "2" 不会找到值 2，反之也是如此。indexOf(..) 的匹配算法无法覆盖，而且要手动与值 -1 进行比较也很麻烦 / 笨拙。
+
+```js
+var a = [1,2,3,4,5]; 
+a.some( function matcher(v){ 
+  return v == "2"; 
+} ); // true 
+a.some( function matcher(v){ 
+  return v == 7; 
+} ); // false
+```
+
+但这种方式的缺点是如果找到匹配的值的时候，只能得到匹配的 true/false 指示，而无法得到真正的匹配值本身。
+
+ES6 的 find(..) 解决了这个问题。基本上它和 some(..) 的工作方式一样，除了一旦回调返回 true/ 真值，会返回实际的数组值：
+
+```js
+var a = [1,2,3,4,5]; 
+a.find( function matcher(v){ 
+  return v == "2"; 
+} ); // 2 
+a.find( function matcher(v){ 
+  return v == 7; // undefined 
+});
+```
+
+通过自定义 matcher(..) 函数也可以支持比较像对象这样的复杂值：
+
+```js
+var points = [ 
+  { x: 10, y: 20 }, 
+  { x: 20, y: 30 }, 
+  { x: 30, y: 40 }, 
+  { x: 40, y: 50 }, 
+  { x: 50, y: 60 } 
+]; 
+points.find( function matcher(point) { 
+  return ( 
+    point.x % 3 == 0 && 
+    point.y % 4 == 0 
+  ); 
+} ); // { x: 30, y: 40 }
+```
+
+> 就像其他接受回调的数组方法一样，find(..) 接受一个可选的第二个参数，如果设定这个参数就绑定到第一个参数回调的 this。否则，this 就是undefined。
+
+前面一小节展示了 some(..) 如何 yield 出一个布尔型结果用于在数组中搜索，以及find(..) 如何从数组搜索 yield 出匹配的值本身，另外，还需要找到匹配值的位置索引。
+
+indexOf(..) 会提供这些，但是无法控制匹配逻辑；它总是使用 === 严格相等。所以 ES6的 findIndex(..) 才是解决方案：
+
+```js
+var points = [ 
+  { x: 10, y: 20 }, 
+  { x: 20, y: 30 }, 
+  { x: 30, y: 40 }, 
+  { x: 40, y: 50 }, 
+  { x: 50, y: 60 } 
+]; 
+points.findIndex( function matcher(point) { 
+  return ( 
+    point.x % 3 == 0 && 
+    point.y % 4 == 0 
+  ); 
+} ); // 2 
+points.findIndex( function matcher(point) { 
+  return ( 
+    point.x % 6 == 0 && 
+    point.y % 7 == 0 
+  ); 
+} ); // -1
+```
+
+不要使用 findIndex(..) != -1（这是 indexOf(..) 的惯用法）从搜索中得到布尔值，因为 some(..) 已经 yield 出你想要的 true/false。也不要用 a[ a.findIndex(..) ] 来得到匹配值，因为这是 find(..) 所做的事。最后，如果需要严格匹配的索引值，那么使用indexOf(..)；如果需要自定义匹配的索引值，那么使用 findIndex(..)。
+
+> 就像其他接收回调的数组方法一样，findIndex(..) 接收一个可选的第二个参数，如果设定这个参数就绑定到第一个参数回调的 this。否则，this 就是undefined。
+
+因为 Array 对于 ES6 来说已经不是新的了，所以从传统角度来说，它可能不会被看作是“集合”，但是它提供了同样的迭代器方法 entries()、values() 和 keys()，从这个意义上说，它是一个集合。
+
+```js
+var a = [1,2,3]; 
+[...a.values()]; // [1,2,3] 
+[...a.keys()]; // [0,1,2] 
+[...a.entries()]; // [ [0,1], [1,2], [2,3] ] 
+[...a[Symbol.iterator]()]; // [1,2,3]
+```
+
+就像 Set 一样，默认的 Array 迭代器和 values() 返回的值一样。
+
+我们将展示 Array.from(..) 如何把数组中的空槽位看作值为undefined 的槽位。这实际上是因为在底层数组迭代器是这样工作的：
+
+```js
+var a = []; 
+a.length = 3; 
+a[1] = 2; 
+[...a.values()]; // [undefined,2,undefined] 
+[...a.keys()]; // [0,1,2] 
+[...a.entries()]; // [ [0,undefined], [1,2], [2,undefined] ]
+```
+
+- Object
+
+静态函数 Object.is(..) 执行比 === 比较更严格的值比较。
+
+Object.is(..) 调用底层 SameValue 算法。SameValue 算法基本上和 === 严格相等比较算法一样（ES6 规范，7.2.13 节），但有两个重要的区别。
+
+```js
+var x = NaN, y = 0, z = -0; 
+x === x; // false 
+y === z; // true 
+Object.is( x, x ); // true 
+Object.is( y, z ); // false
+```
+
+你应该继续使用 === 进行严格相等比较；不应该把 Object.is(..) 当作这个运算符的替代。但是，如果需要严格识别 NaN 或者 -0 值，那么应该选择 Object.is(..)。
+
+> ES6 还新增了一个 Number.isNaN(..) 工具（本章后面会介绍），这个工具可能是更方便的检查工具；与 Object.is(x,NaN) 相比，你可能更喜欢 Number.isNaN(x)。你可以使用 x == 0 && 1 / x === -Infinity 这种笨拙的方式精确判断 -0 值，但这种情况下使用 Object.is(x,-0) 会好很多。
+
+Symbol 很 可 能 会 成 为 对 象 最 常 用 的 特 殊（ 元 ） 属 性。 所 以 引 入 了 工 具 ObgetOwnPropertySymbols(..)，它直接从对象上取得所有的符号属性：
+
+```js
+var o = { 
+  foo: 42, 
+  [ Symbol( "bar" ) ]: "hello world", 
+  baz: true 
+}; 
+Object.getOwnPropertySymbols( o ); // [ Symbol(bar) ]
+```
+
+我们提到工具 Object.setPrototypeOf(..)，这个工具（不出人意料地）设置对象的 [[Prototype]] 用于行为委托
+
+```js
+var o1 = { 
+  foo() { console.log( "foo" ); } 
+}; 
+var o2 = { 
+  // .. o2的定义 .. 
+}; 
+Object.setPrototypeOf( o2, o1 ); 
+// 委托给o1.foo() 
+o2.foo(); // foo
+
+// 也可以：
+var o1 = { 
+  foo() { console.log( "foo" ); } 
+}; 
+var o2 = Object.setPrototypeOf( { 
+  // .. o2的定义 .. 
+}, o1 ); 
+// 委托给o1.foo() 
+o2.foo(); // foo
+```
+
+前面两段代码中，o2 和 o1 的关系都出现在 o2 定义的结尾处。更通俗地说，o2 和 o1 的关系在 o2 的定义上指定，就像类一样，也和字面值对象中的 __proto__ 一样
+
+ES6 新增了 Object.assign(..)，这是这些算法的简化版本。第一个参数是 target，其他传入的参数都是源，它们将按照列出的顺序依次被处理。对于每个源来说，它的可枚举和自己拥有的（也就是不是“继承来的”）键值，包括符号都会通过简单 = 赋值被复制。Object.assign(..) 返回目标对象。
+
+```js
+var target = {}, 
+  o1 = { a: 1 }, o2 = { b: 2 }, 
+  o3 = { c: 3 }, o4 = { d: 4 }; 
+// 设定只读属性
+Object.defineProperty( o3, "e", { 
+  value: 5, 
+  enumerable: true, 
+  writable: false, 
+  configurable: false
+} ); 
+// 设定不可枚举属性
+Object.defineProperty( o3, "f", { 
+  value: 6, 
+  enumerable: false
+} ); 
+o3[ Symbol( "g" ) ] = 7; 
+// 设定不可枚举符号
+Object.defineProperty( o3, Symbol( "h" ), { 
+  value: 8, 
+  enumerable: false
+} ); 
+Object.setPrototypeOf( o3, o4 );
+```
+
+只有属性 a、b、c、e 以及 Symbol("g") 会被复制到 target 中：
+
+```js
+Object.assign( target, o1, o2, o3 ); 
+target.a; // 1 
+target.b; // 2 
+target.c; // 3 
+Object.getOwnPropertyDescriptor( target, "e" ); 
+// { value: 5, writable: true, enumerable: true, 
+// configurable: true } 
+Object.getOwnPropertySymbols( target ); 
+// [Symbol("g")]
+```
+
+复制过程会忽略属性 d、f 和 Symbol("h")；不可枚举的属性和非自有的属性都被排除在赋值过程之外。另外，e 作为一个普通属性赋值被复制，而不是作为只读属性复制。
+
+在前面一节中，我们展示了使用 setPrototypeOf(..) 设定对象 o2 和 o1 之间的 [[Prototype]]关系。还有另外一种应用了 Object.assign(..) 的形式：
+
+```js
+var o1 = { 
+  foo() { console.log( "foo" ); } 
+}; 
+var o2 = Object.assign( 
+  Object.create( o1 ), 
+  { 
+    // .. o2的定义 .. 
+  } 
+); 
+// 委托给o1.foo() 
+o2.foo(); // foo
+```
+
+- Math
+
+三角函数：
+- cosh(..) 双曲余弦函数
+- acosh(..) 双曲反余弦函数
+- sinh(..) 双曲正弦函数
+- asinh(..) 双曲反正弦函数
+- tanh(..) 双曲正切函数
+- atanh(..) 双曲反正切函数
+- hypot(..) 平方和的平方根（也即：广义勾股定理）
+
+算术：
+- cbrt(..) 立方根
+- clz32(..) 计算 32 位二进制表示的前导 0 个数
+- expm1(..) 等价于 exp(x) - 1
+- log2(..) 二进制对数（以 2 为底的对数）
+- log10(..) 以 10 为底的对数
+- log1p(..) 等价于 log(x + 1)
+- imul(..) 两个数字的 32 位整数乘法
+
+元工具：
+- sign(..) 返回数字符号
+- trunc(..)返回数字的整数部分
+- fround(..) 向最接近的 32 位（单精度）浮点值取整
+
+结束
+- Number
+
+Number.parseInt(..) 和 Number.parseFloat(..)
+
+- Number.EPSILON -任意两个值之间的最小差：2^-52
+- Number.MAX_SAFE_INTEGER -JavaScript 可以用数字值无歧义“安全”表达的最大整数：2^53 - 1
+- Number.MIN_SAFE_INTEGER -JavaScript 可以用数字值无歧义“安全”表达的最小整数：-(2^53 - 1) 或 (-2)^53 + 1
+
+Number.isNaN(..)
+
+```js
+var a = NaN, b = "NaN", c = 42; 
+isNaN( a ); // true 
+isNaN( b ); // true--oops! 
+isNaN( c ); // false 
+Number.isNaN( a ); // true 
+Number.isNaN( b ); // false--修正了! 
+Number.isNaN( c ); // false
+```
+
+```js
+var a = NaN, b = Infinity, c = 42; 
+Number.isFinite( a ); // false 
+Number.isFinite( b ); // false 
+Number.isFinite( c ); // true
+```
+
+标准的全局 isFinite(..) 会对参数进行强制类型转换，但是 Number.isFinite(..) 会略去这种强制行为：
+
+```js
+var a = "42"; 
+isFinite( a ); // true 
+Number.isFinite( a ); // false
+```
+
+Number.isFinite(+x)，它会在传入之前显式地把 x 强制转换为数字
+
+JavaScript 的数字值永远都是浮点数（IEE-754）。所以确定数字是否为“整型”的概念并不是检查其类型，因为 JavaScript 并没有这样区分。
+
+相反，你需要检查这个值的小数部分是否非 0。最简单的实现方法通常是：
+
+```js
+x === Math.floor( x );
+```
+
+ES6 新增了一个辅助工具 Number.isInteger(..) ，这个工具可能会更有效地确定这个性质：
+
+```js
+Number.isInteger( 4 ); // true 
+Number.isInteger( 4.2 ); // false
+```
+
+> 在 JavaScript 中，4、4.、4.0 或者 4.0000 之间并没有区别。所有这些都会被当作“整型”并且从 Number.isInteger(..) 中返回 true。
+
+另外，Number.isInteger(..) 会过滤掉 x === Math.floor(x) 可能会搞混的明显非整数值 ：
+
+```js
+Number.isInteger( NaN ); // false 
+Number.isInteger( Infinity ); // false
+```
+
+使用“整数”工作有时候是一个重要的信息，因为这可能会简化某些类型的算法。JavaScript 代码本身不会因为只使用整数而运行得更快，但是，只有在使用整数时，引擎才可以采用优化技术（比如 asm.js)。
+
+基于 Number.isInteger(..) 对 NaN 和 Infinity 值的处理方式，要定义一个 isFloat(..) 工具并不像 !Number.isInteger(..) 那么简单。可能需要做类似于下面这样的事情：
+
+```js
+function isFloat(x) { 
+  return Number.isFinite( x ) && !Number.isInteger( x ); 
+} 
+isFloat( 4.2 ); // true 
+isFloat( 4 ); // false 
+isFloat( NaN ); // false 
+isFloat( Infinity ); // false
+```
+
+> 看起来可能有点奇怪，但是 Infinity 既不应该被当作整型又不应该被当作浮点型。
+
+ES6 还定义了一个工具 Number.isSafeInteger(..)，这个工具检查一个值以确保其为整数并且在 Number.MIN_SAFE_INTEGER-Number.MAX_SAFE_INTEGER 范围之内（全包含）：
+
+```js
+var x = Math.pow( 2, 53 ), 
+  y = Math.pow( -2, 53 ); 
+Number.isSafeInteger( x - 1 ); // true 
+Number.isSafeInteger( y + 1 ); // true 
+Number.isSafeInteger( x ); // false 
+Number.isSafeInteger( y ); // false
+```
+
+- 字符串
+
+详细介绍过 String.fromCodePoint(..)、String#codePointAt(..) 和 String#normalize(..)。新增这些函数是为了提高 JavaScript 字符串值对 Unicode 的支持：
+
+```js
+String.fromCodePoint( 0x1d49e ); // " " 
+"ab d.codePointAt( 2 ).toString( 16 ); // "1d49e"
+```
+
+字符串原型方法 normalize(..) 用于执行 Unicode 规范化，或者把字符用“合并符”连接起来或者把合并的字符解开。
+
+规范化不会对字符串的内容造成可见的效果，但是会改变字符串的内容，这可能会影响像 length 属性的结果，以及通过位置访问字符的方式：
+
+```js
+var s1 = "e\u0301"; 
+s1.length; // 2 
+var s2 = s1.normalize(); 
+s2.length; // 1 
+s2 === "\xE9"; // true
+```
+
+normalize(..) 接受一个可选的参数，来指定要使用的规范化形式。这个参数必须是这几个值之一："NFC" ( 默认 )、"NFD"、"NFKC" 或者 "NFKD"。
+
+String.raw(..)这个函数基本上不会被手动调用，而是与标签模板字面值一起使用：
+
+```js
+var str = "bc"; 
+String.raw`\ta${str}d\xE9`; 
+// "\tabcd\xE9", 而不是" abcdé"
+```
+
+在结果字符串中，\ 和 t 是独立的原始字符，而不是转义字符 \t。对于 Unicode 转义序列也是一样。
+
+```js
+"foo".repeat( 3 ); // "foofoofoo"
+```
+
+除了 ES6 之前的 String#indexOf(..) 和 String#lastIndexOf(..)，又新增了 3 个用于搜索 /检查的新方法：startsWith(..)、endsWidth(..) 和 includes(..)。
+
+```js
+var palindrome = "step on no pets"; 
+palindrome.startsWith( "step on" ); // true 
+palindrome.startsWith( "on", 5 ); // true 
+palindrome.endsWith( "no pets" ); // true 
+palindrome.endsWith( "no", 10 ); // true 
+palindrome.includes( "on" ); // true 
+palindrome.includes( "on", 6 ); // false
+```
+
+对于所有的字符串搜索 / 检查方法，如果寻找空字符串 ""，总是会在字符串的开头或结尾找到。
+
+> 默认情况下，这些方法不会接受正则表达式用于字符串搜索。对第一个参数执行的 isRegExp 检查的部分。
 
 ### 元编程
 
+元编程是指操作目标是程序本身的行为特性的编程。换句话说，它是对程序的编程的编程。
+
+举例来说，如果想要查看对象 a 和另外一个对象 b 的关系是否是 [[Prototype]] 链接的，可以使用 a.isProto type(b)，这是一种元编程形式，通常称为内省（introspection）。另外一个明显的元编程例子是宏（在 JavaScript 中还不支持）——代码在编译时修改自身。用for..in 循环枚举对象的键，或者检查一个对象是否是某个“类构造器”的实例，也都是常见的元编程例子。
+
+元编程关注以下一点或几点：代码查看自身、代码修改自身、代码修改默认语言特性，以此影响其他代码。
+
+元编程的目标是利用语言自身的内省能力使代码的其余部分更具描述性、表达性和灵活性。因为元编程的元（meta）本质，我们有点难以给出比上面提到的更精确的定义。要理解元编程，最好的方法是通过实例来展示。
+
+- 函数名称
+
+```js
+var abc = function() { 
+  // .. 
+}; 
+abc.name; // "abc"
+```
+
+如果给了这个函数一个词法名称，比如 abc = function def() { .. }，那么 name 属性当然就是 "def"。而如果没有词法名称的话，直觉上看似乎名称为 "abc" 比较合理。
+
+```js
+(function(){ .. }); // name: 
+(function*(){ .. }); // name: 
+window.foo = function(){ .. }; // name: 
+class Awesome { 
+  constructor() { .. } // name: Awesome 
+  funny() { .. } // name: funny 
+} 
+var c = class Awesome { .. }; // name: Awesome 
+var o = { 
+  foo() { .. }, // name: foo 
+  *bar() { .. }, // name: bar 
+  baz: () => { .. }, // name: baz 
+  bam: function(){ .. }, // name: bam 
+  get qux() { .. }, // name: get qux 
+  set fuz() { .. }, // name: set fuz 
+  ["b" + "iz"]: 
+  function(){ .. }, // name: biz 
+  [Symbol( "buz" )]: 
+  function(){ .. } // name: [buz] 
+}; 
+var x = o.foo.bind( o ); // name: bound foo 
+(function(){ .. }).bind( o ); // name: bound 
+export default function() { .. } // name: default 
+var y = new Function(); // name: anonymous 
+var GeneratorFunction = 
+  function*(){}.__proto__.constructor; 
+var z = new GeneratorFunction(); // name: anonymous
+```
+
+默认情况下，name 属性不可写，但可配置，也就是说如果需要的话，可使用 Object.defineProperty(..) 来手动修改。
+
+- 元属性
+
+元属性以属性访问的形式提供特殊的其他方法无法获取的元信息。
+
+以 new.target 为例，关键字 new 用作属性访问的上下文。显然，new 本身并不是一个对象，因此这个功能很特殊。而在构造器调用（通过 new 触发的函数 / 方法）内部使用 new.target 时，new 成了一个虚拟上下文，使得 new.target 能够指向调用 new 的目标构造器。
+
+这个是元编程操作的一个明显示例，因为它的目的是从构造器调用内部确定最初 new 的目标是什么，通用地说就是用于内省（检查类型 / 结构）或者静态属性访问。
+
+举例来说，你可能需要在构造器内部根据是直接调用还是通过子类调用采取不同的动作：
+
+```js
+class Parent { 
+  constructor() { 
+    if (new.target === Parent) { 
+      console.log( "Parent instantiated" ); 
+    } 
+    else { 
+      console.log( "A child instantiated" ); 
+    } 
+  } 
+} 
+class Child extends Parent {} 
+var a = new Parent(); 
+// Parent instantiated 
+var b = new Child(); 
+// A child instantiated
+```
+
+这里有点微妙，Parent 类定义内部的 constructor() 实际上被给定了类的词法名称（Parent），即使语法暗示这个类是与构造器分立的实体。
+
+- 公开符号
+
+Symbol.iterator 表示任意对象上的一个专门位置（属性），语言机制自动在这个位置上寻找一个方法，这个方法构造一个迭代器来消耗这个对象的值。很多对象定义有这个符号的默认值。
+
+然而，也可以通过定义 Symbol.iterator 属性为任意对象值定义自己的迭代器逻辑，即使这会覆盖默认的迭代器。这里的元编程特性在于我们定义了一个行为特性，供 JavaScript其他部分（也就是运算符和循环结构）在处理定义的对象时使用。
+
+```js
+var arr = [4,5,6,7,8,9]; 
+for (var v of arr) { 
+  console.log( v ); 
+} 
+// 4 5 6 7 8 9 
+// 定义一个只在奇数索引值产生值的迭代器
+arr[Symbol.iterator] = function*() { 
+  var idx = 1; 
+  do { 
+    yield this[idx]; 
+  } while ((idx += 2) < this.length); 
+}; 
+for (var v of arr) { 
+  console.log( v ); 
+} 
+// 5 7 9
+```
+
+最常见的一个元编程任务，就是在一个值上进行内省来找出它是什么种类，这通常是为了确定其上适合执行何种运算。对于对象来说，最常用的内省技术是 toString() 和 instanceof。
+
+```js
+function Foo() {} 
+var a = new Foo(); 
+a.toString(); // [object Object] 
+a instanceof Foo; // true
+```
+
+在 ES6 中，可以控制这些操作的行为特性：
+
+```js
+function Foo(greeting) { 
+  this.greeting = greeting; 
+} 
+Foo.prototype[Symbol.toStringTag] = "Foo"; 
+Object.defineProperty( Foo, Symbol.hasInstance, { 
+  value: function(inst) { 
+    return inst.greeting == "hello"; 
+  } 
+} ); 
+var a = new Foo( "hello" ), 
+  b = new Foo( "world" ); 
+b[Symbol.toStringTag] = "cool"; 
+a.toString(); // [object Foo] 
+String( b ); // [object cool] 
+a instanceof Foo; // true 
+b instanceof Foo; // false
+```
+
+原型（或实例本身）的 @@toStringTag 符号指定了在 [object ___] 字符串化时使用的符串值。
+
+@@hasInstance 符号是在构造器函数上的一个方法，接受实例对象值，通过返回 true 或false 来指示这个值是否可以被认为是一个实例。
+
+> 要在一个函数上设定 @@hasInstance，必须使用 Object.defineProperty(..)，因为 Function.prototype 上默认的那一个是 writable: false（不可写的）
+
+Symbol.species, 我们介绍了符号 @@species，这个符号控制要生成新实例时，类的内置方法使用哪一个构造器。
+
+最常见的例子是，在创建 Array 的子类并想要定义继承的方法（比如 slice(..)）时使用哪一个构造器（是 Array(..) 还是自定义的子类）。默认情况下，调用 Array 子类实例上的 slice(..) 会创建这个子类的新实例，坦白说这很可能就是你想要的。
+
+但是，你可以通过覆盖一个类的默认 @@species 定义来进行元编程：
+
+```js
+class Cool { 
+  // 把@@species推迟到子类
+  static get [Symbol.species]() { return this; } 
+  again() { 
+    return new this.constructor[Symbol.species](); 
+  } 
+} 
+class Fun extends Cool {} 
+class Awesome extends Cool { 
+  // 强制指定@@species为父构造器
+  static get [Symbol.species]() { return Cool; } 
+} 
+var a = new Fun(), 
+  b = new Awesome(), 
+  c = a.again(), 
+  d = b.again(); 
+c instanceof Fun; // true 
+d instanceof Awesome; // false 
+d instanceof Cool; // true
+```
+
+就像前面代码中 Cool 的定义那样，内置原生构造器上 Symbol.species 的默认行为是return this。在用户类上没有默认值，但是就像展示的那样，这个行为特性很容易模拟。
+
+如果需要定义生成新实例的方法，使用 new this.constructor[Symbol.species](..) 模式元编程，而不要硬编码 new this.constructor(..) 或 new XYZ(..)。然后继承类就能够自定义 Symbol.species 来控制由哪个构造器产生这些实例。
+
+Symbol.toPrimitive, 我们讨论了抽象类型转换运算ToPrimitive，它用在对象为了某个操作（比如比较 == 或者相加 +）必须被强制转换为一个原生类型值的时候。在 ES6 之前，没有办法控制这一行为。
+
+而在 ES6 中，在任意对象值上作为属性的符号 @@toPrimitivesymbol 都可以通过指定一个方法来定制这个 ToPrimitive 强制转换。
+
+```js
+var arr = [1,2,3,4,5]; 
+arr + 10; // 1,2,3,4,510 
+arr[Symbol.toPrimitive] = function(hint) { 
+  if (hint == "default" || hint == "number") { 
+    // 求所有数字之和
+    return this.reduce( function(acc,curr){ 
+      return acc + curr; 
+    }, 0 ); 
+  } 
+}; 
+arr + 10; // 25
+```
+
+Symbol.toPrimitive 方法根据调用 ToPrimitive 的运算期望的类型，会提供一个提示（hint）指定 "string"、"number" 或 "default"（这应该被解释为 "number"）。在前面的代码中，加法 + 运算没有提示（传入 "default"）。而乘法 * 运算提示为 "number"，String(arr)提示为 "string"。
+
+> 如果一个对象与另一个非对象值比较，== 运算符调用这个对象上的ToPrimitive 方法时不指定提示——如果有 @@toPrimitive 方法的话，调用时提示为 "default"。但是，如果比较的两个值都是对象，== 的行为和 === 一样，也就是直接比较其引用。这种情况下完全不会调用 @@toPrimitive。
+
+符号 @@isConcatSpreadable 可以被定义为任意对象（比如数组或其他可迭代对象）的布尔型属性（Symbol.isConcatSpreadable），用来指示如果把它传给一个数组的 concat(..) 是否应该将其展开。
+
+```js
+var a = [1,2,3], 
+  b = [4,5,6]; 
+b[Symbol.isConcatSpreadable] = false; 
+[].concat( a, b ); // [1,2,3,[4,5,6]]
+```
+
+符号 @@unscopables 可以被定义为任意对象的对象属性（Symbol.unscopables），用来指示使用 with 语句时哪些属性可以或不可以暴露为词法变量。
+
+```js
+var o = { a:1, b:2, c:3 }, 
+  a = 10, b = 20, c = 30; 
+o[Symbol.unscopables] = { 
+  a: false, 
+  b: true, 
+  c: false
+}; 
+with (o) { 
+  console.log( a, b, c ); // 1 20 3 
+}
+```
+
+@@unscopables 对象中的 true 表示这个属性应该是 unscopable 的，因此会从词法作用域变量中被过滤出去。false 表示可以将其包含到词法作用域变量中。
+
+> strict 模式下不允许 with 语句，因此应当被认为是语言的过时特性。不要使用它。因为应该避免使用 with，所以符号 @@unscopables 也没有太大意义。
+
+- 代理
+
+Proxy, 代理是一种由你创建的特殊的对象，它“封装”另一个普通对象——或者说挡在这个普通对象的前面。你可以在代理对象上注册特殊的处理函数（也就是 trap），代理上执行各种操作的时候会调用这个程序。这些处理函数除了把操作转发给原始目标 / 被封装对象之外，还有机会执行额外的逻辑。
+
+你可以在代理上定义的 trap 处理函数的一个例子是 get，当你试图访问对象属性的时候，它拦截 [[Get]] 运算。考虑：
+
+```js
+var obj = { a: 1 }, 
+  handlers = { 
+    get(target,key,context) { 
+      // 注意：target === obj, 
+      // context === pobj 
+      console.log( "accessing: ", key ); 
+      return Reflect.get( 
+        target, key, context 
+      ); 
+    } 
+  }, 
+  pobj = new Proxy( obj, handlers ); 
+obj.a; 
+// 1 
+pobj.a; 
+// accessing: a 
+// 1
+```
+
+我们在 handlers（Proxy(..) 的第二个参数）对象上声明了一个 get(..) 处理函数命名方法，它接受一个 target 对象的引用（obj）、key 属性名 ("a") 粗体文字以及 self/ 接收者 /代理（pobj）。
+
+在跟踪语句 console.log(..) 之后，我们把对 obj 的操作通过 Reflect.get(..)“转发”。下一小节中会介绍 APIReflect，这里只要了解每个可用的代理 trap 都有一个对应的同名Reflect 函数即可。
+
+这里的映射是有意对称的。每个代理处理函数在对应的元编程任务执行的时候进行拦截，而每个 Reflect 工具在一个对象上执行相应的元编程任务。每个代理处理函数都有一个自动调用相应的 Reflect 工具的默认定义。几乎可以确定 Proxy 和 Reflect 总是这么协同工作的。
+
+- get(..) -通过 [[Get]]，在代理上访问一个属性（Reflect.get(..)、. 属性运算符或 [ .. ] 属性运算符）
+- set(..) -通过 [[Set]]，在代理上设置一个属性值（Reflect.set(..)、赋值运算符 = 或目标为对象属性的解构赋值）
+- deleteProperty(..) -通 过 [[Delete]]， 从 代 理 对 象 上 删 除 一 个 属 性（Reflect.deleteProperty(..) 或delete）
+- apply(..)（如果目标为函数） -通 过 [[Call]]，将代理作为普通函数 / 方 法 调 用（Reflect.apply(..)、call(..)、apply(..) 或 (..) 调用运算符）
+- construct(..)（如果目标为构造函数） -通过 [[Construct]]，将代理作为构造函数调用（Reflect.construct(..) 或 new）
+- getOwnPropertyDescriptor(..) -通过 [[GetOwnProperty]]，从代理中提取一个属性描述符（Object.getOwnPropertyDescriptor(..)或 Reflect.getOwnPropertyDescriptor(..)）
+- defineProperty(..) -通过 [[DefineOwnProperty]]，在代理上设置一个属性描述符（Object.defineProperty(..)或 Reflect.defineProperty(..)）
+- getPrototypeOf(..) -通 过 [[GetPrototypeOf]]，得到代理的 [[Prototype]]（Object.getPrototypeOf(..)、Reflect.getPrototypeOf(..)、__proto__、Object#isPrototypeOf(..) 或 instanceof）
+- setPrototypeOf(..) -通 过 [[SetPrototypeOf]]，设置代理的 [[Prototype]]（Object.setPrototypeOf(..)、Reflect.setPrototypeOf(..) 或 __proto__）
+- preventExtensions(..) -通过 [[PreventExtensions]]，使得代理变成不可扩展的（Object.prevent Extensions(..)或 Reflect.preventExtensions(..)）
+- isExtensible(..) -通过 [[IsExtensible]]，检测代理是否可扩展（Object.isExtensible(..) 或 Reflect.isExtensible(..)）
+- ownKeys(..) -通过 [[OwnPropertyKeys]]，提取代理自己的属性和 / 或符号属性（Object.keys(..)、Object.getOwnPropertyNames(..)、Object.getOwnSymbolProperties(..)、Reflect.ownKeys(..) 或 JSON.stringify(..)）
+- enumerate(..) -通过 [[Enumerate]]，取得代理拥有的和“继承来的”可枚举属性的迭代器（Reflect.enumerate(..) 或 for..in）
+- has(..) -通过 [[HasProperty]]，检查代理是否拥有或者“继承了”某个属性（Reflect.has(..)、Object#hasOwnProperty(..) 或 "prop" in obj）
+
+除了上面列出的会触发各种 trap 的动作，某些 trap 是由其他 trap 的默认动作间接触发的。
+
+```js
+var handlers = { 
+    getOwnPropertyDescriptor(target,prop) { 
+      console.log( 
+        "getOwnPropertyDescriptor" 
+      ); 
+      return Object.getOwnPropertyDescriptor( 
+        target, prop 
+      ); 
+    }, 
+    defineProperty(target,prop,desc){ 
+      console.log( "defineProperty" ); 
+      return Object.defineProperty( 
+        target, prop, desc 
+      ); 
+    } 
+  }, 
+  proxy = new Proxy( {}, handlers ); 
+
+proxy.a = 2; 
+// getOwnPropertyDescriptor 
+// defineProperty
+```
+
+getOwnPropertyDescriptor(..) 和 defineProperty(..) 处理函数是在设定属性值（不管是新增的还是更新已有的）时由默认 set(..) 处理函数的步骤触发的。如果你也自定义了set(..) 处理函数，那么在 context（不是 target ！）上可以（也可以不）进行相应的调用，这些调用会触发这些代理 trap。
+
+可以在对象上执行的很广泛的一组基本操作都可以通过这些元编程处理函数 trap。但有一些操作是无法（至少现在）拦截的。
+
+比如，下面这些操作都不会 trap 并从代理 pobj 转发到目标 obj：
+
+```js
+var obj = { a:1, b:2 }, 
+  handlers = { .. }, 
+  pobj = new Proxy( obj, handlers ); 
+typeof obj; 
+String( obj ); 
+obj + ""; 
+obj == pobj; 
+obj === pobj
+```
+
+代理处理函数总会有一些不变性（invariant），亦即不能被覆盖的行为。比如，isExtensible(..) 处理函数的返回值总会被类型转换为 boolean。这些不变性限制了自定义代理行为的能力，但它们的目的只是为了防止你创建诡异或罕见（或者不一致）的行为。
+
+可取消代理（revocable proxy）：
+
+```js
+var obj = { a: 1 }, 
+  handlers = { 
+    get(target,key,context) { 
+      // 注意：target === obj, 
+      // context === pobj 
+      console.log( "accessing: ", key ); 
+      return target[key]; 
+    } 
+  }, 
+  { proxy: pobj, revoke: prevoke } = Proxy.revocable( obj, handlers ); 
+pobj.a; 
+// accessing: a 
+// 1 
+// 然后：
+prevoke(); 
+pobj.a; 
+// TypeError
+```
+
+可取消代理用 Proxy.revocable(..) 创建，这是一个普通函数，而不像 Proxy(..) 一样是构造器。除此之外，它接收同样的两个参数：target 和 handlers。
+
+和 new Proxy(..) 不一样，Proxy.revocable(..) 的返回值不是代理本身。而是一个有两个属性——proxy 和 revode 的对象，我们使用对象解构（参见 2.4 节）把这两个属性分别赋给变量 pobj 和 prevoke()。
+
+一旦可取消代理被取消，任何对它的访问（触发它的任意 trap）都会抛出 TypeError。可取消代理的一个可能应用场景是，在你的应用中把代理分发到第三方，其中管理你的模型数据，而不是给出真实模型本身的引用。如果你的模型对象改变或者被替换，就可以使分发出去的代理失效，这样第三方能够（通过错误！）知晓变化并请求更新到这个模型的引用。
+
+1. 代理在先，代理在后
+
+我们在前面介绍过，通常可以把代理看作是对目标对象的“包装”。在这种意义上，代理成为了代码交互的主要对象，而实际目标对象保持隐藏 / 被保护的状态。
+
+你可能这么做是因为你想要把对象传入到某个无法被完全“信任”的环境，因此需要为对它的访问增强规范性，而不是把对象本身传入。
+
+```js
+var messages = [], 
+  handlers = { 
+    get(target,key) { 
+      // 字符串值？
+      if (typeof target[key] == "string") { 
+        // 过滤掉标点符号
+        return target[key].replace( /[^\w]/g, "" ); 
+      } 
+      // 所有其他的传递下去
+      return target[key]; 
+    }, 
+    set(target,key,val) { 
+      // 设定唯一字符串，改为小写
+      if (typeof val == "string") { 
+        val = val.toLowerCase(); 
+        if (target.indexOf( val ) == -1) { 
+          target.push( 
+            val.toLowerCase() 
+          ); 
+        } 
+      } 
+      return true; 
+    } 
+  }, 
+  messages_proxy = 
+  new Proxy( messages, handlers ); 
+// 其他某处：
+messages_proxy.push( 
+  "heLLo...", 42, "wOrlD!!", "WoRld!!" 
+); 
+messages_proxy.forEach( function(val){ 
+  console.log(val); 
+} ); 
+// hello world 
+messages.forEach( function(val){ 
+  console.log(val); 
+} ); 
+// hello... world!!
+```
+
+我称之为代理在先（proxy first）设计，因为我们首先（主要、完全）与代理交互。
+
+通过与 messages_proxy 交互来增加某些特殊的规则，这些是 messages 本身没有的。我们只在值为字符串并且是唯一值的时候才添加这个元素；我们还将这个值变为小写。在从messages_proxy 提取值的时候，我们过滤掉了字符串中的所有标点符号。
+
+另外，我们也可以完全反转这个模式，让目标与代理交流，而不是代理与目标交流。这样，代码只能与主对象交互。这个回退方式的最简单实现就是把 proxy 对象放到主对象[[Prototype]] 链中。
+
+```js
+var handlers = { 
+    get(target,key,context) { 
+      return function() { 
+        context.speak(key + "!"); 
+      }; 
+    } 
+  }, 
+  catchall = new Proxy( {}, handlers ), 
+  greeter = { 
+    speak(who = "someone") { 
+      console.log( "hello", who ); 
+    } 
+  }; 
+// 设定greeter回退到catchall 
+Object.setPrototypeOf( greeter, catchall ); 
+greeter.speak(); // hello someone 
+greeter.speak( "world" ); // hello world 
+greeter.everyone(); // hello everyone!
+```
+
+这里直接与 greeter 而不是 catchall 交流。当我们调用 speak(..) 的时候，它在 greeter上被找到并直接使用。但是当我们试图访问像 everyone() 这样的方法的时候，这个函数在greeter 上并不存在。
+
+默认的对象属性行为是检查 [[Prototype]] 链，所以会查看 catchall 是否有 everyone 属性。然后代理的 get() 处理函数介入并返回一个用访问的属性名（"everyone"）调用 speak(..) 的函数。
+
+我把这个模式称为代理在后（proxy last），因为在这里代理只作为最后的保障。
+
+有一个关于 JavaScript 的常见抱怨，在你试着访问或设置一个还不存在的属性时，默认情况下对象不是非常具有防御性。你可能希望预先定义好一个对象的所有属性 / 方法之后，访问不存在的属性名时能够抛出一个错误。
+
+我们可以通过代理实现这一点，代理在先或代理在后设计都可以。两种情况我们都考虑一下：
+
+```js
+var obj = { 
+    a: 1, 
+    foo() { 
+      console.log( "a:", this.a ); 
+    } 
+  }, 
+  handlers = { 
+    get(target,key,context) { 
+      if (Reflect.has( target, key )) { 
+        return Reflect.get( 
+          target, key, context 
+        ); 
+      } 
+      else { 
+        throw "No such property/method!"; 
+      } 
+    }, 
+    set(target,key,val,context) { 
+      if (Reflect.has( target, key )) { 
+        return Reflect.set( 
+          target, key, val, context 
+        ); 
+      } 
+      else { 
+        throw "No such property/method!"; 
+      } 
+    } 
+  }, 
+  pobj = new Proxy( obj, handlers ); 
+pobj.a = 3; 
+pobj.foo(); // a: 3 
+pobj.b = 4; // Error: No such property/method! 
+pobj.bar(); // Error: No such property/method!
+```
+
+对于 get(..) 和 set(..)，我们都只在目标对象的属性存在的时候才转发这个操作；否则抛出错误。主对象代码应该与代理对象（pobj）交流，因为它截获这些动作以提供保护。
+
+现在，考虑转换为代理在后设计：
+
+```js
+var handlers = { 
+  get() { 
+    throw "No such property/method!"; 
+  }, 
+  set() { 
+    throw "No such property/method!"; 
+  } 
+  }, 
+  pobj = new Proxy( {}, handlers ), 
+  obj = { 
+    a: 1, 
+    foo() { 
+      console.log( "a:", this.a ); 
+    } 
+  }; 
+// 设定obj回退到pobj 
+Object.setPrototypeOf( obj, pobj ); 
+obj.a = 3; 
+obj.foo(); // a: 3 
+obj.b = 4; // Error: No such property/method! 
+obj.bar(); // Error: No such property/method!
+```
+
+考虑到处理函数的定义方式，这里的代理在后设计更简单一些。与截获 [[Get]] 和 [[Set]]操作并且只在目标属性存在情况下才转发不同，我们依赖于这样一个事实：如果 [[Get]] 或[[Set]] 进入我们的 pobj 回退，此时这个动作已经遍历了整个 [[Prototype]] 链并且没有发现匹配的属性。这时候我们可以自由抛出错误。不错吧？
+
+[[Prototype]] 机制运作的主要通道是 [[Get]] 运算。当直接对象中没有找到一个属性的时候，[[Get]] 会自动把这个运算转给 [[Prototype]] 对象处理。
+
+这意味着你可以使用代理的 get(..) trap 来模拟或扩展这个 [[Prototype]] 机制的概念。
+
+我们将考虑的第一个 hack 就是创建两个对象，通过 [[Prototype]] 连成环状（或者，至少看起来是这样！）。实际上并不能创建一个真正的 [[Prototype]] 环，因为引擎会抛出错误。但是可以用代理模拟！
+
+```js
+var handlers = { 
+    get(target,key,context) { 
+      if (Reflect.has( target, key )) { 
+        return Reflect.get( 
+          target, key, context 
+        ); 
+      } 
+      // 伪环状[[Prototype]] 
+      else { 
+        return Reflect.get( 
+          target[ 
+            Symbol.for( "[[Prototype]]" ) 
+          ], 
+          key, 
+          context 
+        ); 
+      } 
+    } 
+  }, 
+  obj1 = new Proxy( 
+    { 
+      name: "obj-1", 
+      foo() { 
+        console.log( "foo:", this.name ); 
+      } 
+    }, 
+    handlers ), 
+  ), 
+  obj2 = Object.assign( 
+    Object.create( obj1 ), 
+    { 
+      name: "obj-2", 
+      bar() { 
+        console.log( "bar:", this.name ); 
+        this.foo(); 
+      } 
+    } 
+  ); 
+// 伪环状[[Prototype]]链接
+obj1[ Symbol.for( "[[Prototype]]" ) ] = obj2; 
+obj1.bar(); 
+// bar: obj-1 <-- 通过代理伪装[[Prototype]] 
+// foo: obj-1 <-- this上下文依然保留着
+obj2.foo(); 
+// foo: obj-2 <-- 通过[[Prototype]]
+```
+
+> 在这个例子中，我们不需要代理 / 转发 [[Set]]，所以比较简单。要完整模拟[[Prototype]]，需要实现一个 set(..) 处理函数来搜索 [[Prototype]] 链寻找匹配的属性，并遵守其描述符特性（比如 set，可写的）
+
+在前面的代码中，通过 Object.create(..) 语句 obj2 [[Prototype]] 链接到了 obj1。而为了创建反向（环）的链接，我们在 obj1 符号位置 Symbol.for("[[Prototype]]")处创建了属性。这个符号可能看起来有点特殊 / 神奇，但实际上并非如此。它只是给我提供了一个方便的与我正在执行的任务关联的命名钩子，以便语义上引用。
+
+然后，代理的 get(..) 处理函数首先查看这个代理上是否有请求的 key。如果没有，就手动把这个运算转发给保存在 target 的 Symbol.for("[[Prototype]]") 位置中的对象引用。
+
+这种模式的一个重要优点是，obj1 和 obj2 的定义几乎不会受到在它们之间建立的这种环状关系的影响。尽管为了简洁的缘故，前面代码把所有的代码都纠缠到了一起，但是仔细观察可以看到，代理处理函数的逻辑完全是通用的（并不具体了解obj1 和 obj2 的细节）。所以，这段逻辑可提取出来封装为一个单独的辅助函数，比如setCircularPrototypeOf(..)。我们把这个实现留给读者作为练习。
+
+既然已经了解了如何通过 get(..) 来模拟一个 [[Prototype]] 链接，现在让我们来深入hack 一下。不用环状 [[Prototype]]，用多个 [[Prototype]] 链接（也就是“多继承”）怎么样？实际上这非常简单直接：
+
+```js
+var obj1 = { 
+    name: "obj-1", 
+    foo() { 
+      console.log( "obj1.foo:", this.name ); 
+    }, 
+  }, 
+  obj2 = { 
+    name: "obj-2", 
+    foo() { 
+      console.log( "obj2.foo:", this.name ); 
+    }, 
+    bar() { 
+      console.log( "obj2.bar:", this.name ); 
+    } 
+  }, 
+  handlers = { 
+    get(target,key,context) { 
+      if (Reflect.has( target, key )) { 
+        return Reflect.get( 
+          target, key, context 
+        ); 
+      } 
+      // 伪装多个[[Prototype]] 
+      else { 
+        for (var P of target[ 
+          Symbol.for( "[[Prototype]]" ) 
+        ]) { 
+          if (Reflect.has( P, key )) { 
+            return Reflect.get( 
+              P, key, context 
+            ); 
+          } 
+        } 
+      } 
+    } 
+  }, 
+  obj3 = new Proxy( 
+    { 
+      name: "obj-3", 
+      baz() { 
+        this.foo(); 
+        this.bar(); 
+      } 
+    }, 
+    handlers 
+  ); 
+// 伪装多个[[Prototype]]链接
+obj3[ Symbol.for( "[[Prototype]]" ) ] = [ 
+  obj1, obj2 
+]; 
+obj3.baz(); 
+// obj1.foo: obj-3 
+// obj2.bar: obj-3
+```
+
+> 正如前面环状 [[Prototype]] 例子之后的注释中提到的一样，我们没有实现set(..) 处理函数，但是要实现一个完整解决方案，模拟 [[Set]] 动作作为普通的 [[Prototype]] 行为是必要的。
+
+obj3 建立了多委托到 obj1 和 obj2。在 obj3.baz() 中，this.foo() 调用最后从 obj1 中提出foo()（先到先得，虽然 obj2 上也有一个 foo()）。如果我们把链接重新排序为 obj2、obj1，就会找到并使用 obj2.foo()。
+
+而现在 this.bar() 调用不会在 obj1 上找到 bar()，所以它会陷入检查 obj2，在其中找到匹配。
+
+obj1 和 obj2 表示 obj3 的两条平行的 [[Prototype]] 链。obj1 和 / 或 obj2 本身也可以有普通的 [[Prototype]] 委托到其他对象，或者本身也可以是一个多委托的代理（就像obj3 一样）。
+
+就像前面的环状 [[Prototype]] 链例子一样，obj1、obj2 和 obj3 的定义与通用的处理多委托代理的逻辑几乎是完全分离的。要定义一个像 setPrototypesOf(..)（注意这个表示复数的“s”）这样的工具接收一个主对象和一个对象列表来模拟多 [[Prototype]] 链接是很简单的。我们还是把这个实现留给读者作为练习。
+
+希望在各种各样的例子之后代理的威力现在变得明朗了。代理使得很多其他威力强大的元编程任务成为可能。
+
+- Reflect API
+
+Reflect 对象是一个平凡对象（就像 Math），不像其他内置原生值一样是函数 / 构造器。
+
+- Reflect.getOwnPropertyDescriptor(..); 
+- Reflect.defineProperty(..); 
+- Reflect.getPrototypeOf(..);
+- Reflect.setPrototypeOf(..);
+- Reflect.preventExtensions(..);
+- Reflect.isExtensible(..)。
+
+一般来说这些工具和 Object.* 的对应工具行为方式类似。但是，有一个区别是如果第一个参数（目标对象）不是对象的话，Object.* 相应工具会试图把它类型转换为一个对象。而这种情况下 Reflect.* 方法只会抛出一个错误。
+
+可以使用下面这些工具访问 / 查看一个对象键：
+
+- Reflect.ownKeys(..) -返回所有“拥有”的（不是“继承”的）键的列表，就像 Object.getOwnPropertyNames (..) 和 Object.getOwnPropertySymbols(..) 返回的一样。关于键的顺序参见后面的“属性排序”一节。
+- Reflect.enumerate(..) -返回一个产生所有（拥有的和“继承的”）可枚举的（enumerable）非符号键集合的迭代器。本质上说，这个键的集合和 foo..in 循环处理的那个键的集合是一样的。关于键的顺序参见后面的“属性排序”一节。
+- Reflect.has(..) -实质上和 in 运 算 符 一 样， 用 于 检 查 某 个 属 性 是 否 在 某 个 对 象 上 或 者 在 它 的[[Prototype]] 链上。比如，Reflect.has(o, "foo") 实质上就是执行 "foo" in o。
+
+函数调用和构造器调用可以通过使用下面这些工具手动执行，与普通的语法（比如，(..)和 new）分开 :
+
+- Reflect.apply(..) -举例来说，Reflect.apply(foo,thisObj,[42,"bar"]) 以 thisObj 作为 this 调用 foo(..)函数，传入参数 42 和 "bar"。
+- Reflect.construct(..) -举例来说，Reflect.construct(foo,[42,"bar"]) 实质上就是调用 new foo(42,"bar")。可以使用下面这些工具来手动执行对象属性访问、设置和删除。
+- Reflect.get(..) -举例来说，Reflect.get(o,"foo") 提取 o.foo。
+- Reflect.set(..) -举例来说，Reflect.set(o,"foo",42) 实质上就是执行 o.foo = 42。
+- Reflect.deleteProperty(..) -举例来说，Reflect.deleteProperty(o,"foo") 实质上就是执行 delete o.foo。
+
+对于 ES6 来说，拥有属性的列出顺序是由 [[OwnPropertyKeys]] 算法定义的（ES6 规范，9.1.12 节），这个算法产生所有拥有的属性（字符串或符号），不管是否可枚举。这个顺序只对 Reflect.ownKeys(..)（以及扩展的 Object.getOwnPropertyNames(..) 和 Object.getOwnPropertySymbols(..)）有保证。
+
+其顺序为：
+
+1. 首先，按照数字上升排序，枚举所有整数索引拥有的属性；
+2. 然后，按照创建顺序枚举其余的拥有的字符串属性名；
+3. 最后，按照创建顺序枚举拥有的符号属性。
+
+```js
+var o = {}; 
+o[Symbol("c")] = "yay"; 
+o[2] = true; 
+o[1] = true; 
+o.b = "awesome"; 
+o.a = "cool"; 
+Reflect.ownKeys( o ); // [1,2,"b","a",Symbol(c)] 
+Object.getOwnPropertyNames( o ); // [1,2,"b","a"] 
+Object.getOwnPropertySymbols( o ); // [Symbol(c)]
+```
+
+另一方面，[[Enumerate]] 算法（ES6 规范，9.1.11 节）只从目标对象和它的 [[Prototype]]链产生可枚举属性。它用于 Reflect.enumerate(..) 和 for..in。可以观察到的顺序和具体的实现相关，不由规范控制。
+
+与之对比，Object.keys(..) 调用 [[OwnPropertyKeys]] 算法取得拥有的所有键的列表。但是，它会过滤掉不可枚举属性，然后把这个列表重新排序来遵循遗留的与实现相关的行为特性，特别是 JSON.stringify(..) 和 for..in。因此通过扩展，这个顺序也和 Reflect.enumerate(..) 顺序相匹配。
+
+换句话说，所有这 4 种机制（Reflect.enumerate(..)、Object.keys(..)、for..in 和 JSON.stringify(..)）都会匹配同样的与具体实现相关的排序，尽管严格上说是通过不同的路径。
+
+把这 4 种机制与 [[OwnPropertyKeys]] 的排序匹配的具体实现是允许的，但并不是必须的。尽管如此，你很可能会看到它们的排序特性是这样的：
+
+```js
+var o = { a: 1, b: 2 }; 
+var p = Object.create( o ); 
+p.c = 3; 
+p.d = 4; 
+for (var prop of Reflect.enumerate( p )) { 
+  console.log( prop ); 
+} 
+// c d a b 
+for (var prop in p) { 
+  console.log( prop ); 
+} 
+// c d a b 
+JSON.stringify( p ); 
+// {"c":3,"d":4} 
+Object.keys( p ); 
+// ["c","d"]
+```
+
+总 结 一 下： 对 于 ES6 来 说，Reflect.ownKeys(..)、Object.getOwnPropertyNames(..) 和Object.getOwnPropertySymbols(..) 的顺序都是可预测且可靠的，这由规范保证。所以依赖于这个顺序的代码是安全的。
+
+Reflect.enumerate(..)、Object.keys(..) 和 for..in（以及扩展的 JSON.stringification(..)）还像过去一样，可观察的顺序是相同的。但是这个顺序不再必须与 Reflect.ownKeys(..) 相同。在使用它们依赖于具体实现的顺序时仍然要小心。
+
+- 尾递归调用（Tail Call Optimization,TCO）
+
+通常，在一个函数内部调用另一个函数的时候，会分配第二个栈帧来独立管理第二个函数调用的变量 / 状态。这个分配不但消耗处理时间，也消耗了额外的内存。
+
+通常调用栈链最多有 10~15 个从一个函数到另一个函数的跳转。这种情况下，内存使用并不会造成任何实际问题。
+
+但是，当考虑到递归编程的时候（一个函数重复调用自身）——或者两个或多个函数彼此调用形成递归——调用栈的深度很容易达到成百上千，甚至更多。如果内存的使用无限制地增长下去，你可能看到了它将导致的问题。
+
+JavaScript 引擎不得不设置一个武断的限制来防止这种编程技术引起浏览器和设备内存耗尽而崩溃。这也是为什么达到这个限制的时候我们会得到烦人的“RangeError: Maximum call stack size exceeded”
+
+有一些称为尾调用（tail call）的函数调用模式，可以以避免额外栈帧分配的方式进行优化。如果可以避免额外的分配，就没有理由任意限制调用栈深度，所以引擎就可以不设置这个限制。
+
+尾调用是一个 return 函数调用的语句，除了调用后返回其返回值之外没有任何其他动作。这个优化只在 strict 模式下应用。这又是一个要坚持编写 strict 模式代码的原因！下面是一个不在尾位置的函数调用：
+
+```js
+"use strict"; 
+function foo(x) { 
+  return x * 2; 
+} 
+function bar(x) { 
+  // 这不是尾调用
+  return 1 + foo( x ); 
+} 
+bar( 10 ); // 21
+```
+
+foo(x) 调用完毕后还得执行 1 + ..，所以 bar(..) 调用的状态需要被保留。
+
+但下面代码展示的对 foo(..) 和 bar(..) 的调用都处于尾位置，因为它们是在其代码路径上发生的最后一件事（除了 return）：
+
+```js
+function foo(x) { 
+  return x * 2; 
+} 
+function bar(x) { 
+  x = x + 1; 
+  if (x > 10) { 
+    return foo( x ); 
+  } 
+  else { 
+    return bar( x + 1 ); 
+  } 
+} 
+bar( 5 ); // 24 
+bar( 15 ); // 32
+```
+
+在这个程序中，bar(..) 显然是递归，而 foo(..) 只是一个普通函数调用。在这两种情况下，函数调用都处于合适的尾位置（proper tail position）。x + 1 在 bar(..) 调用之前求值，在调用结束后，所做的只有 return。
+
+这些形式的正确尾调用（Proper Tail Call，PTC）是可以被优化的——称为尾调用优化（Tail Call Optimization，TCO）——于是额外的栈帧分配是不需要的。引擎不需要对下一个函数调用创建一个新的栈帧，只需复用已有的栈帧。这能够工作是因为一个函数不需要保留任何当前状态——在 PTC 之后不需要这个状态做任何事情。
+
+TCO 意味着对调用栈的允许深度没有任何限度。对于一般程序中的普通函数调用，这个技巧有些许优化，但更重要的是打开了在程序表达中使用递归的大门，甚至是调用栈的调用深度可能达到成千上万的时候。
+
+现在我们不再只把递归作为解决问题的理论方案了，而是可以实际将其用在 JavaScript 程序中
+
+但这里的问题是只有 PTC 可以被优化；非 PTC 当然仍然可以工作，但会像以前一样触发栈帧分配。如果你希望这个优化介入的话，需要认真设计函数结构支持 PTC。
+
+如果有一个函数不是以 PTC 方式编写的，那么你可能会需要手动重新安排代码以适合TCO。
+
+```js
+"use strict"; 
+function foo(x) { 
+  if (x <= 1) return 1; 
+  return (x / 2) + foo( x - 1 ); 
+} 
+foo( 123456 ); // RangeError
+```
+
+调用 foo(x-1) 不是 PTC，因为它的结果每次在 return 之前要加上 (x / 2)。
+
+但是，要想使这段代码适合 ES6 引擎 TCO，可以这样重写：
+
+```js
+"use strict"; 
+var foo = (function(){ 
+  function _foo(acc,x) { 
+  if (x <= 1) return acc; 
+    return _foo( (x / 2) + acc, x - 1 ); 
+  } 
+  return function(x) { 
+    return _foo( 1, x ); 
+  }; 
+})(); 
+foo( 123456 ); // 3810376848.5
+```
+
+如果你在实现了 TCO 的 ES6 引擎中运行前面的代码，会得到如前显示的 3810376848.5。然而，它在非 TCO 引擎里仍然会因 RangeError 而失败。
+
+在非 TCO 引擎中，递归循环最终会失败，抛出一个异常被 try..catch 捕获。换句话说，有了 TCO，循环才能完成。
+
 ### ES6之后
+
+- 异步函数
+
+生成器向类似运行器的工具 yield 出 promise，这个运行器工具会在 promise 完成时恢复生成器。让我们来简单了解一下这个提案提出的特性 async function, JavaScript 将会自动了解如何寻找要等待和恢复的 promise。
+
+```js
+async function main() { 
+  var ret = await step1(); 
+  try { 
+    ret = await step2( ret ); 
+  } 
+  catch (err) { 
+    ret = await step2Failed( err ); 
+  } 
+  ret = await Promise.all( [ 
+    step3a( ret ), 
+    step3b( ret ), 
+    step3c( ret ) 
+  ] ); 
+  await step4( ret ); 
+} 
+main() 
+.then( 
+  function fulfilled(){ 
+    // main()成功完成
+  }, 
+  function rejected(reason){ 
+    // 哎呀，出错了
+  } 
+);
+```
+
+我们没有使用 function *main() {.. 声明，而是使用了 async function main() {.. 形式。而且，没有 yield 出一个 promise，而是 await 这个 promise。调用来运行函数 main() 实际上返回了一个可以直接观察的 promise。这和从 run(main) 调用返回的 promise 是等价的。
+
+看到这种对称性了吗？ async function 本质上就是生成器＋ promise ＋ run(..) 模式的语法糖；它们底层的运作方式是一样的！
+
+> 还有一个对 async function* 的提案，可以称之为“异步生成器”。你可以在同一段代码中既 yield 又 await，甚至可以把这两个运算放在同一个语句：x = await yield y。这个“异步生成器”提案似乎更不稳定——具体说，它的返回值还没有完全确定。有些人认为返回值应该是一个observable，有点类似于一个迭代器和一个 promise 的合并。目前我们不会深入探讨这个主题，但会对它保持关注。
+
+async function 有一个没有解决的问题，因为它只返回一个 promise，所以没有办法从外部取消一个正在运行的 async function 实例。如果这个异步操作的资源紧张，那么可能会引起问题，因为一旦你确认不需要结果就会想要释放资源。
+
+```js
+async function request(url) { 
+  var resp = await ( 
+    new Promise( function(resolve,reject){ 
+      var xhr = new XMLHttpRequest(); 
+      xhr.open( "GET", url ); 
+      xhr.onreadystatechange = function(){ 
+        if (xhr.readyState == 4) { 
+          if (xhr.status == 200) { 
+            resolve( xhr ); 
+          } 
+          else { 
+            reject( xhr.statusText ); 
+          } 
+          } 
+      }; 
+      xhr.send(); 
+    }) 
+  ); 
+  return resp.responseText; 
+} 
+var pr = request( "http://some.url.1" ); 
+pr.then( 
+  function fulfilled(responseText){ 
+    // ajax成功
+  }, 
+  function rejected(reason){ 
+    //哎呀，出错了
+  } 
+);
+```
+
+我给出的这个 request(..) 有点像最近提出要集成到 Web 平台上的 fetch(..) 工具。那么问题来了，如果你想要用 pr 值以某种方法指示取消一个长时间运行的 Ajax 请求会怎样呢？
+
+Promise 是不可取消的（至少在编写本部分的时候是如此）。和很多人一样，我的看法是它们永远不应该被取消。而且即使它有一个 cancel() 方法，就一定意味着调用 pr.cancel() 应该把取消信号一路沿着promise 链传播回到 async function 吗？
+
+编写本部分时，async function 返回普通 promise，所以返回值不太可能会彻底改变。但是判断最终如何发展还为时过早。我们对这个讨论保持关注吧。
+
+- Object.observe(..)
+
+Web 前端开发的圣杯之一就是数据绑定——侦听数据对象的更新，同步这个数据的 DOM表示。多数 JavaScript 框架都为这类操作提供了某种机制。
+
+可能在后 ES6，我们将会看到通过工具 Object.observe(..) 直接添加到语言中的支持。本质上说，这个思路就是你可以建立一个侦听者（listener）来观察对象的改变，然后在每次变化发生时调用一个回调。例如，你可以据此更新 DOM
+
+你可以观察的改变有 6 种类型：
+
+- add
+- update
+- delete
+- reconfigure
+- setPrototype
+- preventExtensions
+
+默认情况下，你可以得到所有这些类型的变化的通知，也可以进行过滤只侦听关注的类型。
+
+```js
+var obj = { a: 1, b: 2 }; 
+Object.observe( 
+  obj, 
+  function(changes){ 
+    for (var change of changes) { 
+      console.log( change ); 
+    } 
+  }, 
+  [ "add", "update", "delete" ] 
+); 
+obj.c = 3; 
+// { name: "c", object: obj, type: "add" } 
+obj.a = 42; 
+// { name: "a", object: obj, type: "update", oldValue: 1 } 
+delete obj.b; 
+// { name: "b", object: obj, type: "delete", oldValue: 2 }
+```
+
+除了主要的 "add"、"update" 和 "delete" 变化类型：
+
+- 如果一个对象通过 Object.defineProperty(..) 重新配置这个对象的属性，比如修改它的 writable 属性，就会发出 "reconfigure" 改变事件。
+- 如果一个对象通过 Object.preventExtensions(..) 变为不可扩展，就会发出 "prevent Extensions" 改变事件。
+
+因 为 Object.seal(..) 和 Object.freeze(..) 也都意味着 Object.preventExtensions(..)，所以它们也会发出相应的改变事件。另外，对象的每个属性都会发出 "reconfigure" 改变事件。如果一个对象的 [[Prototype]] 改变，或者通过 __proto__ setter 来设置，或者使用Object.setPrototy peOf(..) 来设置，都会发出 "setPrototype" 改变事件。
+
+注意，这些改变事件会在改变发生后立即发出。不要把这一点和代理混淆，代理是可以在动作发生之前拦截的。对象观察支持在变化（或一组变化）发生后响应。
+
+除了前面 6 类内置改变事件，你也可以侦听和发出自定义改变事件。
+
+```js
+function observer(changes){ 
+  for (var change of changes) { 
+    if (change.type == "recalc") { 
+      change.object.c = 
+      change.object.oldValue + 
+      change.object.a + 
+      change.object.b; 
+    } 
+  } 
+} 
+function changeObj(a,b) { 
+  var notifier = Object.getNotifier( obj ); 
+  obj.a = a * 2; 
+  obj.b = b * 3; 
+  // 把改变事件排到一个集合中
+  notifier.notify( { 
+    type: "recalc", 
+    name: "c", 
+    oldValue: obj.c 
+  } ); 
+} 
+var obj = { a: 1, b: 2, c: 3 }; 
+Object.observe( 
+  obj, 
+  observer, 
+  ["recalc"] 
+); 
+changeObj( 3, 11 ); 
+obj.a; // 12 
+obj.b; // 30 
+obj.c; // 3
+```
+
+改变集合（"recalc" 自定义事件）已经排入队列准备发送给观测者，但是还没有发送，因此 obj.c 的值仍然是 3。
+
+默认情况下，改变会在当前事件循环的最后发送）。如果你想要立即发送，可以使用 Object.deliverChangeRecords(observer)。一旦改变事件发送后，你就可以看到 obj.c 如预期地更新为：
+
+```js
+obj.c; // 42
+```
+
+在前面的例子中，我们用完成改变事件记录来调用 notifier.notify(..)。还有一种改变记录入队的方式是使用 performChange(..)，这会把指定事件类型从其余事件记录属性中分离出来（通过函数回调）。考虑：
+
+```js
+notifier.performChange( "recalc", function(){ 
+  return { 
+    name: "c", 
+    // this就是在观察之中的对象
+    oldValue: this.c 
+  }; 
+} );
+```
+
+就像普通的事件侦听器一样，你可能希望停止观测一个对象的改变事件。为此，可以通过Object.unobserve(..) 来实现。
+
+```js
+var obj = { a: 1, b: 2 }; 
+Object.observe( obj, function observer(changes) { 
+  for (var change of changes) { 
+    if (change.type == "setPrototype") { 
+      Object.unobserve( 
+        change.object, observer 
+      ); 
+      break; 
+    } 
+  } 
+} );
+```
+
+在这个小例子中，我们侦听改变事件，直到看到 "setPrototype" 事件发生，然后就停止观察任何新改变事件。
+
+- 幂运算符
+
+```js
+var a = 2; 
+a ** 4; // Math.pow( a, 4 ) == 16 
+a **= 3; // a = Math.pow( a, 3 ) 
+a; // 8
+```
+
+- 对象属性与 ...
+
+```js
+var o1 = { a: 1, b: 2 }, 
+  o2 = { c: 3 }, 
+  o3 = { ...o1, ...o2, d: 4 }; 
+console.log( o3.a, o3.b, o3.c, o3.d ); 
+// 1 2 3 4
+
+// ... 运算符可能也会用于把对象的解构属性收集到一个对象：
+var o1 = { b: 2, c: 3, d: 4 }; 
+var { b, ...o2 } = o1; 
+console.log( b, o2.c, o2.d ); // 2 3 4
+// 在这里，...o2 把解构的 c 和 d 属性重新收集回到 o2 对象（o2 没有 o1 中的 a b 属性）
+```
+
+- Array#includes(..)
+
+JavaScript 开发者需要执行的一个极其常见的任务就是在值数组中搜索一个值。一直以来实现这个任务的方法是：
+
+```js
+var vals = [ "foo", "bar", 42, "baz" ]; 
+if (vals.indexOf( 42 ) >= 0) { 
+  // 找到了! 
+}
+```
+
+使用 >= 0 检查的原因是，如果找到的话 indexOf(..) 返回一个 0 或者更大的数字值，如果没有找到就会返回 -1。换句话说，我们是在布尔值上下文中使用返回索引的函数。因为 -1为真而不是假，所以需要更多的手动检查。
+
+```js
+var vals = [ "foo", "bar", 42, "baz" ]; 
+if (~vals.indexOf( 42 )) { 
+  // 找到了! 
+}
+```
+
+这里的 ~ 运算符把 indexOf(..) 返回值规范为更适合强制转换为布尔型的值范围。也就是说，-1 产生 0( 假 )，所有其他值产生非 0 值 ( 真），这正是判断是否找到这个值所需的
+
+我认为这是一个改进，然而其他人强烈反对。但是，没有人认为 indexOf(..) 的搜索逻辑是完美的。比如，它无法找到数组中 NaN 值。
+
+于是出现了一个获得了大量支持的提案，提出增加一个真正返回布尔值的数组搜索方法，称为 includes(..):
+
+```js
+var vals = [ "foo", "bar", 42, "baz" ]; 
+if (vals.includes( 42 )) { 
+  // 找到了! 
+}
+```
+
+> Array#includes(..) 使用的匹配逻辑能够找到 NaN 值，但是无法区分 -0 和0。如果你不关心程序中的 -0 值，那么这可能就是你所需要的。如果你确实在意这个 -0 值的话，那么你就需要实现自己的搜索逻辑，很可能是使用 Object.is(..) 工具
+
+-  SIMD
+
+SIMD API 暴露了可以同时对多个数字值运算的各种底层（CPU）指令。比如，你可以指定两个向量，其中分别有 4 个或 8 个数字，把它们的对应元素一次全部相乘（数据并行！）。
+
+```js
+var v1 = SIMD.float32x4( 3.14159, 21.0, 32.3, 55.55 ); 
+var v2 = SIMD.float32x4( 2.1, 3.2, 4.3, 5.4 ); 
+SIMD.float32x4.mul( v1, v2 ); 
+// [ 6.597339, 67.2, 138.89, 299.97 ]
+```
+
+除了 mul(..)（相乘）之外，SIMD 还会包含其他几个运算，比如 sub()、div()、abs()、neg()、sqrt() 以及很多其他运算。
+
+对于下一代高性能 JavaScript 应用来说，并行数学运算是很关键的。
+
+-  WebAssembly (WASM)
+
+本质上说，如果 WASM 发布，JavaScript 引擎将会获得执行二进制格式代码的新能力，这种格式某种程度上类似于字节码（bytecode，就像 JVM 上运行的那样）。
+
+WASM 提出了一种代码的高度压缩 AST（语法树）二进制表示格式，然后可以直接向JavaScript 引擎发出指令，而它的基础结构，不需要通过 JavaScript 解析，甚至不需要符合JavaScript 的规则。像 C 或 C++ 这样的语言可以被直接编译为 WASM 格式而不是 ASM.js，这样通过跳过 JavaScript 解析会获得额外的速度优势。
+
+WASM 的近期目标是与 ASM.js 和真正 JavaScript 相当。但最终的预期是，WASM 将会增加新功能，而这些新功能是超出 JavaScript 所能做的。比如像线程这样的激进功能给JavaScript 带来了很大压力——这个改变将会给整个 JavaScript 生态系统带来巨大震撼——将很可能会成为一个 WASM 扩展，缓解 JavaScript 本身的修改压力。
+
+实际上，这个新的发展图景为很多语言打开了新的道路，使其能够进入 Web 运行时。对于Web 平台来说，这是一个令人激动的新特性。
+
+对于 JavaScript 来说这意味着什么？ JavaScript 将会变得无关紧要或者“死去”吗？绝对不会！看起来在以后的几年里，ASM.js 不会有太大的发展了，但在 Web 平台中 JavaScript 的主体还是非常安全的。
+
+WASM 的支持者认为，WASM 的成功将意味着 JavaScript 的设计可以免于被不现实的需求撕裂的压力。重点是，对于应用中的高性能部分 WASM 是更好的目标，可以用其他多种语言编写。
+
+有趣的是，JavaScript 是未来不太可能转化为 WASM 的语言之一。未来的修改可能会刻划出 JavaScript 的一个适合于转化为 WASM 的子集，但是这条发展路径的优先级似乎并不高。
+
+尽管 JavaScript 很可能不会转化为 WASM，但是 JavaScript 代码和 WASM 代码将能够最大程度地交互，就像现在的模块交互一样自然。你可以设想调用像 foo() 这样的 JavaScript函数，而实际上调用的是一个同名的能够在你的其余 JavaScript 的限制之外良好运行的WASM 函数。
+
+当下用 JavaScript 编写的代码将可能继续用它编写，至少在可见的未来是这样。transpile到 JavaScript 的东西将可能最终考虑使用 WASM 替代。对于那些性能要求极高，不能容忍多层抽象的功能，最有可能的选择是寻找合适的非 JavaScript 语言编写，然后以WASM 为目标。
+
+这个转变可能会比较缓慢，需要几年才能完成。WASM 进入所有主流浏览器平台可能至少也需要数年。同时，WASM 项目（https://github.com/WebAssembly）已经有一个早期的polyfill 对其基本宗旨提供了概念证明。
+
+但随着时间的发展，也随着 WASM 学到更多非 JavaScript 技巧，很可能当前一些JavaScript 的东西会被重构为以 WASM 为目标的语言。举例来说，框架、游戏引擎以及其他常用工具中性能敏感的部分都可能从这样的转变中获益。在自己的 Web 应用中使用这些工具的开发者很可能不会注意到使用和集成过程中的差别，只会自动受益于性能和功能的提高。
