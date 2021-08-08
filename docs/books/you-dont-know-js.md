@@ -4619,7 +4619,7 @@ if 语句包含了块作用域变量 b 和 c，块作用域变量 j 存在于 fo
 }
 ```
 
-过早访问 let 声明的引用导致的这个 ReferenceError 严格说叫作临时死亡区（Temporal Dead Zone，TDZ）错误——你在访问一个已经声明但没有初始化的变量。
+过早访问 let 声明的引用导致的这个 ReferenceError 严格说叫作临时死亡区（Temporal Dead Zone，TDZ）错误——你在访问一个已经声明但没有初始化（赋值）的变量——它防止变量在未初始化的状态下被访问。
 
 :::warning 注意
 const: 常量不是对这个值本身的限制，而是对赋值的那个变量的限制。换句话说，这个值并没有因为 const 被锁定或者不可变，只是赋值本身不可变。如果这个值是复杂值，比如对象或者数组，其内容仍然是可以修改的。
@@ -4667,16 +4667,1133 @@ function foo(...args) {
   args.shift(); 
   // 把整个args作为参数传给console.log(..) 
   console.log( ...args ); 
-  } 
+}
 ```
 
----
+```js
+function foo(x = 11, y = 31) { 
+  console.log( x + y ); 
+}
 
-2.3 默认参数值
+foo( 5, undefined ); // 36 <-- 丢了undefined 
+foo( 5, null ); // 5 <-- null被强制转换为0 
+```
+
+> 注意函数声明中形式参数是在它们自己的作用域中（可以把它看作是就在函数声明包裹的 ( .. ) 的作用域中），而不是在函数体作用域中。这意味着在默认值表达式中的标识符引用首先匹配到形式参数作用域，然后才会搜索外层作用域。
+
+```js
+var w = 1, z = 2; 
+function foo( x = w + 1, y = x + 1, z = z + 1 ) { 
+  console.log( x, y, z ); 
+} 
+foo(); // ReferenceError
+```
+
+对于对象解构形式来说，如果省略了 var/let/const 声明符，就必须把整个赋值表达式用 ( ) 括起来。因为如果不这样做，语句左侧的 {..} 作为语句中的第一个元素就会被当作是一个块语句而不是一个对象
+
+```js
+var a, b, c, x, y, z; 
+
+[a,b,c] = foo(); 
+( { x, y, z } = bar() ); 
+
+console.log( a, b, c ); // 1 2 3 
+console.log( x, y, z ); // 4 5 6
+```
+
+解构中使用计算出的属性表达式。[which]: 这一部分是计算出的属性，结果是 x
+
+```js
+var which = "x", 
+  o = {}; 
+
+( { [which]: o[which] } = bar() ); 
+
+console.log( o.x ); // 4
+```
+
+甚至可以不用临时变量解决“交换两个变量”这个经典问题：
+
+```js
+var x = 10, y = 20; 
+[ y, x ] = [ x, y ]; 
+console.log( x, y ); // 20 10
+```
+
+```js
+var o = { a:1, b:2, c:3 }, 
+  a, b, c, p; 
+p = { a, b, c } = o; 
+console.log( a, b, c ); // 1 2 3 
+p === o; // true
+// p 赋值为对象 o 的引用，而不是 a、b 或者 c 的值之一
+
+var o = { a:1, b:2, c:3 }, 
+  p = [4,5,6], 
+  a, b, c, x, y, z; 
+( {a} = {b,c} = o ); 
+[x,y] = [z] = p; 
+console.log( a, b, c ); // 1 2 3 
+console.log( x, y, z ); // 4 5 4
+// 通过持有对象 / 数组的值作为完成值，可以把解构赋值表达式组成链
+
+var [ a = 3, b = 6, c = 9, d = 12 ] = foo(); 
+var { x = 5, y = 10, z = 15, w = 20 } = bar(); 
+console.log( a, b, c, d ); // 1 2 3 12 
+console.log( x, y, z, w ); // 4 5 6 20
+// 默认值赋值
+
+var o = { 
+  __id: 10, 
+  get id() { return this.__id++; }, 
+  set id(v) { this.__id = v; } 
+} 
+o.id; // 10 
+o.id; // 11 
+o.id = 20; 
+o.id; // 20 
+// and: 
+o.__id; // 21 
+o.__id; // 21--保持不变!
+```
+
+```js
+var o1 = { 
+  foo() { 
+    console.log( "o1:foo" ); 
+  } 
+}; 
+var o2 = { 
+  foo() { 
+    super.foo(); 
+    console.log( "o2:foo" ); 
+  } 
+}; 
+Object.setPrototypeOf( o2, o1 ); 
+o2.foo(); // o1:foo 
+ // o2:foo
+```
+
+super 只允许在简洁方法中出现，而不允许在普通函数表达式属性中出现。也只允许以 super.XXX 的形式（用于属性 / 方法访问）出现，而不能以super() 的形式出现。
+
+```js
+function foo(strings, ...values) { 
+  console.log( strings ); 
+  console.log( values ); 
+} 
+
+var desc = "awesome"; 
+foo`Everything is ${desc}!`; 
+// [ "Everything is ", "!"] 
+// [ "awesome" ]
+
+
+function bar() { 
+  return function foo(strings, ...values) { 
+    console.log( strings ); 
+    console.log( values ); 
+  } 
+} 
+var desc = "awesome"; 
+bar()`Everything is ${desc}!`; 
+// [ "Everything is ", "!"] 
+// [ "awesome" ]
+
+// 第一个参数，名为 strings，是一个由所有普通字符串（插入表达式之间的部分）组成的数组。得到的 strings 数组中有两个值："Everything is" 和 "!"
+```
+
+本质上说，这是一类不需要 ( .. ) 的特殊函数调用。标签（tag）部分，即 `..` 字符串字面量之前的 foo 这一部分 , 是一个要调用的函数值。实际上，它可以是任意结果为函数的表达式，甚至可以是一个结果为另一个函数的函数调用.
+
+```js
+function dollabillsyall(strings, ...values) { 
+  return strings.reduce( function(s,v,idx){ 
+    if (idx > 0) { 
+      if (typeof values[idx-1] == "number") { 
+        // 看，这里也使用了插入字符串字面量！
+        s += `$${values[idx-1].toFixed( 2 )}`; 
+      } 
+      else { 
+        s += values[idx-1]; 
+      } 
+    } 
+    return s + v; 
+  }, "" ); 
+} 
+var amt1 = 11.99, 
+  amt2 = amt1 * 1.08, 
+  name = "Kyle"; 
+var text = dollabillsyall 
+`Thanks for your purchase, ${name}! Your 
+product cost was ${amt1}, which with tax 
+comes out to ${amt2}.` 
+console.log( text ); 
+// Thanks for your purchase, Kyle! Your 
+// product cost was $11.99, which with tax 
+// comes out to $12.95.
+```
+
+如果在 values 中遇到一个 number 值，就在其之前放一个 "$"，然后用 toFixed(2) 把它格式化为两个十进制数字的形式，否则就让这个值直接通过而不做任何修改。
+
+```js
+function showraw(strings, ...values) { 
+  console.log( strings ); 
+  console.log( strings.raw ); 
+} 
+showraw`Hello\nWorld`; 
+// [ "Hello 
+// World" ] 
+// [ "Hello\nWorld" ]
+```
+
+```js
+console.log( `Hello\nWorld` ); 
+// Hello 
+// World 
+console.log( String.raw`Hello\nWorld` ); 
+// Hello\nWorld 
+String.raw`Hello\nWorld`.length; 
+// 12
+```
+
+```js
+function foo(x,y) { 
+  return x + y; 
+} 
+// 对比
+var foo = (x,y) => x + y;
+```
+
+for..of 循环的值必须是一个 iterable，或者说它必须是可以转换 / 封箱到一个 iterable 对象的值。iterable 就是一个能够产生迭代器供循环使用的对象。
+
+```js
+var a = ["a","b","c","d","e"]; 
+for (var idx in a) { 
+  console.log( idx ); 
+} 
+// 0 1 2 3 4 
+for (var val of a) { 
+  console.log( val ); 
+} 
+// "a" "b" "c" "d" "e"
+
+```
+
+可以看到，for..in 在数组 a 的键 / 索引上循环，而 for..of 在 a 的值上循环。
+
+JavaScript 中默认为（或提供）iterable 的标准内建值包括：
+- Arrays 
+- Strings
+- Generators
+- Collections / TypedArrays
+
+ES6 正则表达式中另外一个新增的标签模式是 y，通常称为“定点（sticky）模式”。定点主要是指在正则表达式的起点有一个虚拟的锚点，只从正则表达式的 lastIndex 属性指定的位置开始匹配。
+
+```js
+// 第一个没有定点模式
+var re1 = /foo/, 
+  str = "++foo++"; 
+re1.lastIndex; // 0 
+re1.test( str ); // true 
+re1.lastIndex; // 0--没有更新
+re1.lastIndex = 4; 
+re1.test( str ); // true--被忽略的lastIndex 
+re1.lastIndex; // 4--没有更新
+```
+
+- test(..) 并不关心 lastIndex 的值，总是从输入字符串的起始处开始执行匹配。
+- 因为我们的模式并没有起始锚点 ^，对 "foo" 的搜索从整个字符串向前寻找匹配。
+- test(..) 不更新 lastIndex。
+
+```js
+// 定点模式正则表达式
+var re2 = /foo/y, // <-- 注意定点标识y 
+  str = "++foo++"; 
+re2.lastIndex; // 0 
+re2.test( str ); // false--0处没有找到"foo" 
+re2.lastIndex; // 0 
+re2.lastIndex = 2; 
+re2.test( str ); // true 
+re2.lastIndex; // 5--更新到前次匹配之后位置
+re2.test( str ); // false 
+re2.lastIndex; // 0--前次匹配失败后重置
+```
+
+- test(..) 使用 lastIndex 作为 str 中精确而且唯一的位置寻找匹配。不会向前移动去寻找匹配——要么匹配位于 lastIndex 位置上，要么就没有匹配。
+- 如果匹配成功，test(..) 会更新 lastIndex 指向紧跟匹配内容之后的那个字符。如果匹配失败，test(..) 会把 lastIndex 重置回 0。
+
+一般的没有用 ^ 限制输入起始点匹配的非定点模式可以自由地在输入字符串中向前移动寻找匹配内容。而定点模式则限制了模式只能从 lastIndex 开始匹配。
+
+```js
+var re = /\d+\.\s(.*?)(?:\s|$)/y 
+  str = "1. foo 2. bar 3. baz"; 
+str.match( re ); // [ "1. foo ", "foo" ] 
+re.lastIndex; // 7--正确位置! 
+str.match( re ); // [ "2. bar ", "bar" ] 
+re.lastIndex; // 14--正确位置! 
+str.match( re ); // ["3. baz", "baz"]
+```
+
+```js
+var re = /o+./g, // <-- 注意g! 
+  str = "foot book more"; 
+re.exec( str ); // ["oot"] 
+re.lastIndex; // 4 
+re.exec( str ); // ["ook"] 
+re.lastIndex; // 9 
+re.exec( str ); // ["or"] 
+re.lastIndex; // 13 
+re.exec( str ); // null--没有更多匹配! 
+re.lastIndex; // 0--现在从头开始!
+```
+
+确实，g 模式匹配加上 exec(..) 从 lastiIndex 的当前值开始匹配，同时会在每次匹配（或匹配失败后）更新 lastIndex，但是这和 y 的行为特性并不相同。
+
+注意前面的代码中位于位置 6 处的 "ook"，会被第二个 exec(..) 调用匹配找到，虽然在那个时候，lastIndex 值是 4（来自于上一次匹配的结尾）。这是为什么？因为就像我前面所说，非定点匹配可以在匹配过程中自由向前移动。因为不允许向前移动，所以定点模式表达式在这里会匹配失败。
+
+除了可能并不需要的向前移动匹配，只用 g 替代 y 的另一个缺点是 g 改变了某些匹配方法的行为特性，比如 str.match(re)。
+
+```js
+var re = /o+./g, // <-- 注意g! 
+  str = "foot book more"; 
+str.match( re ); // ["oot","ook","or"]
+```
+
+看到所有的匹配是如何立即返回了吗？有时候这不是问题，但有时候它又并非是你想要的。
+
+通过使用工具 test(..) 和 match(..)，y 定点标识带来的是一次一个的向前匹配。只是要确保每次匹配的时候 lastIndex 总是处于正确的位置上！
+
+模式中的 ^ 就是表示也仅表示输入的起始点。因此，像 /^foo/y 这样的模式总是也只是寻找字符串起始处的 "foo" 匹配，但前提是允许在此处匹配。如果 lastIndex 不是 0，那么匹配就会失败。
+
+```js
+var re = /^foo/y, 
+  str = "foo"; 
+re.test( str ); // true 
+re.test( str ); // false 
+re.lastIndex; // 0--失败后重置
+re.lastIndex = 1; 
+re.test( str ); // false--由于定位而失败
+re.lastIndex; // 0--失败后重置
+```
+
+底线：y 加上 ^ 再加上 lastIndex > 0 是一个不兼容的组合，总是会导致匹配失败。
+
+y 不会以任何形式改变 ^ 的含义，而 m 多行模式则会，也就是说，^ 意味着输入起始处或者换行之后的文字起始位置。所以，如果组合使用 y 和 m 模式，就会发现字符串中有多个 ^ 匹配基准。但是记住：因为这是 y 定点的，需要确保每次匹配的时候 lastIndex 指向正确的换行位置（可能通过匹配行尾来实现），否则下次匹配不会成功。
+
+```js
+var re = /foo/ig; 
+re.flags; // "gi"
+
+// ES6 规范中规定了表达式的标识按照这个顺序列出："gimuy"，无论原始指定的模式是什么。
+```
+
+Unicode 字符范围从 0x0000 到 0xFFFF，包含可能看到和接触到的所有（各种语言的）标准打印字符。这组字符称为基本多语言平面（Basic Multilingual Plane，BMP）。BMP 甚至包含了像雪人这样的有趣的符号： （U+2603）。
+
+在 BMP 集之外还有很多其他扩展 Unicode 字符，范围直到 0x10FFFF。这些符号通常是星形符号（astral symbol），这个名称是指 BMP 之外的字符的 16 个平面（或者说，层次 / 分组）的集合。星形符号的例子包括 U+1D11E）和 U+1F4A9) 这样的符号。
+
+```js
+var snowman = "\u2603"; 
+console.log( snowman ); // "☃"
+
+var gclef = "\u{1D11E}"; 
+console.log( gclef ); // " "6
+```
+
+默认情况下，JavaScript 字符串运算和方法不能感知字符串中的 astral 符号。所以会单独处理每个 BMP 字符，即使是构成单个 astral 字符的两半。考虑：
+
+```js
+var snowman = "☃"; 
+snowman.length; // 1 
+
+var gclef = " "; 
+gclef.length; // 2
+
+var gclef = " "; 
+[...gclef].length; // 1 
+Array.from( gclef ).length; // 1
+```
+
+ES6 字符串有内建的迭代器。这个迭代器恰好是可以识别Unicode 的，也就是说它能够自动将 astral 符号作为单个值输出。我们可以利用这一点，在数组字面量使用 ...spread 运算符，创建一个字符串符号的数组。然后查看结果数组的长度。ES6 的 Array.from(..) 所做的事情基本上和 [...XYZ] 一样
+
+```js
+var s1 = "\xE9", 
+  s2 = "e\u0301";
+
+console.log( s1 ); // "é" 
+console.log( s2 ); // "é"
+
+[...s1].length; // 1 
+[...s2].length; // 2
+
+s1.normalize().length; // 1 
+s2.normalize().length; // 1 
+s1 === s2; // false 
+s1 === s2.normalize(); // true
+```
+
+基本上说就是，normalize(..) 接受像 "e\u0301" 这样的一个序列，然后把它规范化为"\xE9"。甚至如果有合适的 Unicode 符号可以合并的话，规范化可以把多个相邻的组合符号合并：
+
+```js
+var s1 = "o\u0302\u0300", 
+  s2 = s1.normalize(), 
+  s3 = " "; 
+s1.length; // 3 
+
+s2.length; // 1 
+s3.length; // 1 
+s2 === s3; // true
+```
+
+不幸的是，这里规范化也并不完美。如果有多个组合符号修改了单个字符，你可能就无法得到期望的长度结果，因为可能并没有单个的定义好的规范化符号可以表示所有这些符号带来的合并结果。举例来说：
+
+```js
+var s1 = "e\u0301\u0330"; 
+console.log( s1 ); // "ḛ́" 
+s1.normalize().length; // 2
+```
+
+```js
+var s1 = "abc\u0301d", 
+  s2 = "ab\u0107d", 
+  s3 = "ab\u{1d49e}d"; 
+console.log( s1 ); // "abćd" 
+console.log( s2 ); // "abćd" 
+console.log( s3 ); // "ab d" 
+s1.charAt( 2 ); // "c" 
+s2.charAt( 2 ); // "ć" 
+s3.charAt( 2 ); // "" <-- 不可打印
+s3.charAt( 3 ); // "" <-- 不可打印
+
+[...s1.normalize()][2]; // "ć" 
+[...s2.normalize()][2]; // "ć" 
+[...s3.normalize()][2]; // " "
+```
+
+```js
+var s1 = "abc\u0301d", 
+  s2 = "ab\u0107d", 
+  s3 = "ab\u{1d49e}d"; 
+s1.normalize().codePointAt( 2 ).toString( 16 ); 
+// "107" 
+s2.normalize().codePointAt( 2 ).toString( 16 ); 
+// "107" 
+s3.normalize().codePointAt( 2 ).toString( 16 ); 
+// "1d49e"
+
+String.fromCodePoint( 0x107 ); // "ć" 
+String.fromCodePoint( 0x1d49e ); // " "
+
+String.fromCodePoint( s1.normalize().codePointAt( 2 ) ); 
+// "ć" 
+String.fromCodePoint( s2.normalize().codePointAt( 2 ) ); 
+// "ć" 
+String.fromCodePoint( s3.normalize().codePointAt( 2 ) ); 
+// " "
+```
+
+Unicode 也可以用作标识符名（变量、属性等）。在 ES6 之前，可以通过 Unicode 转义符实现这一点
+
+```js
+var \u03A9 = 42; 
+// 等价于：var Ω = 42;
+
+// 码点转义符语法
+var \u{2B400} = 42; 
+// 等价于：var = 42;
+```
+
+符号的主要意义是创建一个类 ( 似 ) 字符串的不会与其他任何值冲突的值。所以，考虑使用一个符号作为事件名的常量表示的例子：
+
+```js
+const EVT_LOGIN = Symbol( "event.login" );
+
+evthub.listen( EVT_LOGIN, function(data){ 
+  // .. 
+} );
+```
+
+考虑一下这个实现了单例（singleton）模式的模块，也就是说，它只允许自己被创建一次：
+
+```js
+const INSTANCE = Symbol( "instance" ); 
+function HappyFace() { 
+  if (HappyFace[INSTANCE]) return HappyFace[INSTANCE]; 
+  function smile() { .. } 
+  return HappyFace[INSTANCE] = { 
+    smile: smile 
+  }; 
+} 
+var me = HappyFace(), 
+  you = HappyFace(); 
+me === you; // true
+```
+
+这里的 INSTANCE 符号值是一个特殊的、几乎隐藏的、类似元属性的属性，静态保存在HappeyFace() 函数对象中。
+
+全局符号注册:
+
+```js
+const EVT_LOGIN = Symbol.for( "event.login" ); 
+console.log( EVT_LOGIN ); // Symbol(event.login)
+
+function HappyFace() { 
+  const INSTANCE = Symbol.for( "instance" ); 
+  if (HappyFace[INSTANCE]) return HappyFace[INSTANCE]; 
+  // .. 
+  return HappyFace[INSTANCE] = { .. }; 
+}
+```
+
+Symbol.for(..) 在全局符号注册表中搜索，来查看是否有描述文字相同的符号已经存在，如果有的话就返回它。如果没有的话，会新建一个并将其返回。换句话说，全局注册表把符号值本身根据其描述文字作为单例处理。
+
+```js
+var s = Symbol.for( "something cool" ); 
+var desc = Symbol.keyFor( s ); 
+console.log( desc ); // "something cool" 
+// 再次从注册中取得符号
+var s2 = Symbol.for( desc ); 
+s2 === s; // true
+```
+
+```js
+var o = { 
+  foo: 42, 
+  [ Symbol( "bar" ) ]: "hello world", 
+  baz: true 
+}; 
+Object.getOwnPropertyNames( o ); // [ "foo","baz" ]
+
+Object.getOwnPropertySymbols( o ); // [ Symbol(bar) ]
+```
+
+```js
+var a = [1,2,3]; 
+a[Symbol.iterator]; // 原生函数
+```
+
+规范使用 @@ 前缀记法来指代内置符号，最常用的一些是：@@iterator、@@toStringTag、@@toPrimitive。规范还定义了一些其他符号，但是可能没那么常用。
 
 ### 代码组织
 
+- 迭代器（iterator）
+
+```js
+Iterator [required] 
+  next() {method}: 取得下一个IteratorResult
+
+Iterator [optional] 
+  return() {method}: 停止迭代器并返回IteratorResult 
+  throw() {method}: 报错并返回IteratorResult
+
+IteratorResult 
+  value {property}: 当前迭代值或者最终返回值（如果undefined为可选的）
+  done {property}: 布尔值，指示完成状态
+
+Iterable 
+  @@iterator() {method}: 产生一个 Iterator
+```
+
+我们来观察一个数组，这是一个 iterable，它产生的迭代器可以消耗其自身值：
+
+```js
+var arr = [1,2,3]; 
+var it = arr[Symbol.iterator](); 
+it.next(); // { value: 1, done: false } 
+it.next(); // { value: 2, done: false } 
+it.next(); // { value: 3, done: false } 
+it.next(); // { value: undefined, done: true }
+```
+
+每次在这个 arr 值上调用位于 Symbol.iterator 的方法时，都会产生一个全新的迭代器。多数结构都是这么实现的，包括所有 JavaScript 内置数据结构。
+
+```js
+var m = new Map(); 
+m.set( "foo", 42 ); 
+m.set( { cool: true }, "hello world" ); 
+var it1 = m[Symbol.iterator](); 
+var it2 = m.entries(); 
+it1.next(); // { value: [ "foo", 42 ], done: false } 
+it2.next(); // { value: [ "foo", 42 ], done: false } 
+..
+```
+
+迭代器接口——return(..) 和 throw(..)
+
+return(..) 被定义为向迭代器发送一个信号，表明消费者代码已经完毕，不会再从其中提取任何值。这个信号可以用于通知生产者（响应 next(..) 调用的迭代器）执行可能需要的清理工作，比如释放 / 关闭网络、数据库或者文件句柄资源。
+
+如果迭代器存在 return(..)，并且出现了任何可以自动被解释为异常或者对迭代器消耗的提前终止的条件，就会自动调用 return(..)。你也可以手动调用 return(..)。
+
+通用的惯例是，迭代器不应该在调用 return(..) 或者 thrown(..) 之后再产生任何值。
+
+```js
+var it = { 
+  // 使迭代器it成为iterable 
+  [Symbol.iterator]() { return this; }, 
+  next() { .. }, 
+  .. 
+}; 
+it[Symbol.iterator]() === it; // true
+
+for (var v of it) { 
+  console.log( v ); 
+}
+
+// for..of 循环的等价 for 形式
+for (var v, res; (res = it.next()) && !res.done; ) { 
+  v = res.value; 
+  console.log( v ); 
+}
+```
+
+试着构造一个迭代器来产生一个无限斐波纳契序列：
+
+```js
+var Fib = { 
+  [Symbol.iterator]() { 
+    var n1 = 1, n2 = 1; 
+    return { 
+      // 使迭代器成为iterable 
+      [Symbol.iterator]() { return this; }, 
+      next() { 
+        var current = n2; 
+        n2 = n1; 
+        n1 = n1 + current; 
+        return { value: current, done: false }; 
+      }, 
+      return(v) { 
+        console.log("Fibonacci sequence abandoned." ); 
+        return { value: v, done: true }; 
+      } 
+    }; 
+  } 
+}; 
+for (var v of Fib) { 
+  console.log( v ); 
+  if (v > 50) break; 
+} 
+// 1 1 2 3 5 8 13 21 34 55 
+// Fibonacci sequence abandoned.
+
+
+var tasks = { 
+  [Symbol.iterator]() { 
+    var steps = this.actions.slice(); 
+    return { 
+      // 使迭代器成为iterable 
+      [Symbol.iterator]() { return this; }, 
+      next(...args) { 
+        if (steps.length > 0) { 
+          let res = steps.shift()( ...args ); 
+          return { value: res, done: false }; 
+        } 
+        else { 
+          return { done: true } 
+        } 
+      }, 
+      return(v) { 
+        steps.length = 0; 
+        return { value: v, done: true }; 
+      } 
+    }; 
+  }, 
+  actions: [] 
+};
+
+
+tasks.actions.push( 
+  function step1(x){ 
+    console.log( "step 1:", x ); 
+    return x * 2; 
+  }, 
+  function step2(x,y){ 
+    console.log( "step 2:", x, y ); 
+    return x + (y * 2); 
+  }, 
+  function step3(x,y,z){ 
+    console.log( "step 3:", x, y, z ); 
+    return (x * y) + z; 
+  } 
+); 
+var it = tasks[Symbol.iterator](); 
+it.next( 10 ); // step 1: 10 
+ // { value: 20, done: false } 
+it.next( 20, 50 ); // step 2: 20 50 
+ // { value: 120, done: false } 
+it.next( 20, 50, 120 ); // step 3: 20 50 120 
+ // { value: 1120, done: false } 
+it.next(); // { done: true }
+```
+
+```js
+if (!Number.prototype[Symbol.iterator]) { 
+  Object.defineProperty( 
+    Number.prototype, 
+    Symbol.iterator, 
+    { 
+      writable: true, 
+      configurable: true, 
+      enumerable: false, 
+      value: function iterator(){ 
+        var i, inc, done = false, top = +this; 
+        // 正向还是反向迭代？
+        inc = 1 * (top < 0 ? -1 : 1); 
+        return { 
+          // 使得迭代器本身成为iterable! 
+          [Symbol.iterator](){ return this; }, 
+          next() { 
+            if (!done) { 
+            // 初始迭代总是0 
+            if (i == null){ 
+              i = 0; 
+            } 
+            // 正向迭代
+            else if (top >= 0) { 
+              i = Math.min(top,i + inc); 
+            } 
+            // 反向迭代
+            else { 
+              i = Math.max(top,i + inc); 
+            } 
+            // 本次迭代后结束？
+            if (i == top) done = true; 
+              return { value: i, done: false }; 
+            } 
+            else { 
+              return { done: true }; 
+            } 
+          } 
+        }; 
+      } 
+    } 
+  ); 
+}
+
+for (var i of 3) { 
+  console.log( i ); 
+} 
+// 0 1 2 3 
+[...-3]; // [0,-1,-2,-3]
+```
+
+```js
+var a = [1,2,3,4,5];
+var it = a[Symbol.iterator](); 
+var [x,y] = it; 
+// 从it中获取前两个元素
+var [z, ...w] = it; 
+// 获取第三个元素，然后一次取得其余所有元素
+// it已经完全耗尽？是的。
+it.next(); // { value: undefined, done: true } 
+x; // 1 
+y; // 2 
+z; // 3 
+w; // [4,5]
+```
+
+- 生成器
+
+yield 关键字的优先级很低，几乎 yield.. 之后的任何表达式都会首先计算，然后再通过 yield 发送。只有 spread 运算符 ... 和逗号运算符 , 拥有更低的优先级，也就是说它们会在 yield 已经被求值之后才会被绑定。
+
+```js
+yield 2 + 3; // 等价于yield (2 + 3) 
+(yield 2) + 3; // 首先yield 2，然后+ 3
+```
+
+和 = 赋值一样，yield 也是“右结合”的，也就是说多个 yield 表达式连续出现等价于用 (..) 从右向左分组。所以，yield yield yield 3 会被当作 yield(yield(yield 3))
+
+使用 yield..，表达式的完成值来自于用 it.next(..) 恢复生成器的值，而对于 yield *.. 表达式来说，完成值来自于被委托的迭代器的返回值（如果有的话）。
+
+```js
+function *foo() { 
+  yield 1; 
+  yield 2; 
+  yield 3; 
+  return 4; 
+} 
+function *bar() { 
+  var x = yield *foo(); 
+  console.log( "x:", x ); 
+} 
+for (var v of bar()) { 
+  console.log( v ); 
+} 
+// 1 2 3 
+// x: 4
+```
+
+值 1、2 和 3 从 *foo() 中 yield 出来后再从 *bar() 中 yield 出来，然后从 *foo() 返回的值4 是 yield *foo() 表达式的完成值，被赋给了 x。
+
+因为 yield * 可以调用另外一个生成器（通过委托到其迭代器），所以它也可以通过调用自身执行某种生成器递归：
+
+```js
+function *foo(x) { 
+  if (x < 3) { 
+    x = yield *foo( x + 1 ); 
+  } 
+  return x * 2; 
+} 
+foo( 1 );
+```
+
+foo(1) 以及之后的调用迭代器的 next() 来运行递归步骤的结果是 24。第一个 *foo(..) 运行 x 值为 1，满足 x < 3。x + 1 被递归地传给 *foo(..)，所以这一次 x 为 2。再次的递归调用使得 x 值为 3。
+
+现在，因为不满足 x < 3，递归停止，返回 3 * 2 也就是 6 给前一个调用的 yield *.. 表达式，这个值被赋给 x。再次返回 6 * 2 的结果 12 给前一次调用的 x。最后是 12 * 2，也就是 24，返回给 *foo() 生成器的完成结果。
+
+```js
+function *foo(x) { 
+  if (x < 3) { 
+    x = yield *foo( x + 1 ); 
+  } 
+  return x * 2; 
+} 
+var it = foo( 1 ); 
+it.next(); // { value: 24, done: true }
+```
+
+在上面的例子中，生成器没有真正暂停，因为并没有 yield .. 表达式。相反，yield * 只是通过递归调用保存当前的迭代步骤。所以，只要一次调用迭代器的 next() 函数就运行了整个生成器。
+
+```js
+function *foo() { 
+  var x = yield 1; 
+  var y = yield 2; 
+  var z = yield 3; 
+  console.log( x, y, z ); 
+}
+
+var it = foo(); 
+it.next(); // { value: 1, done: false }
+```
+
+在这段代码中，每个 yield.. 从（1, 2, 3）中发出一个值，更直接地说，它是暂停生成器来等待一个值。换句话说几乎等价于在问“这里我应该用什么值？请回复。”这个问题。
+
+第一个 next() 调用初始的暂停状态启动生成器，运行直到第一个 yield。在调用第一个next() 的时候，并没有 yield.. 表达式等待完成。如果向第一个 next() 调用传入一个值，这个值会马上被丢弃，因为并没有 yield 等待接收这个值。
+
+```js
+var it = foo(); 
+// 启动生成器
+it.next(); // { value: 1, done: false } 
+// 回答第一个问题
+it.next( "foo" ); // { value: 2, done: false } 
+// 回答第二个问题
+it.next( "bar" ); // { value: 3, done: false } 
+// 回答第三个问题
+it.next( "baz" ); // "foo" "bar" "baz" 
+ // { value: undefined, done: true }
+```
+
+本章前面讨论过，生成器上附着的迭代器支持可选的 return(..) 和 throw(..) 方法。这两种方法都有立即终止一个暂停的生成器的效果。
+
+```js
+function *foo() { 
+  yield 1; 
+  yield 2; 
+  yield 3; 
+} 
+var it = foo(); 
+it.next(); // { value: 1, done: false } 
+it.return( 42 ); // { value: 42, done: true } 
+it.next(); // { value: undefined, done: true }
+```
+
+return(..) 除了可以手动调用，还可以在每次迭代的末尾被任何消耗迭代器的 ES6 构件自动调用，比如 for..of 循环和 spread 运算符 ...。
+
+```js
+function *foo() { 
+  try { 
+    yield 1; 
+    yield 2; 
+    yield 3; 
+  } 
+  finally { 
+    console.log( "cleanup!" ); 
+  } 
+} 
+for (var v of foo()) { 
+  console.log( v ); 
+} 
+// 1 2 3 
+// cleanup! 
+var it = foo(); 
+it.next(); // { value: 1, done: false } 
+it.return( 42 ); // cleanup! 
+ // { value: 42, done: true }
+```
+
+```js
+function *foo() { 
+  yield 1; 
+  yield 2; 
+  yield 3; 
+} 
+var it = foo(); 
+it.next(); // { value: 1, done: false } 
+try { 
+  it.throw( "Oops!" ); 
+} 
+catch (err) { 
+  console.log( err ); // Exception: Oops! 
+} 
+it.next(); // { value: undefined, done: true }
+```
+
+和 return(..) 不同，迭代器的 throw(..) 方法从来不会被自动调用。
+
+- 模块
+
+| 命名导出1 | 命名导出2 |
+| - | - |
+| ```js | ```js |\
+| export function foo() {// .. } | function foo() {// .. } |\
+| export var awesome = 42; | var awesome = 42; |\
+| var bar = [1,2,3]; | var bar = [1,2,3]; |\
+| export { bar as bar }; | export { foo, awesome, bar }; |\
+| export function foo() {// .. }  | |\
+| ``` | ``` |
+
+
+| 默认导出1 | 默认导出2 |
+| - | - |
+| ```js | ```js |\
+| function foo() {// .. } | function foo() {// .. } |\
+| export default foo; | export { foo as default }; |\
+| //export default function foo(..) {// .. } | .. |\
+| ``` | ``` |
+
+在第一段代码中，导出的是此时到函数表达式值的绑定，而不是标识符 foo。换句话说，export default .. 接受的是一个表达式。如果之后在你的模块中给 foo 赋一个不同的值，模块导入得到的仍然是原来导出的函数，而不是新的值。
+
+在第二段代码模块导出中，默认导出绑定实际上绑定到 foo 标识符而不是它的值，所以得到了前面描述的绑定行为（也就是说，如果之后修改了 foo 的值，在导入一侧看到的值也会更新）。
+
+除了 export default ... 形式导出一个表达式值绑定，所有其他的导出形式都是导出局部标识符的绑定。对于这些绑定来说，如果导出之后在模块内部修改某个值，外部导入的绑定会访问到修改后的值：
+
+```js
+var foo = 42; 
+export { foo as default }; 
+export var bar = "hello world"; 
+foo = 10; 
+bar = "cool";
+```
+
+当你导入这个模块的时候，default 和 bar 导出会绑定到局部变量 foo 和 bar，也就是说它们会暴露更新后的值 10 和 "cool"。导出时刻的值无关紧要。导入时刻的值也无关紧要。绑定是活连接，所以重要的是访问这个绑定时刻的当前值。
+
+> 双向绑定是不允许的。如果从一个模块导入了 foo，然后修改导入的 foo 变量的值，就会抛出错误！
+
+模块的 export 中的关键字 default 指定了一个命名导出，名称实际上就是 default，就像第二种更详细的语法形式表明的一样。在后一种语法中，从 default 到这个例子中的 foo 的重命名都是显式的，和前一种隐式语法形式是一样的。
+
+```js
+export default function foo() { .. } 
+export function bar() { .. } 
+export function baz() { .. }
+
+import FOOFN, { bar, baz as BAZ } from "foo"; 
+FOOFN(); 
+bar(); 
+BAZ();
+```
+
+| 命名空间导入 |
+| - |
+| ```js |\
+| export function bar() { .. } |\
+| export var x = 42; |\
+| export function baz() { .. } |\
+| import * as foo from "foo"; |\
+| foo.bar(); |\
+| foo.x; // 42 |\
+| foo.baz(); |\
+| ``` |
+
+如果通过 * as .. 导入的模块有默认导出，它在指定的命名空间中的名字就是 default。你还可以在这个命名空间绑定之外把默认导入作为顶层标识符命名。
+
+```js
+export default function foo() { .. } 
+export function bar() { .. } 
+export function baz() { .. }
+
+import foofn, * as hello from "world"; 
+foofn(); 
+hello.default(); 
+hello.bar(); 
+hello.baz();
+```
+
+| 模块 "A" | 模块 "B" |
+| - | - |
+| ```js | ```js |\
+| import bar from "B"; | import foo from "A";  |\
+| export default function foo(x) { | export default function bar(y) { |\
+|   if (x > 10) return bar( x - 1 ); | if (y > 5) return foo( y / 2 ); |\
+|   return x * 2;  | return y * 3; |\
+| } | } |\
+| ``` | ``` |
+
+- 如果先加载模块 "A"，第一步是扫描这个文件分析所有的导出，这样就可以注册所有可以导入的绑定。然后处理 import .. from "B"，这表示它需要取得 "B"。
+- 引擎加载 "B" 之后，会对它的导出绑定进行同样的分析。当看到 import .. from "A"，它已经了解 "A" 的 API，所以可以验证 import 是否有效。现在它了解 "B" 的 API，就可以验证等待的 "A" 模块中 import .. from "B" 的有效性。
+
+本质上说，相互导入，加上检验两个 import 语句的有效性的静态验证，虚拟组合了两个独立的模块空间（通过绑定），这样 foo(..) 可以调用 bar(..)，反过来也是一样。这和如果它们本来是声明在同一个作用域中是对称的。
+
+```js
+import foo from "foo"; 
+import bar from "bar"; 
+foo( 25 ); // 11 
+bar( 25 ); // 11.5
+
+// 一般脚本在浏览器中通过<script>加载，这里import不合法
+Reflect.Loader.import( "foo" ) // 为"foo"返回一个promise 
+.then( function(foo){ 
+  foo.bar(); 
+} )
+```
+
+Reflect.Loader.import(..) 工具返回一个 promise，这个 promise 模块就绪就会完成。要导入多个模块，可以使用 Promise.all([ .. ]) 组合多个Reflect.Loader.import(..) 调用返回的 promise。
+
+- 类
+
+```js
+class Foo { 
+  constructor(a,b) { 
+    this.x = a; 
+    this.y = b; 
+  } 
+  gimmeXY() { 
+    return this.x * this.y; 
+  } 
+}
+```
+
+- class Foo 表明创建一个（具体的）名为 Foo 的函数，与你在前 ES6 中所做的非常类似。
+- constructor(..) 指定 Foo(..) 函数的签名以及函数体内容。
+- 类方法使用第 2 章讨论过的对象字面量可用的同样的“简洁方法”语法。这也包含本章前面讨论过的简洁生成器形式，以及 ES5 getter/setter 语法。但是，类方法是不可枚举的，而对象方法默认是可枚举的。
+- 和对象字面量不一样，在 class 定义体内部不用逗号分隔成员！实际上，这甚至是不允许的。
+
+注意！尽管 class Foo 看起来很像 function Foo()，但二者有重要区别。
+
+- 由于前 ES6 可用的 Foo.call(obj) 不能工作，class Foo 的 Foo(..) 调用必须通过new 来实现。
+- function Foo 是“提升的”，而 class Foo 并不是；extends .. 语句指定了一个不能被“提升”的表达式。所以，在实例化一个 class 之前必须先声明它。
+- 全局作用域中的 class Foo 创建了这个作用域的一个词法标识符 Foo，但是和 function Foo 不一样，并没有创建一个同名的全局对象属性。
+
+因为 class 只是创建了一个同名的构造器函数，所以现有的 instanceof 运算符对 ES6 类仍然可以工作。然而，ES6 引入了一种使用 Symbol.hasInstance（参见 7.3 节）自定义instanceof 如何工作的方法。
+
+ES6 class 本身并不是一个真正的实体，而是一个包裹着其他像函数和属性这样的具体实体并把它们组合到一起的元概念。
+
+除了声明形式，class 也可以是一个表达式，就像在这一句中：var x = class Y { .. }。
+
+```js
+class Bar extends Foo { 
+  constructor(a,b,c) { 
+    super( a, b ); 
+    this.z = c; 
+  } 
+  gimmeXYZ() { 
+    return super.gimmeXY() * this.z; 
+  } 
+} 
+var b = new Bar( 5, 15, 25 ); 
+b.x; // 5 
+b.y; // 15 
+b.z; // 25 
+b.gimmeXYZ(); // 1875
+```
+
+Bar extends Foo 的意思当然就是把 Bar.prototype 的 [[Prototype]] 连接到 Foo.prototype。所以，在像 gimmeXYZ() 这样的方法中，super 具体指 Foo.prototype，而在 Bar 构造器中super 指的是 Foo。
+
+new.target 是一个新的在所有函数中都可用的“魔法”值，尽管在一般函数中它通常是undefined。在任何构造器中，new.target 总是指向 new 实际上直接调用的构造器，即使构造器是在父类中且通过子类构造器用 super(..) 委托调用。
+
+```js
+class Foo { 
+  constructor() { 
+    console.log( "Foo: ", new.target.name ); 
+  } 
+} 
+class Bar extends Foo { 
+  constructor() { 
+    super(); 
+    console.log( "Bar: ", new.target.name ); 
+  } 
+  baz() { 
+    console.log( "baz: ", new.target ); 
+  } 
+} 
+var a = new Foo(); 
+// Foo: Foo 
+var b = new Bar(); 
+// Foo: Bar <-- 遵循new调用点
+// Bar: Bar 
+b.baz(); 
+// baz: undefined
+```
+
+除了访问静态属性 / 方法之外，类构造器中的 new.target 元属性没有什么其他用处。
+
+static 方法这些是直接添加到这个类的函数对象上的，而不是在这个函数对象的 prototype 对象上
+
+```js
+class Foo { 
+  static cool() { console.log( "cool" ); } 
+  wow() { console.log( "wow" ); } 
+} 
+class Bar extends Foo { 
+  static awesome() { 
+    super.cool(); 
+    console.log( "awesome" ); 
+  } 
+  neat() { 
+    super.wow(); 
+    console.log( "neat" ); 
+  } 
+} 
+Foo.cool(); // "cool" 
+Bar.cool(); // "cool" 
+Bar.awesome(); // "cool" 
+ // "awesome" 
+var b = new Bar(); 
+b.neat(); // "wow" 
+ // "neat" 
+b.awesome; // undefined 
+b.cool; // undefined
+```
+
+小心不要误以为 static 成员在类的原型链上。实际上它们在函数构造器之间的双向 / 并行链上。
+
+static 适用的一个地方就是为派生（子）类设定 Symbol.species getter（规范内称为@@species）。如果当任何父类方法需要构造一个新实例，但不想使用子类的构造器本身时，这个功能使得子类可以通知父类应该使用哪个构造器。
+
+举例来说，Array 有很多方法会创造并返回一个新的 Array 实例。如果定义一个 Array 的子类，但是想要这些方法仍然构造真正的 Array 实例而不是你的子类实例，就可以这样使用：
+
+```js
+class MyCoolArray extends Array { 
+  // 强制species为父构造器
+  static get [Symbol.species]() { return Array; } 
+} 
+var a = new MyCoolArray( 1, 2, 3 ), 
+  b = a.map( function(v){ return v * 2; } ); 
+b instanceof MyCoolArray; // false 
+b instanceof Array; // true
+```
+
+```js
+class Foo { 
+  // 推迟species为子构造器
+  static get [Symbol.species]() { return this; } 
+  spawn() { 
+    return new this.constructor[Symbol.species](); 
+  } 
+} 
+class Bar extends Foo { 
+  // 强制species为父构造器
+  static get [Symbol.species]() { return Foo; } 
+} 
+var a = new Foo(); 
+var b = a.spawn(); 
+b instanceof Foo; // true 
+var x = new Bar(); 
+var y = x.spawn(); 
+y instanceof Bar; // false 
+y instanceof Foo; // true
+```
+
+父类 Symbol.species 通过 return this 来延迟到子类，就像通常期望的那样。然后 Bar 覆盖手动声明使用 Foo 来进行实例创建。当然，子类仍然可以使用 new this.constructor(..) 来创建自身的实例。
+
 ### 异步流控制
+
+
 
 ### 集合
 
