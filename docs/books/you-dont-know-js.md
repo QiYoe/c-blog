@@ -7037,7 +7037,7 @@ d instanceof Cool; // true
 
 就像前面代码中 Cool 的定义那样，内置原生构造器上 Symbol.species 的默认行为是return this。在用户类上没有默认值，但是就像展示的那样，这个行为特性很容易模拟。
 
-如果需要定义生成新实例的方法，使用 new this.constructor[Symbol.species](..) 模式元编程，而不要硬编码 new this.constructor(..) 或 new XYZ(..)。然后继承类就能够自定义 Symbol.species 来控制由哪个构造器产生这些实例。
+如果需要定义生成新实例的方法，使用 `new this.constructor[Symbol.species](..)` 模式元编程，而不要硬编码 new this.constructor(..) 或 new XYZ(..)。然后继承类就能够自定义 Symbol.species 来控制由哪个构造器产生这些实例。
 
 Symbol.toPrimitive, 我们讨论了抽象类型转换运算ToPrimitive，它用在对象为了某个操作（比如比较 == 或者相加 +）必须被强制转换为一个原生类型值的时候。在 ES6 之前，没有办法控制这一行为。
 
