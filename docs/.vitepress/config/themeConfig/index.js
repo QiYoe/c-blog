@@ -120,7 +120,8 @@ function getFrontEndSidebar() {
     {
       text: 'AST',
       children: [
-        { text: 'AST详解', link: '/front-end/ast/' }
+        { text: 'AST详解', link: '/front-end/ast/' },
+        { text: 'The-Super-Tiny-Compiler', link: '/front-end/ast/the-super-tiny-compiler' },
       ]
     },
     {

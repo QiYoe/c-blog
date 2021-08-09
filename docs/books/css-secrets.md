@@ -12,3 +12,11 @@ head:
 [CSS揭秘](https://cread.jd.com/read/startRead.action?bookId=30410281&readType=1)
 
 [CSS揭秘读书笔记-You-need-to-know-css](https://lhammer.cn/You-need-to-know-css/#/zh-cn/introduce?v=1)
+
+
+
+<pre>`This will be displayed as-is`</pre>
+
+:::v-pre
+`{{This will be displayed as-is}}`
+:::

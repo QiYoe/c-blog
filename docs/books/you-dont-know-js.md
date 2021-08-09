@@ -2915,8 +2915,8 @@ runAll(
 ); 
 ```
 以下是 runAll(..) 内部运行的过程。
-1. 第一个生成器从第一个来自于 "http://some.url.1" 的 Ajax 响应得到一个 promise，然后把控制 yield 回 runAll(..) 工具。
-2. 第二个生成器运行，对于 "http://some.url.2" 实现同样的操作，把控制 yield 回runAll(..) 工具。
+1. 第一个生成器从第一个来自于 "`http://some.url.1`" 的 Ajax 响应得到一个 promise，然后把控制 yield 回 runAll(..) 工具。
+2. 第二个生成器运行，对于 "`http://some.url.2`" 实现同样的操作，把控制 yield 回runAll(..) 工具。
 3. 第一个生成器恢复运行，通过 yield 传出其 promise p1。在这种情况下，runAll(..) 工具所做的和我们之前的 run(..) 一样，因为它会等待这个 promise 决议，然后恢复同一个生成器（没有控制转移！）。p1 决议后，runAll(..) 使用这个决议值再次恢复第一个生成器，然后 res[0] 得到了自己的值。接着，在第一个生成器完成的时候，有一个隐式的控制转移。
 4. 第二个生成器恢复运行，通过 yield 传出其 promise p2，并等待其决议。一旦决议，runAll(..) 就用这个值恢复第二个生成器，设置 res[1]。
 
@@ -7952,6 +7952,6 @@ WASM 的支持者认为，WASM 的成功将意味着 JavaScript 的设计可以�
 
 当下用 JavaScript 编写的代码将可能继续用它编写，至少在可见的未来是这样。transpile到 JavaScript 的东西将可能最终考虑使用 WASM 替代。对于那些性能要求极高，不能容忍多层抽象的功能，最有可能的选择是寻找合适的非 JavaScript 语言编写，然后以WASM 为目标。
 
-这个转变可能会比较缓慢，需要几年才能完成。WASM 进入所有主流浏览器平台可能至少也需要数年。同时，WASM 项目（https://github.com/WebAssembly）已经有一个早期的polyfill 对其基本宗旨提供了概念证明。
+这个转变可能会比较缓慢，需要几年才能完成。WASM 进入所有主流浏览器平台可能至少也需要数年。同时，WASM 项目（[https://github.com/WebAssembly](https://github.com/WebAssembly)）已经有一个早期的polyfill 对其基本宗旨提供了概念证明。
 
 但随着时间的发展，也随着 WASM 学到更多非 JavaScript 技巧，很可能当前一些JavaScript 的东西会被重构为以 WASM 为目标的语言。举例来说，框架、游戏引擎以及其他常用工具中性能敏感的部分都可能从这样的转变中获益。在自己的 Web 应用中使用这些工具的开发者很可能不会注意到使用和集成过程中的差别，只会自动受益于性能和功能的提高。
