@@ -29,6 +29,7 @@ module.exports = {
           headerless: true
         })
         .use(require('markdown-it-ins'))
+        .use(require('markdown-it-textual-uml'))
     }
   }
 }

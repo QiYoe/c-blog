@@ -28,3 +28,7 @@ head:
 [你用前端知识认识各种算法](https://github.com/trekhleb/javascript-algorithms/blob/master/README.zh-CN.md)
 
 [个人博客-工具集合](https://www.kwgg2020.com/study.html)
+
+[PlantUML](https://plantuml.com/zh/nwdiag)
+
+[DOT](https://graphviz.gitlab.io/docs/outputs/)
