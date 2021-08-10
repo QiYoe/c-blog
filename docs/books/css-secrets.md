@@ -23,10 +23,10 @@ head:
 
 ```mermaid
 graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+A-->B;
+A-->C;
+B-->D;
+C-->D;
 ```
 
 
@@ -52,4 +52,5 @@ digraph example1 {
   |       Lots of work      |
   +-------------------------+
 ```
+<CodePen title="Create animation with a class" slug="XWRoZob" tab="result" :editable="true" :preview="false" :height="400" />
 

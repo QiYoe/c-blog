@@ -16,3 +16,7 @@ cite {
   width: 100%;
   text-align: end;
 }
+
+.container {
+  max-width: 55rem !important;
+}

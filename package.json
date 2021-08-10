@@ -23,11 +23,9 @@
     "serve": "vitepress serve docs"
   },
   "devDependencies": {
-    "codemirror": "^5.62.2",
     "markdown-it-ins": "^3.0.1",
     "markdown-it-multimd-table": "^4.1.0",
     "markdown-it-textual-uml": "^0.1.8",
-    "vitepress": "^0.15.5",
-    "vuep": "^0.8.1"
+    "vitepress": "^0.15.5"
   }
 }
