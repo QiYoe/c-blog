@@ -32,3 +32,42 @@ head:
 [PlantUML](https://plantuml.com/zh/nwdiag)
 
 [DOT](https://graphviz.gitlab.io/docs/outputs/)
+
+
+<pre>`This will be displayed as-is`</pre>
+
+:::v-pre
+`{{This will be displayed as-is}}`
+:::
+
+```mermaid
+graph TD;
+A-->B;
+A-->C;
+B-->D;
+C-->D;
+```
+
+
+```plantuml
+Bob -> Alice : hello
+```
+
+```dot
+digraph example1 {
+    1 -> 2 -> { 4, 5 };
+    1 -> 3 -> { 6, 7 };
+}
+```
+
+```ditaa
++--------+   +-------+    +-------+
+|        +---+ ditaa +--> |       |
+|  Text  |   +-------+    |diagram|
+|Document|   |!magic!|    |       |
+|     {d}|   |       |    |       |
++---+----+   +-------+    +-------+
+  :                         ^
+  |       Lots of work      |
+  +-------------------------+
+```
