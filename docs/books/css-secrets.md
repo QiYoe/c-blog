@@ -9,6 +9,10 @@ head:
       content: CSS揭秘 css-secrets
 ---
 
+<script setup>
+import CanIUseEmbed from '../components/CanIUseEmbed.vue'
+</script>
+
 ## 边框与背景
 
 ### 半透明边框
@@ -19,12 +23,7 @@ head:
 
 <CodePen title="translucent-borders" slug="QWvzYGx" tab="js,result" :editable="true" :preview="true" :height="350" />
 
-<iframe
-  width="100%"
-  height="410px"
-  src="https://caniuse.bitsofco.de/embed/index.html?feat=mdn-css__properties__background-clip&periods=future_1,current,past_1,past_2,past_3&accessible-colours=false&image-base=none"
-  frameborder="0">
-</iframe>
+<CanIUseEmbed cssProperty="mdn-css__properties__background-clip" />
 
 ### 多重边框
 
@@ -36,12 +35,7 @@ head:
 
 <CodePen title="translucent-borders" slug="WNjLmoq" tab="js,result" :editable="true" :preview="true" :height="370" />
 
-<iframe
-  width="100%"
-  height="410px"
-  src="https://caniuse.bitsofco.de/embed/index.html?feat=mdn-css__properties__box-shadow&periods=future_1,current,past_1,past_2,past_3&accessible-colours=false&image-base=none"
-  frameborder="0">
-</iframe>
+<CanIUseEmbed cssProperty="mdn-css__properties__box-shadow" />
 
 ### 边框内圆角
 
@@ -55,16 +49,30 @@ head:
 
 <CodePen title="translucent-borders" slug="NWjoNbX" tab="js,result" :editable="true" :preview="true" :height="370" />
 
-<iframe
-  width="100%"
-  height="410px"
-  src="https://caniuse.bitsofco.de/embed/index.html?feat=mdn-css__properties__box-shadow&periods=future_1,current,past_1,past_2,past_3&accessible-colours=false&image-base=none"
-  frameborder="0">
-</iframe>
+<CanIUseEmbed cssProperty="mdn-css__properties__outline" />
 
 ### 背景定位
 
+> 背景知识：:point_right: [background-position](https://developer.mozilla.org/zh-CN/docs/Web/CSS/background-position), [background-origin](https://developer.mozilla.org/zh-CN/docs/Web/CSS/background-origin), [calc](https://developer.mozilla.org/zh-CN/docs/Web/CSS/calc)
+
+<CodePen title="translucent-borders" slug="MWmLvzQ" tab="js,result" :editable="true" :preview="true" :height="370" />
+
+<CanIUseEmbed cssProperty="mdn-css__properties__background-origin" />
+<CanIUseEmbed cssProperty="calc" />
+
 ### 条纹背景
+
+> 背景知识：:point_right: [gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/gradient), [linear-gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/linear-gradient), [radial-gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/radial-gradient), [repeating-linear-gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/repeating-linear-gradient)
+
+#### 进度条
+
+<CodePen title="translucent-borders" slug="OJmdOaG" tab="js,result" :editable="true" :preview="true" :height="370" />
+
+#### 不规则卡片
+
+
+
+<CanIUseEmbed cssProperty="css-gradients" />
 
 ### 1px 线/边
 

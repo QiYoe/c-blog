@@ -3,37 +3,37 @@
     <div class="footer_bg_one">
       <img 
         class="lazy"
-        data-url="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/assets-storage/imgs/blog-home-footer/1.gif"
+        data-url="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/blog-home-footer/1.gif"
         style="width: 100%;"
         alt=""
-        src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/assets-storage/imgs/blog-home-footer/1.gif"
+        src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/blog-home-footer/1.gif"
       />
     </div>
     <div class="footer_bg_three">
       <img 
         class="lazy"
-        data-url="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/assets-storage/imgs/blog-home-footer/3.gif"
+        data-url="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/blog-home-footer/3.gif"
         style="width: 100%;"
         alt=""
-        src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/assets-storage/imgs/blog-home-footer/3.gif"
+        src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/blog-home-footer/3.gif"
       />
     </div>
     <div class="footer_bg_two">
       <img 
         class="lazy"
-        data-url="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/assets-storage/imgs/blog-home-footer/2.gif"
+        data-url="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/blog-home-footer/2.gif"
         style="width: 100%;"
         alt=""
-        src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/assets-storage/imgs/blog-home-footer/2.gif"
+        src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/blog-home-footer/2.gif"
       />
     </div>
     <div class="footer_bg_four">
       <img 
         class="lazy"
-        data-url="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/assets-storage/imgs/blog-home-footer/4.gif"
+        data-url="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/blog-home-footer/4.gif"
         style="width: 100%;"
         alt=""
-        src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/assets-storage/imgs/blog-home-footer/4.gif"
+        src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/blog-home-footer/4.gif"
       />
     </div>
   </div>
@@ -42,7 +42,7 @@
 <style scoped>
 .footer_bg {
   position: relative;
-  background: url(https://img.halfrost.com/Blog/ArticleTitleImage/footer_bg.png) repeat-x scroll center 0;
+  background: url(https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/blog-home-footer/footer_bg.png) repeat-x scroll center 0;
   width: 100%;
   height: 264px;
   overflow-x: hidden;
