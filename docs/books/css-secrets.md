@@ -9,8 +9,6 @@ head:
       content: CSS揭秘 css-secrets
 ---
 
-[CSS揭秘读书笔记-You-need-to-know-css](https://lhammer.cn/You-need-to-know-css/#/zh-cn/introduce?v=1)
-
 ## 边框与背景
 
 ### 半透明边框
@@ -46,6 +44,23 @@ head:
 </iframe>
 
 ### 边框内圆角
+
+> 背景知识：:point_right: [box-shadow](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-shadow), [outline](https://developer.mozilla.org/zh-CN/docs/Web/CSS/outline)
+
+我们知道`box-shadow`是会紧贴`border-radius`圆角边的，但是，描边`outline`并不会与圆角边`border-radius`贴合，我们可以将两者组合，通过`box-shadow`去填补描边`outline`所产生的间隙来达到我们想要的效果。
+
+:::danger 关于扩张半径的取值？
+假设圆角`border-radius`的半径为`r`,根据勾股定理，扩张半径的最小值应等于`(√2−1)r ~= 3.314`，最大值不能超过描边宽度，即`6px`。
+:::
+
+<CodePen title="translucent-borders" slug="NWjoNbX" tab="js,result" :editable="true" :preview="true" :height="370" />
+
+<iframe
+  width="100%"
+  height="410px"
+  src="https://caniuse.bitsofco.de/embed/index.html?feat=mdn-css__properties__box-shadow&periods=future_1,current,past_1,past_2,past_3&accessible-colours=false&image-base=none"
+  frameborder="0">
+</iframe>
 
 ### 背景定位
 
