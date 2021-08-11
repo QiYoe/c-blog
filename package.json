@@ -26,6 +26,6 @@
     "markdown-it-ins": "^3.0.1",
     "markdown-it-multimd-table": "^4.1.0",
     "markdown-it-textual-uml": "^0.1.8",
-    "vitepress": "^0.15.6"
+    "vitepress": "^0.16.0"
   }
 }
