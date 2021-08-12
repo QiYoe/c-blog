@@ -23,6 +23,13 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 
 或者用左手法则也行：**伸出左手，大拇指指向正轴方向，四个手指的指向即是旋转正向，但务必记住是左手！**
 
+### css 2d坐标轴空间
+
+- rotate 顺时针为+，逆时针为-
+- translate x为横轴，y为纵轴
+- scale x为横轴，y为纵轴
+- skew 延x轴逆时针为正，沿+y顺时针为正
+
 ## 边框与背景
 
 ### 半透明边框
@@ -43,7 +50,7 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 
 `box-shadow`只能模拟实线边框效果，某些情况下，我们可能需要生成虚线的边框效果，我们可以通过类似于`border`的描边`outline`和对应的描边偏移`outline-offset`来实现。
 
-<CodePen title="translucent-borders" slug="WNjLmoq" tab="js,result" :editable="true" :preview="true" :height="370" />
+<CodePen title="multiple-borders" slug="WNjLmoq" tab="js,result" :editable="true" :preview="true" :height="370" />
 
 <CanIUseEmbed cssProperty="mdn-css__properties__box-shadow" />
 
@@ -57,7 +64,7 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 假设圆角`border-radius`的半径为`r`,根据勾股定理，扩张半径的最小值应等于`(√2−1)r ~= 3.314`，最大值不能超过描边宽度，即`6px`。
 :::
 
-<CodePen title="translucent-borders" slug="NWjoNbX" tab="js,result" :editable="true" :preview="true" :height="370" />
+<CodePen title="inner-rounding" slug="NWjoNbX" tab="js,result" :editable="true" :preview="true" :height="370" />
 
 <CanIUseEmbed cssProperty="mdn-css__properties__outline" />
 
@@ -65,7 +72,7 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 
 > 背景知识：:point_right: [background-position](https://developer.mozilla.org/zh-CN/docs/Web/CSS/background-position), [background-origin](https://developer.mozilla.org/zh-CN/docs/Web/CSS/background-origin), [calc](https://developer.mozilla.org/zh-CN/docs/Web/CSS/calc)
 
-<CodePen title="translucent-borders" slug="MWmLvzQ" tab="js,result" :editable="true" :preview="true" :height="370" />
+<CodePen title="extended-bg-position" slug="MWmLvzQ" tab="js,result" :editable="true" :preview="true" :height="370" />
 
 <CanIUseEmbed cssProperty="mdn-css__properties__background-origin" />
 <CanIUseEmbed cssProperty="calc" />
@@ -76,11 +83,11 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 
 - 进度条
 
-<CodePen title="translucent-borders" slug="OJmdOaG" tab="js,result" :editable="true" :preview="true" :height="370" />
+<CodePen title="stripes-background-linear" slug="OJmdOaG" tab="js,result" :editable="true" :preview="true" :height="370" />
 
 - 不规则卡片
 
-<CodePen title="translucent-borders" slug="NWjoOgX" tab="js,result" :editable="true" :preview="true" :height="370" />
+<CodePen title="stripes-background-radial" slug="NWjoOgX" tab="js,result" :editable="true" :preview="true" :height="370" />
 
 > 示例中为了实现:hover时有贴边的阴影，所以采用了`radial-gradient`。
 
@@ -92,14 +99,14 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 
 - `box-shadow` + `transform` 实现 1px 线条
 
-<CodePen title="translucent-borders" slug="NWjoOgX" tab="js,result" :editable="true" :preview="true" :height="370" />
+<CodePen title="one-pixel-line" slug="NWjoOgX" tab="js,result" :editable="true" :preview="true" :height="370" />
 
 - `border` + `伪元素` + `transform` 实现 1px 独立边框 :thumbsup:
 
-<CodePen title="translucent-borders" slug="wvdNQWY" tab="js,result" :editable="true" :preview="true" :height="370" />
+<CodePen title="one-pixel-line-border" slug="wvdNQWY" tab="js,result" :editable="true" :preview="true" :height="370" />
 
-<CanIUseEmbed cssProperty="css-media-resolution" />
-<CanIUseEmbed cssProperty="transforms3d" />
+<CanIUseEmbed cssProperty="mdn-css__types__resolution" />
+<CanIUseEmbed cssProperty="mdn-css__properties__transform" />
 
 ## 常见形状
 
@@ -109,15 +116,32 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 
 通常我们一般使用`border-radius`来时实现圆角效果，其实`border-radius`是可以单独指定它的半长轴和半短轴，只需要用“/”分割即可。我们可以通过这个属性轻松实现半圆、半椭圆、四分之一圆及四分之一圆等常见的图形。
 
-<CodePen title="translucent-borders" slug="vYmbQWR" tab="js,result" :editable="true" :preview="true" :height="370" />
+<CodePen title="ellipse" slug="vYmbQWR" tab="js,result" :editable="true" :preview="true" :height="370" />
 
-<CanIUseEmbed cssProperty="border-radius" />
+<CanIUseEmbed cssProperty="mdn-css__properties__border-radius" />
 
 ### parallel四边形
 
+> 背景知识：:point_right: [transform](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform), [clip-path](https://developer.mozilla.org/zh-CN/docs/Web/CSS/clip-path)
+
+<CodePen title="parallelogram" slug="ExmMaxv" tab="js,result" :editable="true" :preview="true" :height="480" />
+
+<CanIUseEmbed cssProperty="mdn-css__properties__clip-path" />
+
 ### 切角效果
 
+> 背景知识：:point_right: [gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/gradient), [clip-path](https://developer.mozilla.org/zh-CN/docs/Web/CSS/clip-path)
+
+<CodePen title="bevel-corners" slug="MWmxKaj" tab="js,result" :editable="true" :preview="true" :height="480" />
+
 ### 简易饼图
+
+> 背景知识：:point_right: [gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/gradient), [animation](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation), [SVG](https://developer.mozilla.org/zh-CN/docs/Web/SVG/Tutorial)
+
+<CodePen title="pie-chart" slug="yLbwOBp" tab="js,result" :editable="true" :preview="true" :height="480" />
+
+<CanIUseEmbed cssProperty="mdn-css__properties__animation" />
+<CanIUseEmbed cssProperty="svg" />
 
 ### 提示气泡
 
