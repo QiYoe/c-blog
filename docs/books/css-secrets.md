@@ -13,6 +13,16 @@ head:
 import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 </script>
 
+## 前置知识
+
+### css 3d坐标轴空间
+
+<div align="center"><img src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/css-secrets/css-3d.jpg" width="300" align="center"/></div>
+
+**正向轴对着眼睛，顺时针则旋转角度为正，逆时针则旋转角度为负。**
+
+或者用左手法则也行：**伸出左手，大拇指指向正轴方向，四个手指的指向即是旋转正向，但务必记住是左手！**
+
 ## 边框与背景
 
 ### 半透明边框
@@ -64,21 +74,44 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 
 > 背景知识：:point_right: [gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/gradient), [linear-gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/linear-gradient), [radial-gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/radial-gradient), [repeating-linear-gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/repeating-linear-gradient)
 
-#### 进度条
+- 进度条
 
 <CodePen title="translucent-borders" slug="OJmdOaG" tab="js,result" :editable="true" :preview="true" :height="370" />
 
-#### 不规则卡片
+- 不规则卡片
 
+<CodePen title="translucent-borders" slug="NWjoOgX" tab="js,result" :editable="true" :preview="true" :height="370" />
 
+> 示例中为了实现:hover时有贴边的阴影，所以采用了`radial-gradient`。
 
 <CanIUseEmbed cssProperty="css-gradients" />
 
 ### 1px 线/边
 
+> 背景知识：:point_right: [box-shadow](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-shadow), [transform](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform), [@media](https://developer.mozilla.org/zh-CN/docs/Web/CSS/@media)
+
+- `box-shadow` + `transform` 实现 1px 线条
+
+<CodePen title="translucent-borders" slug="NWjoOgX" tab="js,result" :editable="true" :preview="true" :height="370" />
+
+- `border` + `伪元素` + `transform` 实现 1px 独立边框 :thumbsup:
+
+<CodePen title="translucent-borders" slug="wvdNQWY" tab="js,result" :editable="true" :preview="true" :height="370" />
+
+<CanIUseEmbed cssProperty="css-media-resolution" />
+<CanIUseEmbed cssProperty="transforms3d" />
+
 ## 常见形状
 
 ### 圆与椭圆
+
+> 背景知识：:point_right: [border-radius](https://developer.mozilla.org/zh-CN/docs/Web/CSS/border-radius)
+
+通常我们一般使用`border-radius`来时实现圆角效果，其实`border-radius`是可以单独指定它的半长轴和半短轴，只需要用“/”分割即可。我们可以通过这个属性轻松实现半圆、半椭圆、四分之一圆及四分之一圆等常见的图形。
+
+<CodePen title="translucent-borders" slug="vYmbQWR" tab="js,result" :editable="true" :preview="true" :height="370" />
+
+<CanIUseEmbed cssProperty="border-radius" />
 
 ### parallel四边形
 
