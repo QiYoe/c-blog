@@ -141,9 +141,26 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 <CodePen title="pie-chart" slug="yLbwOBp" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 <CanIUseEmbed cssProperty="mdn-css__properties__animation" />
-<CanIUseEmbed cssProperty="svg" />
+<CanIUseEmbed cssProperty="svg"  height="440" />
 
 ### 提示气泡
+
+> 背景知识：:point_right: [transition](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transition), [transform](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform), [filter](https://developer.mozilla.org/zh-CN/docs/Web/CSS/filter)
+
+- `dark`主题
+
+<CodePen title="poptip-dark" slug="yLbwOBp" tab="js,result" :editable="true" :preview="true" :height="480" />
+
+- `light`主题：`filter: drop-shadow()`
+
+<CodePen title="poptip-light" slug="LYyaebm" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 什么是“CSS Filter Effects”？
+
+[cinwell website](https://www.bestagencies.com/tools/filter-effects-css-generator/)
+
+<CanIUseEmbed cssProperty="css-transitions" height="440" />
+<CanIUseEmbed cssProperty="css-filters" height="440" />
 
 ### 其他多边形
 
