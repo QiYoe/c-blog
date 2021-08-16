@@ -26,5 +26,6 @@ module.exports = [
     gtag('js', new Date());
 
     gtag('config', 'G-SBNLNM3Q41');
-  `]
+  `],
+  ['script', { type: 'async', src: 'https://cpwebassets.codepen.io/assets/embed/ei.js' }],
 ]

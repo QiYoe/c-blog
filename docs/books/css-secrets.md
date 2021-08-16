@@ -23,12 +23,28 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 
 或者用左手法则也行：**伸出左手，大拇指指向正轴方向，四个手指的指向即是旋转正向，但务必记住是左手！**
 
+- rotate3d
+  - rotateX +顺时针旋转，-逆时针旋转（X轴垂直平面）
+  - rotateY +顺时针旋转，-逆时针旋转（Y轴垂直平面）
+  - rotateZ +顺时针旋转，-逆时针旋转（Z轴垂直平面）
+- scale3d
+  - scaleX +顺时针旋转，-逆时针旋转（X轴垂直平面）
+  - scaleY +顺时针旋转，-逆时针旋转（Y轴垂直平面）
+  - scaleZ +顺时针旋转，-逆时针旋转（Z轴垂直平面）
+- translate3d
+  - translateX +顺时针旋转，-逆时针旋转（X轴垂直平面）
+  - translateY +顺时针旋转，-逆时针旋转（Y轴垂直平面）
+
 ### css 2d坐标轴空间
+
+<div align="center"><img src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/css-secrets/css-2d.png" width="300" align="center"/></div>
 
 - rotate 顺时针为+，逆时针为-
 - translate x为横轴，y为纵轴
 - scale x为横轴，y为纵轴
-- skew 延x轴逆时针为正，沿+y顺时针为正
+- skew
+  - skewX +顺时针旋转，-逆时针旋转
+  - skewY +顺时针旋转，-逆时针旋转
 
 ## 边框与背景
 
@@ -149,7 +165,7 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 
 - `dark`主题
 
-<CodePen title="poptip-dark" slug="yLbwOBp" tab="js,result" :editable="true" :preview="true" :height="480" />
+<CodePen title="poptip-dark" slug="ZEKPXWo" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - `light`主题：`filter: drop-shadow()`
 
@@ -164,11 +180,29 @@ import CanIUseEmbed from '../components/CanIUseEmbed.vue'
 
 ### 其他多边形
 
+> 背景知识：:point_right: [box-sizing](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-sizing), [transform](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform)
+
+<CodePen title="polygon" slug="OJmqaBB" tab="js,result" :editable="true" :preview="true" height="480" />
+
+<CanIUseEmbed cssProperty="css3-boxsizing" />
+
 ## 视觉效果
 
 ### 常见投影
 
+> 背景知识：:point_right: [box-shadow](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-shadow)
+
+<CodePen title="single-projection" slug="VwbRqbG" tab="js,result" :editable="true" :preview="true" height="480" />
+
+<CanIUseEmbed cssProperty="css-boxshadow" />
+
 ### 不规则投影
+
+> 背景知识：:point_right: [filter](https://developer.mozilla.org/zh-CN/docs/Web/CSS/filter), [radial-gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/radial-gradient), [border-image](https://developer.mozilla.org/zh-CN/docs/Web/CSS/border-image)
+
+<CodePen title="irregular-projection" slug="VwbRqbG" tab="js,result" :editable="true" :preview="true" height="480" />
+
+<CanIUseEmbed cssProperty="css-boxshadow" />
 
 ### 毛玻璃投影
 
