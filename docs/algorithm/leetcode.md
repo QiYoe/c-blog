@@ -20,3 +20,5 @@ head:
 [算法代码可视化](https://github.com/algorithm-visualizer/algorithm-visualizer)
 
 [labuladong 的算法小抄](https://labuladong.gitee.io/algo/1/2/)
+
+[JavaScript 算法与数据结构](https://github.com/trekhleb/javascript-algorithms/blob/master/README.zh-CN.md)

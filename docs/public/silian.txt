@@ -22,7 +22,7 @@ https://qiyoe.cn/front-end/websocket/
 https://qiyoe.cn/front-end/web-container/
 https://qiyoe.cn/books/you-dont-know-js.html
 https://qiyoe.cn/books/js-advice.html
-https://qiyoe.cn/books/css-secrets.html
+https://qiyoe.cn/books/css-tricks.html
 https://qiyoe.cn/books/grokking-algorithms.html
 https://qiyoe.cn/books/pro-git.html
 https://qiyoe.cn/other/smart-tools.html

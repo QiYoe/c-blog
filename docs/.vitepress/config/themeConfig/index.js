@@ -29,7 +29,7 @@ module.exports = {
       items: [
         { text: '你不知道的JavaScript', link: '/books/you-dont-know-js' },
         { text: 'JavaScript深入系列', link: '/books/js-advice' },
-        { text: 'CSS揭秘', link: '/books/css-secrets' },
+        { text: 'CSS揭秘', link: '/books/css-tricks' },
         { text: '算法图解', link: '/books/grokking-algorithms' },
         { text: 'Pro-Git', link: '/books/pro-git' },
         { text: 'Docker-从入门到实践', link: '/books/docker-practice' },
@@ -162,7 +162,7 @@ function getBooksSidebar() {
       children: [
         { text: '你不知道的JavaScript', link: '/books/you-dont-know-js' },
         { text: 'JavaScript深入系列', link: '/books/js-advice' },
-        { text: 'CSS揭秘', link: '/books/css-secrets' },
+        { text: 'CSS揭秘', link: '/books/css-tricks' },
         { text: '算法图解', link: '/books/grokking-algorithms' },
         { text: 'Pro-Git', link: '/books/pro-git' },
         { text: 'Docker-从入门到实践', link: '/books/docker-practice' },
