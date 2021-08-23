@@ -4,7 +4,7 @@ bgImage: /banner.png
 bgText: 背景图片
 heroImage: /banner.png
 heroAlt: Banner image
-heroText: 好记性不如烂笔头，写笔记是为了回头看
+heroText: 好记性不如烂笔头!
 tagline: （づ￣3￣）づ╭❤～
 isShowTitleInHome: true
 actionText: ▶ 开始

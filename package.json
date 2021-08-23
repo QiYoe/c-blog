@@ -18,7 +18,7 @@
     "blog"
   ],
   "scripts": {
-    "dev": "vitepress dev docs --port 8080",
+    "dev": "vitepress dev docs",
     "build": "vitepress build docs",
     "serve": "vitepress serve docs"
   },

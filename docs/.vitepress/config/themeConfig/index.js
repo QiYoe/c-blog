@@ -29,6 +29,7 @@ module.exports = {
       items: [
         { text: '你不知道的JavaScript', link: '/books/you-dont-know-js' },
         { text: 'JavaScript深入系列', link: '/books/js-advice' },
+        { text: 'TypeScript入门教程', link: '/books/typescript-tutorial' },
         { text: 'CSS揭秘', link: '/books/css-tricks' },
         { text: '算法图解', link: '/books/grokking-algorithms' },
         { text: 'Pro-Git', link: '/books/pro-git' },
@@ -162,6 +163,7 @@ function getBooksSidebar() {
       children: [
         { text: '你不知道的JavaScript', link: '/books/you-dont-know-js' },
         { text: 'JavaScript深入系列', link: '/books/js-advice' },
+        { text: 'TypeScript入门教程', link: '/books/typescript-tutorial' },
         { text: 'CSS揭秘', link: '/books/css-tricks' },
         { text: '算法图解', link: '/books/grokking-algorithms' },
         { text: 'Pro-Git', link: '/books/pro-git' },
