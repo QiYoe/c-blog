@@ -364,32 +364,326 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 ### 圣杯布局
 
+此布局一般的需求为两边等宽，中间自适应的三栏布局。
+
+<CodePen title="holy-grail-layout" slug="BaZBbKB" tab="js,result" :editable="true" :preview="true" height="480" />
+
 ### 双飞翼布局
+
+此布局的需求同[圣杯布局](https://lhammer.cn/You-need-to-know-css/#/holy-grail-layout)一样，都为两边等宽，中间自适应的三栏布局，源自淘宝UED
+
+<CodePen title="double-wing-layout" slug="VwWZRzg" tab="js,result" :editable="true" :preview="true" height="480" />
+
+:::tip 圣杯布局和双飞翼布局的区别
+圣杯布局和双飞翼布局解决问题的方案在前一半是相同的，也就是三栏全部float浮动，但左右两栏加上负margin让其跟中间栏div并排，以形成三栏布局。
+
+不同在于解决”中间栏div内容不被遮挡“问题的思路不一样：圣杯布局，为了中间div内容不被遮挡，将中间div设置了左右padding-left和padding-right后，将左右两个div用相对布局position: relative并分别配合right和left属性，以便左右两栏div移动后不遮挡中间div。
+
+双飞翼布局，为了中间div内容不被遮挡，直接在中间div内部创建子div用于放置内容，在该子div里用margin-left和margin-right为左右两栏div留出位置。多了1个div，少用大致4个css属性（圣杯布局中间divpadding-left和padding-right这2个属性，加上左右两个div用相对布局position: relative及对应的right和left共4个属性，一共6个；而双飞翼布局子div里用margin-left和margin-right共2个属性，6-2=4），个人感觉比圣杯布局思路更直接和简洁一点。
+:::
 
 ### 类订单布局
 
+> 背景知识：:point_right: [水平垂直居中](#水平垂直居中)
+
+此布局一般的需求为左侧高度不固定，右侧自适应高度并且居中。
+
+<div align="center" style="border: 1px solid #f5f5f5"><img src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/css-secrets/interesting-layout-1.jpeg" width="100%" align="center"/></div>
+
+- 伪元素 `:after` + `vertical-align:middle` 方案
+
+<CodePen title="class-order-layout" slug="rNwBRdJ" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 伪元素 `display: flex` 方案
+
+<CodePen title="dlayout-flexbox" slug="ZEyzZYR" tab="js,result" :editable="true" :preview="true" height="480" />
+
 ### Flex布局
+
+> 背景知识：:point_right: [flex](https://developer.mozilla.org/zh-CN/docs/Web/CSS/flex), [flex 布局的基本概念](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+
+Flex 布局的全称为 CSS Flexible Box Layout Module，是 W3C 提出的一种新型页面布局方案，第一个版本于 2009 年推出，到现在为止，W3C 一共发布了 12 个版本，[最新版本](https://www.w3.org/TR/css-flexbox-1/)于 20171019 推出，已经得到了所有主流浏览器的支持，所以请大胆的使用吧~
+
+:::tip Flexbox 原理演示
+[A Visual Guide to CSS3 Flexbox Properties](https://lhammer.cn/Flexbox/ ":include :type=iframe width=100% height=791px")
+:::
+
+Flex 布局由容器`flex container`和项目`flex item`两部分组成，容器默认存在两根轴：水平的主轴`main axis`和垂直的交叉轴`cross axis`，项目默认以主轴排列。
+Flex 属性包括容器属性和项目属性两部分，容器上可设置：`flex-direction`、`flex-wrap`、`flex-flow`、`justify-content`、`align-items`、`align-content`6 个属性，项目上同样可设置 6 个属性，分别为：`order`、`flex-grow`、`flex-shrink`、`flex-basis`、`flex`、`align-self`。示例如下：
+
+- 容器属性
+  - flex-direction 属性
+
+**作用：** 决定主轴的方向。
+
+```css
+flex-direction: row | row-reverse | column | column-reverse;
+```
+
+> - row：默认值，主轴为水平方向,表示从左向右排列
+> - row-reverse：主轴为水平方向，从右向左排列
+> - column：主轴为垂直方向，从上向下排列
+> - column-reverse：主轴为垂直方向，从下向上排列
+
+<CodePen title="flexDirection" slug="zYzOXry" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 容器属性
+  - flex-wrap 属性
+
+**作用：** 决定项目在一条轴线排不下时如何换行。
+
+```css
+flex-wrap: nowrap | wrap | wrap-reverse;
+```
+
+> - nowrap：默认值，不换行
+> - wrap：换行，第一行在上方
+> - row-reverse：换行，第一行在下方
+
+<CodePen title="flexWrap" slug="wvewbbL" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 容器属性
+  - flex-flow 属性
+
+**作用：** `flex-direction`属性和`flex-wrap`属性的简写形式，默认值为 row nowrap。
+
+```css
+flex-flow: <flex-direction> || <flex-wrap>;
+```
+
+> - row nowrap：默认值，主轴为水平方向，不换行
+> - `<flex-direction>`
+> - `<flex-wrap>`
+
+- 容器属性
+  - justify-content 属性
+
+**作用：** 定义项目在主轴上的对齐方式。
+
+```css
+justify-content: flex-start | flex-end | center | space-between | space-round |
+  space-evenly;
+```
+
+> - flex-start：默认值，左对齐
+> - flex-end：右对齐
+> - center：居中
+> - space-evenly：每个项目之间及两端的间隔都相等
+> - space-around：每个项目两侧间隔相等
+> - space-between：两端对齐，项目之间间隔相等
+
+<CodePen title="justifyContent" slug="MWogMKJ" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 容器属性
+  - align-items 属性
+
+**作用：** 定义项目在交叉轴（默认方向从上到下）上的对齐方式。
+
+```css
+align-items: flex-start | flex-end | center | baseline | stretch;
+```
+
+> - flex-start：交叉轴的起点对齐
+> - flex-end：交叉轴的终点对齐
+> - cente：交叉轴的中心对齐
+> - baseline：项目第一行文字的基线对齐
+> - stretch：默认值，项目未设置固定高度时，将占满整个容器
+
+<CodePen title="alignItems" slug="Rwgbzav" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 容器属性
+  - align-content 属性
+
+**作用：** 定义了多根轴线的对齐方式。如果项目只有一根轴线，该属性不起作用
+
+```css
+align-content: flex-start | flex-end | center | space-between | space-around |
+  stretch;
+```
+
+> - flex-start：交叉轴的起点对齐
+> - flex-end：交叉轴的终点对齐
+> - center：交叉轴的中心对齐
+> - space-between：与交叉轴两端对齐，轴线之间的间隔平均分布
+> - space-around：每根轴线两侧的间隔都相等
+> - stretch：默认值，轴线占满整个交叉轴
+
+<CodePen title="alignContent" slug="ExXYBmQ" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 项目属性
+  - order 属性
+
+**作用：** 定义项目的排列顺序。
+
+```css
+order: <number>;
+```
+
+> - `<number>`：值为整数，数值越小，排列越靠前，默认为 0
+
+<CodePen title="order" slug="xxrKoLz" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 项目属性
+  - order 属性
+
+**作用：** 定义项目的排列顺序。
+
+```css
+order: <number>;
+```
+
+> - `<number>`：值为整数，数值越小，排列越靠前，默认为 0
+
+<CodePen title="order" slug="xxrKoLz" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 项目属性
+  - flex-grow 属性
+
+**作用：** 定义项目的伸缩比例，按照该比例给项目分配空间。
+
+```css
+flex-grow: <number>;
+```
+
+> - `<number>`：值为整数，数值越大，项目占据空间越大，默认为 0
+
+<CodePen title="flexGrow" slug="xxrKopJ" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 项目属性
+  - flex-shrink 属性
+
+**作用：** 定义项目的收缩比例，按照该比例给项目分配空间。
+
+```css
+flex-shrink: <number>;
+```
+
+> - `<number>`：值为整数，数值越大，项目占据空间越小，默认为 1
+
+<CodePen title="flexShrink" slug="abwogqK" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 项目属性
+  - flex-basis 属性
+
+**作用：** 定义在分配多余空间之前，项目占据的主轴空间。浏览器根据这个属性，计算主轴是否有多余空间。
+
+```css
+flex-basis: <length> | auto;
+```
+
+> - `<length>`：默认为 auto，即项目的原始尺寸；也可设置和 width 或 height 属性一样的值（比如 329px），则项目将占据固定空间。
+
+<CodePen title="flexBasis" slug="XWgrLEZ" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 项目属性
+  - flex 属性 :thumbsup:
+
+**作用：** 是`flex-grow`,`flex-shrink`和`flex-basis`的简写，后两个属性可选。
+
+```css
+flex: none | [ < "flex-grow" > < "flex-shrink" >? || < "flex-basis" > ];
+```
+
+> - `0 1 auto`：默认值，不伸缩，如果容器空间不足则等比例收缩
+> - `1 1 auto`：对应关键字`auto`，如果容器空间多余，则等比例分配多余空间空间；如果容器空间不足则等比例收缩
+> - `0 0 auto`：对应关键字`none`，按项目原始大小分配空间
+
+- 项目属性
+  - align-self 属性
+
+**作用：** 定义单个项目的对齐方式，可覆盖 align-items 属性。
+
+```css
+align-self: auto | flex-start | flex-end | center | baseline | stretch;
+```
+
+> - auto：默认值，继承父元素的`align-items`属性，如果没有父元素，则等同于 stretch
+> - flex-start：交叉轴的起点对齐
+> - flex-end：交叉轴的终点对齐
+> - center：交叉轴的中心对齐
+> - baseline：项目第一行文字的基线对齐
+> - stretch：未设置固定高度是，将占满整个容器
+
+<CodePen title="alignSelf" slug="PojYraq" tab="js,result" :editable="true" :preview="true" height="480" />
 
 ## 动画过渡
 
 ### 弹跳效果
 
+> 背景知识：:point_right: [animation](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation), [timing-function](https://developer.mozilla.org/zh-CN/docs/Web/CSS/timing-function), [transform](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform)
+
+小球下落过程属于自由落体运动，在时间函数[timing-function](https://developer.mozilla.org/zh-CN/docs/Web/CSS/timing-function)中,`ease`（更快的加速度）相对更接近于自由落体运动，所以下落过程我们选用`ease`作为时间函数的关键值；当小球被弹起时属于减速运动，我们需用使用`ease`的方向版本`cubic-bezier(.1,.25,.1,.25)`（更快的减速度）作为时间函数的函数值来模仿减速运动。调速函数如下图所示：
+
+<div align="center"><img src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/css-secrets/cubic-bezier.jpeg" width="100%" align="center"/></div>
+
+<CodePen title="bounce" slug="yLXBdRz" tab="js,result" :editable="true" :preview="true" height="480" />
+
 ### 弹性过渡
+
+> 背景知识：:point_right: [animation](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation), [transition](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transition)
+
+一切的过度皆应该由动画来完成
+
+- `animation`方案 :thumbsup:
+
+<CodePen title="elastic-animation" slug="xxrxKWq" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- 三次贝塞尔`cubic-bezier` + `transition`方案
+
+<CodePen title="elastic-transtion" slug="jOwONdO" tab="js,result" :editable="true" :preview="true" height="480" />
+
+三次贝塞尔曲线`cubic-bezier`主要是为`animation`生成速度曲线的函数，语法是`cubic-bezier(<x1>, <y1>, <x2>, <y2>)`，更多请参考：[Lea Verou](http://lea.verou.me/about/)的图形化工具[cubic-bezier](http://cubic-bezier.com/#)
 
 ### 闪烁效果
 
+背景知识：:point_right: [animation-direction](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-direction)
+
+`animation-direction`属性接受的值共有四个，为了你能从视觉上直接理解其作用，我以下图一段从`#FFFFFF`变化到`#b4a078`并循环三次的动画为例，展示了这四个值各自对动画的作用效果。
+
+<div align="center"><img src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/css-secrets/animation-direction.jpeg" width="60%" align="center"/></div><br />
+
+<CodePen title="blink" slug="wvevwOb" tab="js,result" :editable="true" :preview="true" height="480" />
+
 ### 打字效果
+
+> 背景知识：:point_right: [animation](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation), [animation-timing-function](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-timing-function)
+
+<CodePen title="typing" slug="MWoWWge" tab="js,result" :editable="true" :preview="true" height="480" />
+
+:::danger 注意
+此方法仅限**单行等宽**字体~
+:::
 
 ### 抖动效果
 
+> 背景知识：:point_right: [animation](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation)
+
+- See [百度](https://www.baidu.com/s?wd=%E6%8A%96%E5%8A%A8&rsv_spt=1&rsv_iqid=0xe9f337870004f38a&issp=1&f=8&rsv_bp=0&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_enter=1&rsv_sug3=11&rsv_sug1=15&rsv_sug7=101&rsv_sug2=0&inputT=3789&rsv_sug4=4507)
+
+<CodePen title="shakeBaidu" slug="ExXxxVw" tab="js,result" :editable="true" :preview="true" height="480" />
+
+- See [CSShake](https://github.com/elrumordelaluz/csshake)
+
+<CodePen title="CSShake" slug="dyRyyGj" tab="js,result" :editable="true" :preview="true" height="480" />
+
 ### 无缝平滑效果
+
+> 背景知识：:point_right: [animation](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation)
+
+- 图片平滑效果
+
+<CodePen title="single-projection" slug="JjJjjKL" tab="js,result" :editable="true" :preview="true" height="480" />
+
+> 上图为两张左右对称的图片拼接而成，效果不是很完美，在开发中，只需使用一张左右可以无缝对接（类似360°全景图）的图片即可更完美。
+
+- 块平滑效果
+
+<CodePen title="block-smooth" slug="VwWwwmV" tab="js,result" :editable="true" :preview="true" height="480" />
 
 ### 延轨迹平滑效果
 
-## 其他
+> 背景知识：:point_right: [animation](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation), [transition](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transition), [transform](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform), [animation-delay](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-delay)
 
-### 常用片段
+**transform-origin 只是一个语法糖而已。实际上你总是可以用 translate() 来代替它。**
 
-### 自定义变量
-
-### 有趣的项目
+<CodePen title="circular-smooth" slug="NWgWWpG" tab="js,result" :editable="true" :preview="true" height="480" />
