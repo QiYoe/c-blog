@@ -28,7 +28,7 @@ cite {
   white-space: nowrap;
   overflow: hidden;
   border-right: 1px solid transparent;
-  animation: typing 5s steps(9), caret 0.5s steps(1) infinite;
+  animation: typing 4.5s steps(9), caret .5s steps(1) infinite;
 }
 
 @keyframes typing {
