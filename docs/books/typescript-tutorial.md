@@ -9,8 +9,6 @@ head:
       content: TypeScript 入门教程 TS
 ---
 
-[TypeScript 入门教程](https://ts.xcatliu.com/)
-
 ## 前置准备
 
 ### 安装 TypeScript
@@ -107,26 +105,150 @@ hello.ts:6:22 - error TS2345: Argument of type 'number[]' is not assignable to p
 
 JavaScript 的类型分为两种：原始数据类型（Primitive data types）和对象类型（Object types）。
 
-原始数据类型包括：`boolean`、`number`、`string`、`null`、`undefined` 以及 ES6 中的新类型 `[Symbol](https://es6.ruanyifeng.com/#docs/symbol)` 和 ES10 中的新类型 `[BigInt](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/BigInt)`。
+原始数据类型包括：`boolean`、`number`、`string`、`null`、`undefined` 以及 ES6 中的新类型 [Symbol](https://es6.ruanyifeng.com/#docs/symbol) 和 ES10 中的新类型 [BigInt](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/BigInt)。
 
 本节主要介绍`前五种`原始数据类型在 TypeScript 中的应用。
 
-- Boolean
+- boolean
 
+布尔值是最基础的数据类型，在 TypeScript 中，使用 `boolean` 定义布尔值类型：
 
+```ts
+let isDone: boolean = false;
 
-- Number
+// 编译通过
+// 后面约定，未强调编译错误的代码片段，默认为编译通过
+```
 
+注意，使用构造函数 `Boolean` 创造的对象不是布尔值：
 
-- String
+```ts
+let createdByNewBoolean: boolean = new Boolean(1);
 
+// Type 'Boolean' is not assignable to type 'boolean'.
+// 'boolean' is a primitive, but 'Boolean' is a wrapper object. Prefer using 'boolean' when possible.
+```
 
-- Null
+事实上 new Boolean() 返回的是一个 Boolean 对象：
 
+```ts
+let createdByNewBoolean: Boolean = new Boolean(1);
+```
 
-- Undefined
+直接调用 Boolean 也可以返回一个 boolean 类型：
 
+```ts
+let createdByBoolean: boolean = Boolean(1);
+```
 
+在 TypeScript 中，`boolean` 是 JavaScript 中的基本类型，而 `Boolean` 是 JavaScript 中的构造函数。其他基本类型（除了 `null` 和 `undefined`）一样，不再赘述。
+
+- number
+
+使用 `number` 定义数值类型：
+
+```ts
+let decLiteral: number = 6;
+let hexLiteral: number = 0xf00d;
+// ES6 中的二进制表示法
+let binaryLiteral: number = 0b1010;
+// ES6 中的八进制表示法
+let octalLiteral: number = 0o744;
+let notANumber: number = NaN;
+let infinityNumber: number = Infinity;
+```
+
+编译结果：
+
+```js
+var decLiteral = 6;
+var hexLiteral = 0xf00d;
+// ES6 中的二进制表示法
+var binaryLiteral = 10;
+// ES6 中的八进制表示法
+var octalLiteral = 484;
+var notANumber = NaN;
+var infinityNumber = Infinity;
+```
+
+- string
+
+使用 `string` 定义字符串类型：
+
+```ts
+let myName: string = 'Tom';
+let myAge: number = 25;
+
+// 模板字符串
+let sentence: string = `Hello, my name is ${myName}.
+I'll be ${myAge + 1} years old next month.`;
+```
+
+编译结果：
+
+```js
+var myName = 'Tom';
+var myAge = 25;
+// 模板字符串
+var sentence = "Hello, my name is " + myName + ".
+I'll be " + (myAge + 1) + " years old next month.";
+```
+
+- void
+
+JavaScript 没有空值（Void）的概念，在 TypeScript 中，可以用 void 表示没有任何返回值的函数：
+
+```ts
+function alertName(): void {
+  alert('My name is Tom');
+}
+```
+
+声明一个 `void` 类型的变量没有什么用，因为你只能将它赋值为 `undefined` 和 `null`（只在 --strictNullChecks 未指定时）：
+
+```ts
+// "strict": true
+//会报错 不能将类型“null”分配给类型“void”
+let unusable: void = null;
+//不会报错
+let unusable: void = undefined;
+```
+
+- `null` 和 `undefined`
+
+在 TypeScript 中，可以使用 `null` 和 `undefined` 来定义这两个原始数据类型：
+
+```ts
+let u: undefined = undefined;
+let n: null = null;
+```
+
+与 `void` 的区别是，`undefined` 和 `null` 是所有类型的子类型。也就是说 `undefined` 类型的变量，可以赋值给 `number` 类型的变量：
+
+```ts
+// "strict": true
+// 这样不会报错
+let num: number = undefined;
+// Type 'undefined' is not assignable to type 'number'.
+
+// 这样也不会报错
+let u: undefined;
+let num: number = u;
+// Type 'undefined' is not assignable to type 'number'.
+```
+
+```warning
+声明变量的数据类型为 void 时，非严格模式下，变量的值可以为 undefined 或 null。而严格模式下，变量的值只能为 undefined。
+```
+
+而 `void` 类型的变量不能赋值给 `number` 类型的变量：
+
+```ts
+let u: void;
+let num: number = u;
+
+// Type 'void' is not assignable to type 'number'.
+```
 
 ### 任意值
 
@@ -172,4 +294,4 @@ JavaScript 的类型分为两种：原始数据类型（Primitive data types）�
 
 ### 编译选项
 
-
+> 摘自[TypeScript 入门教程](https://ts.xcatliu.com/)
