@@ -1894,27 +1894,727 @@ import 'core-js';
 
 ### 函数
 
+函数类型在 TypeScript 类型系统中扮演着非常重要的角色，它们是可组合系统的核心构建块。
+
 #### 参数注解
+
+你可以注解函数参数，就像你可以注解其他变量一样:
+```ts
+// variable annotation
+let sampleVariable: { bar: number };
+
+// function parameter annotation
+function foo(sampleParameter: { bar: number }) {}
+```
+
+这里我们使用了内联类型注解，除此之外，你还可以使用接口等其他方式。
 
 ##### 返回类型注解
 
+你可以在函数参数列表之后使用与变量相同的样式来注解返回类型，如例子中 `：Foo`：
+```ts
+interface Foo {
+  foo: string;
+}
+
+// Return type annotated as `: Foo`
+function foo(sample: Foo): Foo {
+  return sample;
+}
+```
+
+我们在这里使用了一个 `interface`，但你可以自由地使用其他注解方式，例如内联注解。
+
+通常，你不需要注解函数的返回类型，因为它可以由编译器推断：
+```ts
+interface Foo {
+  foo: string;
+}
+
+function foo(sample: Foo) {
+  return sample; // inferred return type 'Foo'
+}
+```
+
+但是，添加这些注解以帮助解决错误提示通常是一个好主意，例如：
+```ts
+function foo() {
+  return { fou: 'John Doe' }; // You might not find this misspelling of `foo` till it's too late
+}
+
+sendAsJSON(foo());
+```
+
+如果你不打算从函数返回任何内容，则可以将其标注为：`void` 。你通常可以删除 `void`， TypeScript 能推导出来：
+
 ##### 可选参数
+
+你可以将参数标记为可选:
+```ts
+function foo(bar: number, bas?: string): void {
+  // ..
+}
+
+foo(123);
+foo(123, 'hello');
+```
+
+或者，当调用者没有提供该参数时，你可以提供一个默认值（在参数声明后使用 `= someValue` ）：
+```ts
+function foo(bar: number, bas: string = 'hello') {
+  console.log(bar, bas);
+}
+
+foo(123); // 123, hello
+foo(123, 'world'); // 123, world
+```
 
 ##### 重载
 
+TypeScript 允许你声明函数重载。这对于文档 + 类型安全来说很实用。请思考以下代码：
+```ts
+function padding(a: number, b?: number, c?: number, d?: any) {
+  if (b === undefined && c === undefined && d === undefined) {
+    b = c = d = a;
+  } else if (c === undefined && d === undefined) {
+    c = a;
+    d = b;
+  }
+  return {
+    top: a,
+    right: b,
+    bottom: c,
+    left: d
+  };
+}
+```
+
+如果仔细查看代码，就会发现 a，b，c，d 的值会根据传入的参数数量而变化。此函数也只需要 1 个，2 个或 4 个参数。可以使用函数重载来*强制*和*记录*这些约束。你只需多次声明函数头。最后一个函数头是在函数体内实际处于活动状态但不可用于外部。
+
+如下所示:
+```ts
+// 重载
+function padding(all: number);
+function padding(topAndBottom: number, leftAndRight: number);
+function padding(top: number, right: number, bottom: number, left: number);
+// Actual implementation that is a true representation of all the cases the function body needs to handle
+function padding(a: number, b?: number, c?: number, d?: number) {
+  if (b === undefined && c === undefined && d === undefined) {
+    b = c = d = a;
+  } else if (c === undefined && d === undefined) {
+    c = a;
+    d = b;
+  }
+  return {
+    top: a,
+    right: b,
+    bottom: c,
+    left: d
+  };
+}
+```
+
+这里前三个函数头可有效调用 `padding`:
+```ts
+padding(1); // Okay: all
+padding(1, 1); // Okay: topAndBottom, leftAndRight
+padding(1, 1, 1, 1); // Okay: top, right, bottom, left
+
+padding(1, 1, 1); // Error: Not a part of the available overloads
+```
+
+当然，最终声明（从函数内部看到的真正声明）与所有重载兼容是很重要的。这是因为这是函数体需要考虑的函数调用的真实性质。
+
+:::tip
+TypeScript 中的函数重载没有任何运行时开销。它只允许你记录希望调用函数的方式，并且编译器会检查其余代码。
+:::
+
 ##### 函数声明
+
+> 快速开始：类型注解是你描述现有实现类型的一种方式
+
+在没有提供函数实现的情况下，有两种声明函数类型的方式:
+```ts
+type LongHand = {
+  (a: number): number;
+};
+
+type ShortHand = (a: number) => number;
+```
+
+上面代码中的两个例子完全相同。但是，当你想使用函数重载时，只能用第一种方式:
+```ts
+type LongHandAllowsOverloadDeclarations = {
+  (a: number): number;
+  (a: string): string;
+};
+```
 
 ### 可调用的
 
+你可以使用类型别名或者接口来表示一个可被调用的类型注解：
+```ts
+interface ReturnString {
+  (): string;
+}
+```
+
+它可以表示一个返回值为 `string` 的函数：
+```ts
+declare const foo: ReturnString;
+
+const bar = foo(); // bar 被推断为一个字符串。
+```
+
+#### 一个实际的例子
+
+当然，像这样一个可被调用的类型注解，你也可以根据实际来传递任何参数、可选参数以及 rest 参数，这有一个稍微复杂的例子：
+```ts
+interface Complex {
+  (foo: string, bar?: number, ...others: boolean[]): number;
+}
+```
+
+一个接口可提供多种调用签名，用以特殊的函数重载：
+```ts
+interface Overloaded {
+  (foo: string): string;
+  (foo: number): number;
+}
+
+// 实现接口的一个例子：
+function stringOrNumber(foo: number): number;
+function stringOrNumber(foo: string): string;
+function stringOrNumber(foo: any): any {
+  if (typeof foo === 'number') {
+    return foo * foo;
+  } else if (typeof foo === 'string') {
+    return `hello ${foo}`;
+  }
+}
+
+const overloaded: Overloaded = stringOrNumber;
+
+// 使用
+const str = overloaded(''); // str 被推断为 'string'
+const num = overloaded(123); // num 被推断为 'number'
+```
+
+这也可以用于内联注解中：
+```ts
+let overloaded: {
+  (foo: string): string;
+  (foo: number): number;
+};
+```
+
+#### 箭头函数
+
+为了使指定可调用的类型签名更容易，TypeScript 也允许你使用简单的箭头函数类型注解。例如，在一个以 number 类型为参数，以 string 类型为返回值的函数中，你可以这么写：
+```ts
+const simple: (foo: number) => string = foo => foo.toString();
+```
+
+:::tip
+它仅仅只能作为简单的箭头函数，你无法使用重载。如果想使用重载，你必须使用完整的 `{ (someArgs): someReturn }` 的语法
+:::
+
+#### 可实例化
+
+可实例化仅仅是可调用的一种特殊情况，它使用 `new` 作为前缀。它意味着你需要使用 `new` 关键字去调用它：
+```ts
+interface CallMeWithNewToGetString {
+  new (): string;
+}
+
+// 使用
+declare const Foo: CallMeWithNewToGetString;
+const bar = new Foo(); // bar 被推断为 string 类型
+```
+
 ### 类型断言
+
+TypeScript 允许你覆盖它的推断，并且能以你任何你想要的方式分析它，这种机制被称为「类型断言」。TypeScript 类型断言用来告诉编译器你比它更了解这个类型，并且它不应该再发出错误。
+
+类型断言的一个常见用例是当你从 JavaScript 迁移到 TypeScript 时：
+```ts
+const foo = {};
+foo.bar = 123; // Error: 'bar' 属性不存在于 ‘{}’
+foo.bas = 'hello'; // Error: 'bas' 属性不存在于 '{}'
+```
+
+这里的代码发出了错误警告，因为 `foo` 的类型推断为 `{}`，即没有属性的对象。因此，你不能在它的属性上添加 `bar` 或 `bas`，你可以通过类型断言来避免此问题：
+```ts
+interface Foo {
+  bar: number;
+  bas: string;
+}
+
+const foo = {} as Foo;
+foo.bar = 123;
+foo.bas = 'hello';
+```
+
+#### `as foo` 与 `<foo>`
+
+最初的断言语法如下所示：
+```ts
+let foo: any;
+let bar = <string>foo; // 现在 bar 的类型是 'string'
+```
+
+然而，当你在 JSX 中使用 `<foo>` 的断言语法时，这会与 JSX 的语法存在歧义：
+```ts
+let foo = <string>bar;</string>;
+```
+
+因此，为了一致性，我们建议你使用 `as foo` 的语法来为类型断言。
+
+#### 类型断言与类型转换
+
+它之所以不被称为「类型转换」，是因为转换通常意味着某种运行时的支持。但是，类型断言纯粹是一个编译时语法，同时，它也是一种为编译器提供关于如何分析代码的方法。
+
+#### 类型断言被认为是有害的
+
+在很多情景下，断言能让你更容易的从遗留项目中迁移（甚至将其他代码粘贴复制到你的项目中），然而，你应该小心谨慎的使用断言。让我们用最初的代码作为示例，如果你没有按约定添加属性，TypeScript 编译器并不会对此发出错误警告：
+```ts
+interface Foo {
+  bar: number;
+  bas: string;
+}
+
+const foo = {} as Foo;
+
+// ahhh, 忘记了什么？
+```
+
+另外一个常见的想法是使用类型断言来提供代码的提示：
+```ts
+interface Foo {
+  bar: number;
+  bas: string;
+}
+
+const foo = <Foo>{
+  // 编译器将会提供关于 Foo 属性的代码提示
+  // 但是开发人员也很容易忘记添加所有的属性
+  // 同样，如果 Foo 被重构，这段代码也可能被破坏（例如，一个新的属性被添加）。
+};
+```
+
+这也会存在一个同样的问题，如果你忘记了某个属性，编译器同样也不会发出错误警告。使用一种更好的方式：
+```ts
+interface Foo {
+  bar: number;
+  bas: string;
+}
+
+const foo: Foo = {
+  // 编译器将会提供 Foo 属性的代码提示
+};
+```
+
+在某些情景下，你可能需要创建一个临时的变量，但至少，你不会使用一个承诺（可能是假的），而是依靠类型推断来检查你的代码。
+
+#### 双重断言
+
+类型断言，尽管我们已经证明了它并不是那么安全，但它也还是有用武之地。如下一个非常实用的例子所示，当使用者了解传入参数更具体的类型时，类型断言能按预期工作：
+```ts
+function handler(event: Event) {
+  const mouseEvent = event as MouseEvent;
+}
+```
+
+然而，如下例子中的代码将会报错，尽管使用者已经使用了类型断言：
+```ts
+function handler(event: Event) {
+  const element = event as HTMLElement; // Error: 'Event' 和 'HTMLElement' 中的任何一个都不能赋值给另外一个
+}
+```
+
+如果你仍然想使用那个类型，你可以使用双重断言。首先断言成兼容所有类型的 `any`，编译器将不会报错：
+```ts
+function handler(event: Event) {
+  const element = (event as any) as HTMLElement; // ok
+}
+```
+
+##### TypeScript 是怎么确定单个判断是否足够
+
+当 `S` 类型是 `T` 类型的子集，或者 `T` 类型是 `S` 类型的子集时，`S` 能被成功断言成 `T`。这是为了在进行类型断言时提供额外的安全性，完全毫无根据的断言是危险的，如果你想这么做，你可以使用 `any`。
 
 ### Freshness
 
+为了能让检查对象字面量类型更容易，TypeScript 提供 「[Freshness](https://github.com/Microsoft/TypeScript/pull/3823)」 的概念（它也被称为更严格的对象字面量检查）用来确保对象字面量在结构上类型兼容。
+
+结构类型非常方便。考虑如下例子代码，它可以让你非常便利的从 JavaScript 迁移至 TypeScript，并且会提供类型安全：
+```ts
+function logName(something: { name: string }) {
+  console.log(something.name);
+}
+
+const person = { name: 'matt', job: 'being awesome' };
+const animal = { name: 'cow', diet: 'vegan, but has milk of own specie' };
+const randow = { note: `I don't have a name property` };
+
+logName(person); // ok
+logName(animal); // ok
+logName(randow); // Error: 没有 `name` 属性
+```
+
+但是，结构类型有一个缺点，它能误导你认为某些东西接收的数据比它实际的多。如下例，TypeScript 发出错误警告：
+```ts
+function logName(something: { name: string }) {
+  console.log(something.name);
+}
+
+logName({ name: 'matt' }); // ok
+logName({ name: 'matt', job: 'being awesome' }); // Error: 对象字面量只能指定已知属性，`job` 属性在这里并不存在。
+```
+
+:::warning
+请注意，这种错误提示，只会发生在对象字面量上。
+:::
+
+如果没有这种错误提示，我们可能会去寻找函数的调用 `logName({ name: 'matt', job: 'being awesome' })`，继而会认为 `logName` 可能会使用 `job` 属性做一些事情，然而实际上 `logName` 并没有使用它。
+
+另外一个使用比较多的场景是与具有可选成员的接口一起使用，如果没有这样的对象字面量检查，当你输入错误单词的时候，并不会发出错误警告：
+```ts
+function logIfHasName(something: { name?: string }) {
+  if (something.name) {
+    console.log(something.name);
+  }
+}
+
+const person = { name: 'matt', job: 'being awesome' };
+const animal = { name: 'cow', diet: 'vegan, but has milk of own species' };
+
+logIfHasName(person); // okay
+logIfHasName(animal); // okay
+
+logIfHasName({ neme: 'I just misspelled name to neme' }); // Error: 对象字面量只能指定已知属性，`neme` 属性不存在。
+```
+
+之所以只对对象字面量进行类型检查，因为在这种情况下，那些实际上并没有被使用到的属性有可能会拼写错误或者会被误用。
+
+#### 允许额外的属性
+
+一个类型能够包含索引签名，以明确表明可以使用额外的属性：
+```ts
+let x: { foo: number, [x: string]: any };
+
+x = { foo: 1, baz: 2 }; // ok, 'baz' 属性匹配于索引签名
+```
+
+#### 用例: React State
+
+Facebook ReactJS 为对象的 Freshness 提供了一个很好的用例，通常在组件中，你只使用少量属性，而不是传入所有，来调用 `setState`：
+```ts
+// 假设
+interface State {
+  foo: string;
+  bar: string;
+}
+
+// 你可能想做：
+this.setState({ foo: 'Hello' }); // Error: 没有属性 'bar'
+
+// 因为 state 包含 'foo' 与 'bar'，TypeScript 会强制你这么做：
+this.setState({ foo: 'Hello', bar: this.state.bar });
+```
+
+如果你想使用 Freshness，你可能需要将所有成员标记为可选，这仍然会捕捉到拼写错误：
+```ts
+// 假设
+interface State {
+  foo?: string;
+  bar?: string;
+}
+
+// 你可能想做
+this.setState({ foo: 'Hello' }); // Yay works fine!
+
+// 由于 Freshness，你也可以防止错别字
+this.setState({ foos: 'Hello' }}; // Error: 对象只能指定已知属性
+
+// 仍然会有类型检查
+this.setState({ foo: 123 }}; // Error: 无法将 number 类型赋值给 string 类型
+```
+
 ### 类型保护
+
+类型保护允许你使用更小范围下的对象类型。
+
+#### typeof
+
+TypeScript 熟知 JavaScript 中 `instanceof` 和 `typeof` 运算符的用法。如果你在一个条件块中使用这些，TypeScript 将会推导出在条件块中的的变量类型。如下例所示，TypeScript 将会辨别 `string` 上是否存在特定的函数，以及是否发生了拼写错误：
+```ts
+function doSome(x: number | string) {
+  if (typeof x === 'string') {
+    // 在这个块中，TypeScript 知道 `x` 的类型必须是 `string`
+    console.log(x.subtr(1)); // Error: 'subtr' 方法并没有存在于 `string` 上
+    console.log(x.substr(1)); // ok
+  }
+
+  x.substr(1); // Error: 无法保证 `x` 是 `string` 类型
+}
+```
+
+#### instanceof
+
+这有一个关于 `class` 和 `instanceof` 的例子：
+```ts
+class Foo {
+  foo = 123;
+  common = '123';
+}
+
+class Bar {
+  bar = 123;
+  common = '123';
+}
+
+function doStuff(arg: Foo | Bar) {
+  if (arg instanceof Foo) {
+    console.log(arg.foo); // ok
+    console.log(arg.bar); // Error
+  }
+  if (arg instanceof Bar) {
+    console.log(arg.foo); // Error
+    console.log(arg.bar); // ok
+  }
+}
+
+doStuff(new Foo());
+doStuff(new Bar());
+```
+
+TypeScript 甚至能够理解 `else`。当你使用 `if` 来缩小类型时，TypeScript 知道在其他块中的类型并不是 `if` 中的类型：
+```ts
+class Foo {
+  foo = 123;
+}
+
+class Bar {
+  bar = 123;
+}
+
+function doStuff(arg: Foo | Bar) {
+  if (arg instanceof Foo) {
+    console.log(arg.foo); // ok
+    console.log(arg.bar); // Error
+  } else {
+    // 这个块中，一定是 'Bar'
+    console.log(arg.foo); // Error
+    console.log(arg.bar); // ok
+  }
+}
+
+doStuff(new Foo());
+doStuff(new Bar());
+```
+
+#### in
+
+`in` 操作符可以安全的检查一个对象上是否存在一个属性，它通常也被作为类型保护使用：
+```ts
+interface A {
+  x: number;
+}
+
+interface B {
+  y: string;
+}
+
+function doStuff(q: A | B) {
+  if ('x' in q) {
+    // q: A
+  } else {
+    // q: B
+  }
+}
+```
+
+#### 字面量类型保护
+
+当你在联合类型里使用字面量类型时，你可以检查它们是否有区别：
+```ts
+type Foo = {
+  kind: 'foo'; // 字面量类型
+  foo: number;
+};
+
+type Bar = {
+  kind: 'bar'; // 字面量类型
+  bar: number;
+};
+
+function doStuff(arg: Foo | Bar) {
+  if (arg.kind === 'foo') {
+    console.log(arg.foo); // ok
+    console.log(arg.bar); // Error
+  } else {
+    // 一定是 Bar
+    console.log(arg.foo); // Error
+    console.log(arg.bar); // ok
+  }
+}
+```
+
+#### 使用定义的类型保护
+
+JavaScript 并没有内置非常丰富的、运行时的自我检查机制。当你在使用普通的 JavaScript 对象时（使用结构类型，更有益处），你甚至无法访问 `instanceof` 和 `typeof`。在这种情景下，你可以创建*用户自定义的类型保护函数*，这仅仅是一个返回值为类似于`someArgumentName is SomeType` 的函数，如下：
+```ts
+// 仅仅是一个 interface
+interface Foo {
+  foo: number;
+  common: string;
+}
+
+interface Bar {
+  bar: number;
+  common: string;
+}
+
+// 用户自己定义的类型保护！
+function isFoo(arg: Foo | Bar): arg is Foo {
+  return (arg as Foo).foo !== undefined;
+}
+
+// 用户自己定义的类型保护使用用例：
+function doStuff(arg: Foo | Bar) {
+  if (isFoo(arg)) {
+    console.log(arg.foo); // ok
+    console.log(arg.bar); // Error
+  } else {
+    console.log(arg.foo); // Error
+    console.log(arg.bar); // ok
+  }
+}
+
+doStuff({ foo: 123, common: '123' });
+doStuff({ bar: 123, common: '123' });
+```
 
 ### 字面量类型
 
+字面量是 JavaScript 本身提供的一个准确变量。
+
+#### 字符串字面量
+
+你可以使用一个字符串字面量作为一个类型：
+```ts
+let foo: 'Hello';
+```
+
+在这里，我们创建了一个被称为 `foo` 变量，它仅接收一个字面量值为 `Hello` 的变量：
+```ts
+let foo: 'Hello';
+foo = 'Bar'; // Error: 'bar' 不能赋值给类型 'Hello'
+```
+
+它们本身并不是很实用，但是可以在一个联合类型中组合创建一个强大的（实用的）抽象：
+```ts
+type CardinalDirection = 'North' | 'East' | 'South' | 'West';
+
+function move(distance: number, direction: CardinalDirection) {
+  // ...
+}
+
+move(1, 'North'); // ok
+move(1, 'Nurth'); // Error
+```
+
+#### 其他字面量类型
+
+TypeScript 同样也提供 `boolean` 和 `number` 的字面量类型：
+```ts
+type OneToFive = 1 | 2 | 3 | 4 | 5;
+type Bools = true | false;
+```
+
+#### 推断
+
+通常，你会得到一个类似于 `Type string is not assignable to type 'foo'` 的错误，如下：
+```ts
+function iTakeFoo(foo: 'foo') {}
+const test = {
+  someProp: 'foo'
+};
+
+iTakeFoo(test.someProp); // Error: Argument of type string is not assignable to parameter of type 'foo'
+```
+
+这是由于 `test` 被推断为 `{ someProp: string }`，我们可以采用一个简单的类型断言来告诉 TypeScript 你想推断的字面量：
+```ts
+function iTakeFoo(foo: 'foo') {}
+
+type Test = {
+  someProp: 'foo';
+};
+
+const test: Test = {
+  // 推断 `someProp` 永远是 'foo'
+  someProp: 'foo'
+};
+
+iTakeFoo(test.someProp); // ok
+```
+
+#### 使用用例
+
+TypeScript 枚举类型是基于数字的，你可以使用带字符串字面量的联合类型，来模拟一个基于字符串的枚举类型，就好像上文中提出的 `CardinalDirection`。你甚至可以使用下面的函数来生成 `key: value` 的结构：
+```ts
+// 用于创建字符串列表映射至 `K: V` 的函数
+function strEnum<T extends string>(o: Array<T>): { [K in T]: K } {
+  return o.reduce((res, key) => {
+    res[key] = key;
+    return res;
+  }, Object.create(null));
+}
+```
+
+然后，你就可以使用 `keyof`、`typeof` 来生成字符串的联合类型。下面是一个完全的例子：
+```ts
+// 用于创建字符串列表映射至 `K: V` 的函数
+function strEnum<T extends string>(o: Array<T>): { [K in T]: K } {
+  return o.reduce((res, key) => {
+    res[key] = key;
+    return res;
+  }, Object.create(null));
+}
+
+// 创建 K: V
+const Direction = strEnum(['North', 'South', 'East', 'West']);
+
+// 创建一个类型
+type Direction = keyof typeof Direction;
+
+// 简单的使用
+let sample: Direction;
+
+sample = Direction.North; // Okay
+sample = 'North'; // Okay
+sample = 'AnythingElse'; // ERROR!
+```
+
+#### 辨析联合类型
+
+我们将会在此书的稍后章节讲解它。
+
 ### readonly
+
+#### Readonly
+
+#### 其他的使用用例
+
+##### ReactJS
+
+##### 绝对的不可变
+
+##### 自动推断
+
+#### 与 const 的不同
 
 ### 范型
 
