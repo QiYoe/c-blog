@@ -2604,27 +2604,999 @@ sample = 'AnythingElse'; // ERROR!
 
 ### readonly
 
+TypeScript 类型系统允许你在一个接口里使用 `readonly` 来标记属性。它能让你以一种更安全的方式工作（不可预期的改变是很糟糕的）：
+```ts
+function foo(config: { readonly bar: number, readonly bas: number }) {
+  // ..
+}
+
+const config = { bar: 123, bas: 123 };
+foo(config);
+
+// 现在你能够确保 'config' 不能够被改变了
+```
+
+当然，你也可以在 `interface` 和 `type` 里使用 `readonly`：
+```ts
+type Foo = {
+  readonly bar: number;
+  readonly bas: number;
+};
+
+// 初始化
+const foo: Foo = { bar: 123, bas: 456 };
+
+// 不能被改变
+foo.bar = 456; // Error: foo.bar 为仅读属性
+```
+
+你也能指定一个类的属性为只读，然后在声明时或者构造函数中初始化它们，如下所示：
+```ts
+class Foo {
+  readonly bar = 1; // OK
+  readonly baz: string;
+  constructor() {
+    this.baz = 'hello'; // OK
+  }
+}
+```
+
 #### Readonly
+
+这有一个 `Readonly` 的映射类型，它接收一个泛型 `T`，用来把它的所有属性标记为只读类型：
+```ts
+type Foo = {
+  bar: number;
+  bas: number;
+};
+
+type FooReadonly = Readonly<Foo>;
+
+const foo: Foo = { bar: 123, bas: 456 };
+const fooReadonly: FooReadonly = { bar: 123, bas: 456 };
+
+foo.bar = 456; // ok
+fooReadonly.bar = 456; // Error: bar 属性只读
+```
 
 #### 其他的使用用例
 
 ##### ReactJS
 
+`ReactJS` 是一个喜欢用不变数据的库，你可以标记你的 `Props` 和 `State` 为不可变数据：
+```ts
+interface Props {
+  readonly foo: number;
+}
+
+interface State {
+  readonly bar: number;
+}
+
+export class Something extends React.Component<Props, State> {
+  someMethod() {
+    // 你可以放心，没有人会像下面这么做
+    this.props.foo = 123; // Error: props 是不可变的
+    this.state.baz = 456; // Error: 你应该使用 this.setState()
+  }
+}
+```
+
+然而，你并没有必要这么做，`React` 的声明文件已经标记这些为 `readonly`（通过传入泛型参数至一个内部包装，来把每个属性标记为 `readonly`，如上例子所示），
+```ts
+export class Something extends React.Component<{ foo: number }, { baz: number }> {
+  someMethod() {
+    this.props.foo = 123; // Error: props 是不可变的
+    this.state.baz = 456; // Error: 你应该使用 this.setState()
+  }
+}
+```
+
 ##### 绝对的不可变
+
+你甚至可以把索引签名标记为只读：
+```ts
+interface Foo {
+  readonly [x: number]: number;
+}
+
+// 使用
+
+const foo: Foo = { 0: 123, 2: 345 };
+console.log(foo[0]); // ok（读取）
+foo[0] = 456; // Error: 属性只读
+```
+
+如果你想以不变的方式使用原生 JavaScript 数组，可以使用 TypeScript 提供的 `ReadonlyArray<T>` 接口：
+```ts
+let foo: ReadonlyArray<number> = [1, 2, 3];
+console.log(foo[0]); // ok
+foo.push(4); // Error: ReadonlyArray 上不存在 `push`，因为他会改变数组
+foo = foo.concat(4); // ok, 创建了一个复制
+```
 
 ##### 自动推断
 
-#### 与 const 的不同
+在一些情况下，编译器能把一些特定的属性推断为 `readonly`，例如在一个 `class` 中，如果你有一个只含有 `getter` 但是没有 `setter` 的属性，他能被推断为只读：
+```ts
+class Person {
+  firstName: string = 'John';
+  lastName: string = 'Doe';
+
+  get fullName() {
+    return this.firstName + this.lastName;
+  }
+}
+
+const person = new Person();
+
+console.log(person.fullName); // John Doe
+person.fullName = 'Dear Reader'; // Error, fullName 只读
+```
+
+#### 与 `const` 的不同
+
+`const`
+- 用于变量；
+- 变量不能重新赋值给其他任何事物。
+
+`readonly`
+- 用于属性；
+- 用于别名，可以修改属性；
+
+简单的例子 1：
+```ts
+const foo = 123; // 变量
+let bar: {
+  readonly bar: number; // 属性
+};
+```
+
+简单的例子 2：
+```ts
+const foo: {
+  readonly bar: number;
+} = {
+  bar: 123
+};
+
+function iMutateFoo(foo: { bar: number }) {
+  foo.bar = 456;
+}
+
+iMutateFoo(foo);
+console.log(foo.bar); // 456
+```
+
+`readonly` 能确保“我”不能修改属性，但是当你把这个属性交给其他并没有这种保证的使用者（允许出于类型兼容性的原因），他们能改变它。当然，如果 `iMutateFoo` 明确的表示，他们的参数不可修改，那么编译器会发出错误警告：
+```ts
+interface Foo {
+  readonly bar: number;
+}
+
+let foo: Foo = {
+  bar: 123
+};
+
+function iTakeFoo(foo: Foo) {
+  foo.bar = 456; // Error: bar 属性只读
+}
+
+iTakeFoo(foo);
+```
 
 ### 范型
 
+设计泛型的关键目的是在成员之间提供有意义的约束，这些成员可以是：
+- 类的实例成员
+- 类的方法
+- 函数参数
+- 函数返回值
+
+#### 动机和示例
+
+下面是对一个先进先出的数据结构——队列，在 `TypeScript` 和 `JavaScript` 中的简单实现。
+```ts
+class Queue {
+  private data = [];
+  push = item => this.data.push(item);
+  pop = () => this.data.shift();
+}
+```
+
+在上述代码中存在一个问题，它允许你向队列中添加任何类型的数据，当然，当数据被弹出队列时，也可以是任意类型。在下面的示例中，看起来人们可以向队列中添加 `string` 类型的数据，但是实际上，该用法假定的是只有 `number` 类型会被添加到队列里。
+```ts
+class Queue {
+  private data = [];
+  push = item => this.data.push(item);
+  pop = () => this.data.shift();
+}
+
+const queue = new Queue();
+
+queue.push(0);
+queue.push('1'); // Oops，一个错误
+
+// 一个使用者，走入了误区
+console.log(queue.pop().toPrecision(1));
+console.log(queue.pop().toPrecision(1)); // RUNTIME ERROR
+```
+
+一个解决的办法（事实上，这也是不支持泛型类型的唯一解决办法）是为这些约束创建特殊类，如快速创建数字类型的队列：
+```ts
+class QueueNumber {
+  private data = [];
+  push = (item: number) => this.data.push(item);
+  pop = (): number => this.data.shift();
+}
+
+const queue = new QueueNumber();
+
+queue.push(0);
+queue.push('1'); // Error: 不能推入一个 `string` 类型，只能是 `number` 类型
+
+// 如果该错误得到修复，其他将不会出现问题
+```
+
+当然，快速也意味着痛苦。例如当你想创建一个字符串的队列时，你将不得不再次修改相当大的代码。我们真正想要的一种方式是无论什么类型被推入队列，被推出的类型都与推入类型一样。当你使用泛型时，这会很容易：
+```ts
+// 创建一个泛型类
+class Queue<T> {
+  private data: T[] = [];
+  push = (item: T) => this.data.push(item);
+  pop = (): T | undefined => this.data.shift();
+}
+
+// 简单的使用
+const queue = new Queue<number>();
+queue.push(0);
+queue.push('1'); // Error：不能推入一个 `string`，只有 number 类型被允许
+```
+
+另外一个我们见过的例子：一个 `reverse` 函数，现在在这个函数里提供了函数参数与函数返回值的约束：
+```ts
+function reverse<T>(items: T[]): T[] {
+  const toreturn = [];
+  for (let i = items.length - 1; i >= 0; i--) {
+    toreturn.push(items[i]);
+  }
+  return toreturn;
+}
+
+const sample = [1, 2, 3];
+let reversed = reverse(sample);
+
+reversed[0] = '1'; // Error
+reversed = ['1', '2']; // Error
+
+reversed[0] = 1; // ok
+reversed = [1, 2]; // ok
+```
+
+在此章节中，你已经了解在类和函数上使用泛型的例子。一个值得补充一点的是，你可以为创建的成员函数添加泛型：
+```ts
+class Utility {
+  reverse<T>(items: T[]): T[] {
+    const toreturn = [];
+    for (let i = items.length; i >= 0; i--) {
+      toreturn.push(items[i]);
+    }
+    return toreturn;
+  }
+}
+```
+
+:::tip
+你可以随意调用泛型参数，当你使用简单的泛型时，泛型常用 `T`、`U`、`V` 表示。如果在你的参数里，不止拥有一个泛型，你应该使用一个更语义化名称，如 `TKey` 和 `TValue` （通常情况下，以 `T` 作为泛型的前缀，在其他语言如 C++ 里，也被称为模板）
+:::
+
+#### 误用的泛型
+
+我见过开发者使用泛型仅仅是为了它的 hack。当你使用它时，你应该问问自己：你想用它来提供什么样的约束。如果你不能很好的回答它，你可能会误用泛型，如：
+```ts
+declare function foo<T>(arg: T): void;
+```
+
+在这里，泛型完全没有必要使用，因为它仅用于单个参数的位置，使用如下方式可能更好：
+```ts
+declare function foo(arg: any): void;
+```
+
+#### 设计模式：方便通用
+
+考虑如下函数：
+```ts
+declare function parse<T>(name: string): T;
+```
+
+在这种情况下，泛型 `T` 只在一个地方被使用了，它并没有在成员之间提供约束 `T`。这相当于一个如下的类型断言：
+```ts
+declare function parse(name: string): any;
+
+const something = parse('something') as TypeOfSomething;
+```
+
+仅使用一次的泛型并不比一个类型断言来的安全。它们都给你使用 API 提供了便利。
+
+另一个明显的例子是，一个用于加载 json 返回值函数，它返回你任何传入类型的 `Promise`：
+```ts
+const getJSON = <T>(config: { url: string; headers?: { [key: string]: string } }): Promise<T> => {
+  const fetchConfig = {
+    method: 'GET',
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    ...(config.headers || {})
+  };
+  return fetch(config.url, fetchConfig).then<T>(response => response.json());
+};
+```
+
+##### 配合 axios 使用
+
+通常情况下，我们会把后端返回数据格式单独放入一个 interface 里：
+```ts
+// 请求接口数据
+export interface ResponseData<T = any> {
+  /**
+   * 状态码
+   * @type { number }
+   */
+  code: number;
+
+  /**
+   * 数据
+   * @type { T }
+   */
+  result: T;
+
+  /**
+   * 消息
+   * @type { string }
+   */
+  message: string;
+}
+```
+
+当我们把 API 单独抽离成单个模块时：
+```ts
+// 在 axios.ts 文件中对 axios 进行了处理，例如添加通用配置、拦截器等
+import Ax from './axios';
+
+import { ResponseData } from './interface.ts';
+
+export function getUser<T>() {
+  return Ax.get<ResponseData<T>>('/somepath')
+    .then(res => res.data)
+    .catch(err => console.error(err));
+}
+```
+
+接着我们写入返回的数据类型 `User`，这可以让 TypeScript 顺利推断出我们想要的类型：
+```ts
+interface User {
+  name: string;
+  age: number;
+}
+
+async function test() {
+  // user 被推断出为
+  // {
+  //  code: number,
+  //  result: { name: string, age: number },
+  //  message: string
+  // }
+  const user = await getUser<User>();
+}
+```
+
 ### 类型推断
+
+TypeScript 能根据一些简单的规则推断（检查）变量的类型，你可以通过实践，很快的了解它们。
+
+#### 定义变量
+
+变量的类型，由定义推断：
+```ts
+let foo = 123; // foo 是 'number'
+let bar = 'hello'; // bar 是 'string'
+
+foo = bar; // Error: 不能将 'string' 赋值给 `number`
+```
+
+这是一个从右向左流动类型的示例。
+
+#### 函数返回类型
+
+返回类型能被 `return` 语句推断，如下所示，推断函数返回为一个数字：
+```ts
+function add(a: number, b: number) {
+  return a + b;
+}
+```
+
+这是一个从底部流出类型的例子。
+
+#### 赋值
+
+函数参数类型/返回值也能通过赋值来推断。如下所示，`foo` 的类型是 `Adder`，他能让 `foo` 的参数 `a`、`b` 是 `number` 类型。
+```ts
+type Adder = (a: number, b: number) => number;
+let foo: Adder = (a, b) => a + b;
+```
+
+这个事实可以用下面的代码来证明，TypeScript 会发出正如你期望发出的错误警告：
+```ts
+type Adder = (a: number, b: number) => number;
+let foo: Adder = (a, b) => {
+  a = 'hello'; // Error：不能把 'string' 类型赋值给 'number' 类型
+  return a + b;
+};
+```
+
+这是一个从左向右流动类型的示例。
+
+如果你创建一个函数，并且函数参数为一个回调函数，相同的赋值规则也适用于它。从 `argument` 至 `parameter` 只是变量赋值的另一种形式。
+```ts
+type Adder = (a: number, b: number) => number;
+function iTakeAnAdder(adder: Adder) {
+  return adder(1, 2);
+}
+
+iTakeAnAdder((a, b) => {
+  a = 'hello'; // Error: 不能把 'string' 类型赋值给 'number' 类型
+  return a + b;
+});
+```
+
+#### 结构化
+
+这些简单的规则也适用于结构化的存在（对象字面量），例如在下面这种情况下 foo 的类型被推断为 { a: number, b: number }：
+```ts
+const foo = {
+  a: 123,
+  b: 456
+};
+
+foo.a = 'hello'; // Error：不能把 'string' 类型赋值给 'number' 类型
+```
+
+数组也一样：
+```ts
+const bar = [1, 2, 3];
+bar[0] = 'hello'; // Error：不能把 'string' 类型赋值给 'number' 类型
+```
+
+#### 解构
+
+这些也适用于解构中：
+```ts
+const foo = {
+  a: 123,
+  b: 456
+};
+let { a } = foo;
+
+a = 'hello'; // Error：不能把 'string' 类型赋值给 'number' 类型
+```
+
+数组中：
+```ts
+const bar = [1, 2];
+let [a, b] = bar;
+
+a = 'hello'; // Error：不能把 'string' 类型赋值给 'number' 类型
+```
+
+如果函数参数能够被推断出来，那么解构亦是如此。在如下例子中，函数参数能够被解构为 `a/b` 成员：
+```ts
+type Adder = (number: { a: number; b: number }) => number;
+function iTakeAnAdder(adder: Adder) {
+  return adder({ a: 1, b: 2 });
+}
+
+iTakeAnAdder(({ a, b }) => {
+  // a, b 的类型能被推断出来
+  a = 'hello'; // Error：不能把 'string' 类型赋值给 'number' 类型
+  return a + b;
+});
+```
+#### 类型保护
+
+在前面章节[类型保护](#类型保护)中，我们已经知道它如何帮助我们改变和缩小类型范围（特别是在联合类型下）。类型保护只是一个块中变量另一种推断形式。
+
+#### 警告
+
+##### 小心使用函数
+
+如果类型不能被赋值推断出来，类型也将不会流入函数参数中。例如如下的一个例子，编译器并不知道 `foo` 的类型，所它也就不能推断出 `a` 或者 `b` 的类型。
+```ts
+const foo = (a, b) => {
+  /* do something */
+};
+```
+
+然而，如果 `foo` 添加了类型注解，函数参数也就能被推断（`a`，`b` 都能被推断为 `number` 类型）：
+```ts
+type TwoNumberFunction = (a: number, b: number) => void;
+const foo: TwoNumberFunction = (a, b) => {
+  /* do something */
+};
+```
+
+##### 小心使用返回值
+
+尽管 TypeScript 一般情况下能推断函数的返回值，但是它可能并不是你想要的。例如如下的 `foo` 函数，它的返回值为 `any`：
+```ts
+function foo(a: number, b: number) {
+  return a + addOne(b);
+}
+
+// 一些使用 JavaScript 库的特殊函数
+function addOne(a) {
+  return a + 1;
+}
+```
+
+这是因为返回值的类型被一个缺少类型定义的 `addOne` 函数所影响（`a` 是 `any`，所以 `addOne` 返回值为 `any`，`foo` 的返回值是也是 `any`）。
+
+:::tip
+我发现最简单的方式是明确的写上函数返回值，毕竟这些注解是一个定理，而函数是注解的一个证据。
+:::
+
+这里还有一些其他可以想象的情景，但是有一个好消息是有编译器选项 `noImplicitAny` 可以捕获这些 bug。
+
+##### `noImplicitAny`
+
+选项 `noImplicitAny` 用来告诉编译器，当无法推断一个变量时发出一个错误（或者只能推断为一个隐式的 `any` 类型），你可以：
+- 通过显式添加 `:any` 的类型注解，来让它成为一个 `any` 类型；
+- 通过一些更正确的类型注解来帮助 TypeScript 推断类型。
 
 ### 类型兼容性
 
+类型兼容性用于确定一个类型是否能赋值给其他类型。
+
+如 `string` 类型与 `number` 类型不兼容：
+```ts
+let str: string = 'Hello';
+let num: number = 123;
+
+str = num; // Error: 'number' 不能赋值给 'string'
+num = str; // Error: 'string' 不能赋值给 'number'
+```
+
+#### 安全性
+
+TypeScript 类型系统设计比较方便，它允许你有一些不正确的行为。例如：任何类型都能被赋值给 `any`，这意味着告诉编译器你可以做任何你想做的事情：
+```ts
+let foo: any = 123;
+foo = 'hello';
+
+foo.toPrecision(3);
+```
+
+#### 结构化
+
+TypeScript 对象是一种结构类型，这意味着只要结构匹配，名称也就无关紧要了：
+```ts
+interface Point {
+  x: number;
+  y: number;
+}
+
+class Point2D {
+  constructor(public x: number, public y: number) {}
+}
+
+let p: Point;
+
+// ok, 因为是结构化的类型
+p = new Point2D(1, 2);
+```
+
+这允许你动态创建对象（就好像你在 `vanilla JS` 中使用一样），并且它如果能被推断，该对象仍然具有安全性。
+```ts
+interface Point2D {
+  x: number;
+  y: number;
+}
+
+interface Point3D {
+  x: number;
+  y: number;
+  z: number;
+}
+
+const point2D: Point2D = { x: 0, y: 10 };
+const point3D: Point3D = { x: 0, y: 10, z: 20 };
+function iTakePoint2D(point: Point2D) {
+  /* do something */
+}
+
+iTakePoint2D(point2D); // ok, 完全匹配
+iTakePoint2D(point3D); // 额外的信息，没关系
+iTakePoint2D({ x: 0 }); // Error: 没有 'y'
+```
+
+#### 变体
+
+对类型兼容性来说，变体是一个利于理解和重要的概念。
+
+对一个简单类型 `Base` 和 Child 来说，如果 `Child` 是 `Base` 的子类，`Child` 的实例能被赋值给 `Base` 类型的变量。
+:::tip
+这是多态性。
+:::
+
+在由 `Base` 和 `Child` 组合的复杂类型的类型兼容性中，它取决于相同场景下的 `Base` 与 Child 的变体：
+- 协变（Covariant）：只在同一个方向；
+- 逆变（Contravariant）：只在相反的方向；
+- 双向协变（Bivariant）：包括同一个方向和不同方向；
+- 不变（Invariant）：如果类型不完全相同，则它们是不兼容的。
+
+:::tip
+对于存在完全可变数据的健全的类型系统（如 JavaScript），`Invariant` 是一个唯一的有效可选属性，但是如我们所讨论的，*便利性*迫使我们作出一些不是很安全的选择。
+:::
+
+关于协变和逆变的更多内容，请参考：[协变与逆变](#协变与逆变)
+
+#### 函数
+
+当你在比较两个函数时，这有一些你需要考虑到的事情。
+
+##### 返回类型
+
+协变（Covariant）：返回类型必须包含足够的数据。
+```ts
+interface Point2D {
+  x: number;
+  y: number;
+}
+interface Point3D {
+  x: number;
+  y: number;
+  z: number;
+}
+
+let iMakePoint2D = (): Point2D => ({ x: 0, y: 0 });
+let iMakePoint3D = (): Point3D => ({ x: 0, y: 0, z: 0 });
+
+iMakePoint2D = iMakePoint3D;
+iMakePoint3D = iMakePoint2D; // ERROR: Point2D 不能赋值给 Point3D
+```
+
+##### 参数数量
+
+更少的参数数量是好的（如：函数能够选择性的忽略一些多余的参数），但是你得保证有足够的参数被使用了：
+```ts
+const iTakeSomethingAndPassItAnErr = (x: (err: Error, data: any) => void) => {
+  /* 做一些其他的 */
+};
+
+iTakeSomethingAndPassItAnErr(() => null); // ok
+iTakeSomethingAndPassItAnErr(err => null); // ok
+iTakeSomethingAndPassItAnErr((err, data) => null); // ok
+
+// Error: 参数类型 `(err: any, data: any, more: any) => null` 不能赋值给参数类型 `(err: Error, data: any) => void`
+iTakeSomethingAndPassItAnErr((err, data, more) => null);
+```
+
+##### 可选的和 rest 参数
+
+可选的（预先确定的）和 Rest 参数（任何数量的参数）都是兼容的：
+```ts
+let foo = (x: number, y: number) => {};
+let bar = (x?: number, y?: number) => {};
+let bas = (...args: number[]) => {};
+
+foo = bar = bas;
+bas = bar = foo;
+```
+
+:::tip
+可选的（上例子中的 `bar`）与不可选的（上例子中的 `foo`）仅在选项为 `strictNullChecks` 为 `false` 时兼容。
+:::
+
+##### 函数参数类型
+
+双向协变（Bivariant）：旨在支持常见的事件处理方案。
+```ts
+// 事件等级
+interface Event {
+  timestamp: number;
+}
+interface MouseEvent extends Event {
+  x: number;
+  y: number;
+}
+interface KeyEvent extends Event {
+  keyCode: number;
+}
+
+// 简单的事件监听
+enum EventType {
+  Mouse,
+  Keyboard
+}
+function addEventListener(eventType: EventType, handler: (n: Event) => void) {
+  // ...
+}
+
+// 不安全，但是有用，常见。函数参数的比较是双向协变。
+addEventListener(EventType.Mouse, (e: MouseEvent) => console.log(e.x + ',' + e.y));
+
+// 在安全情景下的一种不好方案
+addEventListener(EventType.Mouse, (e: Event) => console.log((<MouseEvent>e).x + ',' + (<MouseEvent>e).y));
+addEventListener(EventType.Mouse, <(e: Event) => void>((e: MouseEvent) => console.log(e.x + ',' + e.y)));
+
+// 仍然不允许明确的错误，对完全不兼容的类型会强制检查
+addEventListener(EventType.Mouse, (e: number) => console.log(e));
+```
+
+同样的，你也可以把 `Array<Child>` 赋值给 `Array<Base>` （协变），因为函数是兼容的。数组的协变需要所有的函数 `Array<Child>` 都能赋值给 `Array<Base>`，例如 `push(t: Child)` 能被赋值给 `push(t: Base)`，这都可以通过函数参数双向协变实现。
+
+下面的代码对于其他语言的开发者来说，可能会感到很困惑，因为他们认为是有错误的，可是 Typescript 并不会报错：
+```ts
+interface Point2D {
+  x: number;
+  y: number;
+}
+interface Point3D {
+  x: number;
+  y: number;
+  z: number;
+}
+
+let iTakePoint2D = (point: Point2D) => {};
+let iTakePoint3D = (point: Point3D) => {};
+
+iTakePoint3D = iTakePoint2D; // ok, 这是合理的
+iTakePoint2D = iTakePoint3D; // ok，为什么？
+```
+
+#### 枚举
+
+- 枚举与数字类型相互兼容
+```ts
+enum Status {
+  Ready,
+  Waiting
+}
+
+let status = Status.Ready;
+let num = 0;
+
+status = num;
+num = status;
+```
+
+- 来自于不同枚举的枚举变量，被认为是不兼容的：
+```ts
+enum Status {
+  Ready,
+  Waiting
+}
+enum Color {
+  Red,
+  Blue,
+  Green
+}
+
+let status = Status.Ready;
+let color = Color.Red;
+
+status = color; // Error
+```
+
+#### 类
+
+- 仅仅只有实例成员和方法会相比较，构造函数和静态成员不会被检查。
+```ts
+class Animal {
+  feet: number;
+  constructor(name: string, numFeet: number) {}
+}
+
+class Size {
+  feet: number;
+  constructor(meters: number) {}
+}
+
+let a: Animal;
+let s: Size;
+
+a = s; // OK
+s = a; // OK
+```
+
+- 私有的和受保护的成员必须来自于相同的类。
+```ts
+class Animal {
+  protected feet: number;
+}
+class Cat extends Animal {}
+
+let animal: Animal;
+let cat: Cat;
+
+animal = cat; // ok
+cat = animal; // ok
+
+class Size {
+  protected feet: number;
+}
+
+let size: Size;
+
+animal = size; // ERROR
+size = animal; // ERROR
+```
+
+#### 泛型
+
+TypeScript 类型系统基于变量的结构，仅当类型参数在被一个成员使用时，才会影响兼容性。如下例子中，`T` 对兼容性没有影响：
+```ts
+interface Empty<T> {}
+
+let x: Empty<number>;
+let y: Empty<string>;
+
+x = y; // ok
+```
+
+当 `T` 被成员使用时，它将在实例化泛型后影响兼容性：
+```ts
+interface Empty<T> {
+  data: T;
+}
+
+let x: Empty<number>;
+let y: Empty<string>;
+
+x = y; // Error
+```
+
+如果尚未实例化泛型参数，则在检查兼容性之前将其替换为 `any`：
+```ts
+let identity = function<T>(x: T): T {
+  // ...
+};
+
+let reverse = function<U>(y: U): U {
+  // ...
+};
+
+identity = reverse; // ok, 因为 `(x: any) => any` 匹配 `(y: any) => any`
+```
+
+类中的泛型兼容性与前文所提及一致：
+```ts
+class List<T> {
+  add(val: T) {}
+}
+
+class Animal {
+  name: string;
+}
+class Cat extends Animal {
+  meow() {
+    // ..
+  }
+}
+
+const animals = new List<Animal>();
+animals.add(new Animal()); // ok
+animals.add(new Cat()); // ok
+
+const cats = new List<Cat>();
+cats.add(new Animal()); // Error
+cats.add(new Cat()); // ok
+```
+
+#### 脚注：不变性 (Invariance)
+
+我们说过，不变性可能是唯一一个听起来合理的选项，这里有一个关于 `contra` 和 `co` 的变体，被认为对数组是不安全的。
+```ts
+class Animal {
+  constructor(public name: string) {}
+}
+class Cat extends Animal {
+  meow() {
+    console.log('cat');
+  }
+}
+
+let animal = new Animal('animal');
+let cat = new Cat('cat');
+
+// 多态
+// Animal <= Cat
+
+animal = cat; // ok
+cat = animal; // ERROR: cat 继承于 animal
+
+// 演示每个数组形式
+let animalArr: Animal[] = [animal];
+let catArr: Cat[] = [cat];
+
+// 明显的坏处，逆变
+// Animal <= Cat
+// Animal[] >= Cat[]
+catArr = animalArr; // ok, 如有有逆变
+catArr[0].meow(); // 允许，但是会在运行时报错
+
+// 另外一个坏处，协变
+// Animal <= Cat
+// Animal[] <= Cat[]
+animalArr = catArr; // ok，协变
+
+animalArr.push(new Animal('another animal')); // 仅仅是 push 一个 animal 至 carArr 里
+catArr.forEach(c => c.meow()); // 允许，但是会在运行时报错。
+```
+
 ### Never
 
+程序语言的设计确实应该存在一个底部类型的概念，当你在分析代码流的时候，这会是一个理所当然存在的类型。TypeScript 就是这样一种分析代码流的语言（😎），因此它需要一个可靠的，代表永远不会发生的类型。
+
+`never` 类型是 TypeScript 中的底层类型。它自然被分配的一些例子：
+- 一个从来不会有返回值的函数（如：如果函数内含有 `while(true) {}`）；
+- 一个总是会抛出错误的函数（如：`function foo() { throw new Error('Not Implemented') }`，`foo` 的返回类型是 `never`）；
+
+你也可以将它用做类型注解：
+```ts
+let foo: never; // ok
+```
+
+但是，`never` 类型仅能被赋值给另外一个 `never`：
+```ts
+let foo: never = 123; // Error: number 类型不能赋值给 never 类型
+
+// ok, 作为函数返回类型的 never
+let bar: never = (() => {
+  throw new Error('Throw my hands in the air like I just dont care');
+})();
+```
+
+很棒，现在让我们看看它的关键用例。
+
+#### 用例：详细的检查
+
+```ts
+function foo(x: string | number): boolean {
+  if (typeof x === 'string') {
+    return true;
+  } else if (typeof x === 'number') {
+    return false;
+  }
+
+  // 如果不是一个 never 类型，这会报错：
+  // - 不是所有条件都有返回值 （严格模式下）
+  // - 或者检查到无法访问的代码
+  // 但是由于 TypeScript 理解 `fail` 函数返回为 `never` 类型
+  // 它可以让你调用它，因为你可能会在运行时用它来做安全或者详细的检查。
+  return fail('Unexhaustive');
+}
+
+function fail(message: string): never {
+  throw new Error(message);
+}
+```
+
+`never` 仅能被赋值给另外一个 `never` 类型，因此你可以用它来进行编译时的全面的检查，我们将会在[辨析联合类型](#辨析联合类型)中讲解它。
+
+#### 与 `void` 的差异
+
+一旦有人告诉你，`never` 表示一个从来不会优雅的返回的函数时，你可能马上就会想到与此类似的 `void`，然而实际上，`void` 表示没有任何类型，`never` 表示永远不存在的值的类型。
+
+当一个函数返回空值时，它的返回值为 `void` 类型，但是，当一个函数永不返回时（或者总是抛出错误），它的返回值为 `never` 类型。`void` 类型可以被赋值（在 `strictNullChecking` 为 `false` 时），但是除了 `never` 本身以外，其他任何类型不能赋值给 `never`。
+
 ### 辨析联合类型
+
+#### 详细的检查
+
+#### Switch
+
+#### strictNullChecks
+
+#### Redux
 
 ### 索引签名
 
