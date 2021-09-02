@@ -10,5 +10,3 @@ head:
 ---
 
 [TS官方文档](https://www.tslang.cn/)
-
-[深入理解 TypeScript](https://jkchao.github.io/typescript-book-chinese/#why/)

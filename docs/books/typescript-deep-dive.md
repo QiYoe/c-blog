@@ -3590,153 +3590,2226 @@ function fail(message: string): never {
 
 ### 辨析联合类型
 
+当类中含有[字面量成员](#字面量类型)时，我们可以用该类的属性来辨析联合类型。
+
+作为一个例子，考虑 `Square` 和 `Rectangle` 的联合类型 `Shape`。`Square` 和 `Rectangle`有共同成员 `kind`，因此 `kind` 存在于 `Shape` 中。
+```ts
+interface Square {
+  kind: 'square';
+  size: number;
+}
+
+interface Rectangle {
+  kind: 'rectangle';
+  width: number;
+  height: number;
+}
+
+type Shape = Square | Rectangle;
+```
+
+如果你使用类型保护风格的检查（`==`、`===`、`!=`、`!==`）或者使用具有判断性的属性（在这里是 `kind`），TypeScript 将会认为你会使用的对象类型一定是拥有特殊字面量的，并且它会为你自动把类型范围变小：
+```ts
+function area(s: Shape) {
+  if (s.kind === 'square') {
+    // 现在 TypeScript 知道 s 的类型是 Square
+    // 所以你现在能安全使用它
+    return s.size * s.size;
+  } else {
+    // 不是一个 square ？因此 TypeScript 将会推算出 s 一定是 Rectangle
+    return s.width * s.height;
+  }
+}
+```
+
 #### 详细的检查
+
+通常，联合类型的成员有一些自己的行为（代码）：
+```ts
+interface Square {
+  kind: 'square';
+  size: number;
+}
+
+interface Rectangle {
+  kind: 'rectangle';
+  width: number;
+  height: number;
+}
+
+// 有人仅仅是添加了 `Circle` 类型
+// 我们可能希望 TypeScript 能在任何被需要的地方抛出错误
+interface Circle {
+  kind: 'circle';
+  radius: number;
+}
+
+type Shape = Square | Rectangle | Circle;
+```
+
+一个可能会让你的代码变差的例子：
+```ts
+function area(s: Shape) {
+  if (s.kind === 'square') {
+    return s.size * s.size;
+  } else if (s.kind === 'rectangle') {
+    return s.width * s.height;
+  }
+
+  // 如果你能让 TypeScript 给你一个错误，这是不是很棒？
+}
+```
+
+你可以通过一个简单的向下思想，来确保块中的类型被推断为与 `never` 类型兼容的类型。例如，你可以添加一个更详细的检查来捕获错误：
+```ts
+function area(s: Shape) {
+  if (s.kind === 'square') {
+    return s.size * s.size;
+  } else if (s.kind === 'rectangle') {
+    return s.width * s.height;
+  } else {
+    // Error: 'Circle' 不能被赋值给 'never'
+    const _exhaustiveCheck: never = s;
+  }
+}
+```
+
+它将强制你添加一种新的条件：
+```ts
+function area(s: Shape) {
+  if (s.kind === 'square') {
+    return s.size * s.size;
+  } else if (s.kind === 'rectangle') {
+    return s.width * s.height;
+  } else if (s.kind === 'circle') {
+    return Math.PI * s.radius ** 2;
+  } else {
+    // ok
+    const _exhaustiveCheck: never = s;
+  }
+}
+```
 
 #### Switch
 
+:::tip
+你可以通过 `switch` 来实现以上例子。
+:::
+
+```ts
+function area(s: Shape) {
+  switch (s.kind) {
+    case 'square':
+      return s.size * s.size;
+    case 'rectangle':
+      return s.width * s.height;
+    case 'circle':
+      return Math.PI * s.radius ** 2;
+    default:
+      const _exhaustiveCheck: never = s;
+  }
+}
+```
+
 #### strictNullChecks
+
+如果你使用 `strictNullChecks` 选项来做详细的检查，你应该返回 `_exhaustiveCheck` 变量（类型是 `never`），否则 TypeScript 可能会推断返回值为 `undefined`：
+```ts
+function area(s: Shape) {
+  switch (s.kind) {
+    case 'square':
+      return s.size * s.size;
+    case 'rectangle':
+      return s.width * s.height;
+    case 'circle':
+      return Math.PI * s.radius ** 2;
+    default:
+      const _exhaustiveCheck: never = s;
+      return _exhaustiveCheck;
+  }
+}
+```
 
 #### Redux
 
+Redux 库正是使用的上述例子。
+
+以下是添加了 TypeScript 类型注解的[redux 要点](https://github.com/reduxjs/redux#the-gist)。
+```ts
+import { createStore } from 'redux';
+
+type Action =
+  | {
+      type: 'INCREMENT';
+    }
+  | {
+      type: 'DECREMENT';
+    };
+
+/**
+ * This is a reducer, a pure function with (state, action) => state signature.
+ * It describes how an action transforms the state into the next state.
+ *
+ * The shape of the state is up to you: it can be a primitive, an array, an object,
+ * or even an Immutable.js data structure. The only important part is that you should
+ * not mutate the state object, but return a new object if the state changes.
+ *
+ * In this example, we use a `switch` statement and strings, but you can use a helper that
+ * follows a different convention (such as function maps) if it makes sense for your
+ * project.
+ */
+function counter(state = 0, action: Action) {
+  switch (action.type) {
+    case 'INCREMENT':
+      return state + 1;
+    case 'DECREMENT':
+      return state - 1;
+    default:
+      return state;
+  }
+}
+
+// Create a Redux store holding the state of your app.
+// Its API is { subscribe, dispatch, getState }.
+let store = createStore(counter);
+
+// You can use subscribe() to update the UI in response to state changes.
+// Normally you'd use a view binding library (e.g. React Redux) rather than subscribe() directly.
+// However it can also be handy to persist the current state in the localStorage.
+
+store.subscribe(() => console.log(store.getState()));
+
+// The only way to mutate the internal state is to dispatch an action.
+// The actions can be serialized, logged or stored and later replayed.
+store.dispatch({ type: 'INCREMENT' });
+// 1
+store.dispatch({ type: 'INCREMENT' });
+// 2
+store.dispatch({ type: 'DECREMENT' });
+// 1
+```
+
+与 TypeScript 一起使用可以有效的防止拼写错误，并且能提高重构和书写文档化代码的能力。
+
 ### 索引签名
+
+可以用字符串访问 JavaScript 中的对象（TypeScript 中也一样），用来保存对其他对象的引用。
+
+例如：
+```ts
+let foo: any = {};
+foo['Hello'] = 'World';
+console.log(foo['Hello']); // World
+```
+
+我们在键 `Hello` 下保存了一个字符串 `World`，除字符串外，它也可以保存任意的 JavaScript 对象，例如一个类的实例。
+```ts
+class Foo {
+  constructor(public message: string) {}
+  log() {
+    console.log(this.message);
+  }
+}
+
+let foo: any = {};
+foo['Hello'] = new Foo('World');
+foo['Hello'].log(); // World
+```
+
+当你传入一个其他对象至索引签名时，JavaScript 会在得到结果之前会先调用 `.toString` 方法：
+```ts
+let obj = {
+  toString() {
+    console.log('toString called');
+    return 'Hello';
+  }
+};
+
+let foo: any = {};
+foo[obj] = 'World'; // toString called
+console.log(foo[obj]); // toString called, World
+console.log(foo['Hello']); // Worldorld
+```
+
+:::tip
+只要索引位置使用了 `obj`，`toString` 方法都将会被调用。
+:::
+
+数组有点稍微不同，对于一个 `number` 类型的索引签名，JavaScript 引擎将会尝试去优化（这取决于它是否是一个真的数组、存储的项目结构是否匹配等）。因此，`number` 应该被考虑作为一个有效的对象访问器（这与 `string` 不同），如下例子：
+```ts
+let foo = ['World'];
+console.log(foo[0]); // World
+```
+
+因此，这就是 JavaScript。现在让我们看看 TypeScript 对这些概念更优雅的处理。
+
+#### TypeScript 索引签名
+
+JavaScript 在一个对象类型的索引签名上会隐式调用 · 方法，而在 TypeScript 中，为防止初学者砸伤自己的脚（我总是看到 stackoverflow 上有很多 JavaScript 使用者都会这样。），它将会抛出一个错误。
+```ts
+const obj = {
+  toString() {
+    return 'Hello';
+  }
+};
+
+const foo: any = {};
+
+// ERROR: 索引签名必须为 string, number....
+foo[obj] = 'World';
+
+// FIX: TypeScript 强制你必须明确这么做：
+foo[obj.toString()] = 'World';
+```
+
+强制用户必须明确的写出 `toString()` 的原因是：在对象上默认执行的 `toString` 方法是有害的。例如 v8 引擎上总是会返回 `[object Object]`
+```ts
+let foo = ['World'];
+console.log(foo[0]); // World
+```
+
+当然，数字类型是被允许的，这是因为：
+- 需要对数组 / 元组完美的支持；
+- 即使你在上例中使用 `number` 类型的值来替代 `obj`，`number` 类型默认的 `toString` 方法实现的很友好（不是 `[object Object]`）。
+
+如下所示：
+```ts
+console.log((1).toString()); // 1
+console.log((2).toString()); // 2
+```
+
+因此，我们有以下结论：
+:::tip
+TypeScript 的索引签名必须是 `string` 或者 `number`。
+
+`symbols` 也是有效的，TypeScript 支持它。在接下来我们将会讲解它。
+:::
+
+#### 声明一个索引签名
+
+在上文中，我们通过使用 `any` 来让 TypeScript 允许我们可以做任意我们想做的事情。实际上，我们可以明确的指定索引签名。例如：假设你想确认存储在对象中任何内容都符合 `{ message: string }` 的结构，你可以通过 `[index: string]: { message: string }` 来实现。
+```ts
+const foo: {
+  [index: string]: { message: string };
+} = {};
+
+// 储存的东西必须符合结构
+// ok
+foo['a'] = { message: 'some message' };
+
+// Error, 必须包含 `message`
+foo['a'] = { messages: 'some message' };
+
+// 读取时，也会有类型检查
+// ok
+foo['a'].message;
+
+// Error: messages 不存在
+foo['a'].messages;
+```
+
+:::tip
+索引签名的名称（如：`{ [index: string]: { message: string } }` 里的 `index` ）除了可读性外，并没有任何意义。例如：如果有一个用户名，你可以使用 `{ username: string}: { message: string }`，这有利于下一个开发者理解你的代码。
+:::
+
+`number` 类型的索引也支持：`{ [count: number]: 'SomeOtherTypeYouWantToStoreEgRebate' }`。
+
+#### 所有成员都必须符合字符串的索引签名
+
+当你声明一个索引签名时，所有明确的成员都必须符合索引签名：
+```ts
+// ok
+interface Foo {
+  [key: string]: number;
+  x: number;
+  y: number;
+}
+
+// Error
+interface Bar {
+  [key: string]: number;
+  x: number;
+  y: string; // Error: y 属性必须为 number 类型
+}
+```
+
+这可以给你提供安全性，任何以字符串的访问都能得到相同结果。
+```ts
+interface Foo {
+  [key: string]: number;
+  x: number;
+}
+
+let foo: Foo = {
+  x: 1,
+  y: 2
+};
+
+// 直接
+foo['x']; // number
+
+// 间接
+const x = 'x';
+foo[x]; // number
+```
+
+#### 使用一组有限的字符串字面量
+
+一个索引签名可以通过映射类型来使索引字符串为联合类型中的一员，如下所示：
+```ts
+type Index = 'a' | 'b' | 'c';
+type FromIndex = { [k in Index]?: number };
+
+const good: FromIndex = { b: 1, c: 2 };
+
+// Error:
+// `{ b: 1, c: 2, d: 3 }` 不能分配给 'FromIndex'
+// 对象字面量只能指定已知类型，'d' 不存在 'FromIndex' 类型上
+const bad: FromIndex = { b: 1, c: 2, d: 3 };
+```
+
+这通常与 `keyof/typeof` 一起使用，来获取变量的类型，在下一章节中，我们将解释它。
+
+变量的规则一般可以延迟被推断：
+```ts
+type FromSomeIndex<K extends string> = { [key in K]: number };
+```
+
+#### 同时拥有 `string` 和 `number` 类型的索引签名
+
+这并不是一个常见的用例，但是 TypeScript 支持它。
+
+`string` 类型的索引签名比 `number` 类型的索引签名更严格。这是故意设计，它允许你有如下类型：
+```ts
+interface ArrStr {
+  [key: string]: string | number; // 必须包括所用成员类型
+  [index: number]: string; // 字符串索引类型的子级
+
+  // example
+  length: number;
+}
+```
+
+#### 设计模式：索引签名的嵌套
+
+:::tip
+添加索引签名时，需要考虑的 API。
+:::
+
+在 JavaScript 社区你将会见到很多滥用索引签名的 API。如 JavaScript 库中使用 CSS 的常见模式：
+```ts
+interface NestedCSS {
+  color?: string; // strictNullChecks=false 时索引签名可为 undefined
+  [selector: string]: string | NestedCSS;
+}
+
+const example: NestedCSS = {
+  color: 'red',
+  '.subclass': {
+    color: 'blue'
+  }
+};
+```
+
+尽量不要使用这种把字符串索引签名与有效变量混合使用。如果属性名称中有拼写错误，这个错误不会被捕获到：
+```ts
+const failsSilently: NestedCSS = {
+  colour: 'red' // 'colour' 不会被捕捉到错误
+};
+```
+
+取而代之，我们把索引签名分离到自己的属性里，如命名为 `nest`（或者 `children`、`subnodes` 等）：
+```ts
+interface NestedCSS {
+  color?: string;
+  nest?: {
+    [selector: string]: NestedCSS;
+  };
+}
+
+const example: NestedCSS = {
+  color: 'red',
+  nest: {
+    '.subclass': {
+      color: 'blue'
+    }
+  }
+}
+
+const failsSliently: NestedCSS = {
+  colour: 'red'  // TS Error: 未知属性 'colour'
+}
+```
+
+#### 索引签名中排除某些属性
+
+有时，你需要把属性合并至索引签名（虽然我们并不建议这么做，你应该使用上文中提到的嵌套索引签名的形式），如下例子：
+```ts
+type FieldState = {
+  value: string;
+};
+
+type FromState = {
+  isValid: boolean; // Error: 不符合索引签名
+  [filedName: string]: FieldState;
+};
+```
+
+TypeScript 会报错，因为添加的索引签名，并不兼容它原有的类型，使用交叉类型可以解决上述问题：
+```ts
+type FieldState = {
+  value: string;
+};
+
+type FormState = { isValid: boolean } & { [fieldName: string]: FieldState };
+```
+
+请注意尽管你可以声明它至一个已存在的 TypeScript 类型上，但是你不能创建如下的对象：
+```ts
+type FieldState = {
+  value: string;
+};
+
+type FormState = { isValid: boolean } & { [fieldName: string]: FieldState };
+
+// 将它用于从某些地方获取的 JavaScript 对象
+declare const foo: FormState;
+
+const isValidBool = foo.isValid;
+const somethingFieldState = foo['something'];
+
+// 使用它来创建一个对象时，将不会工作
+const bar: FormState = {
+  // 'isValid' 不能赋值给 'FieldState'
+  isValid: false
+};
+```
 
 ### 流动的类型
 
+TypeScript 类型系统非常强大，它支持其他任何单一语言无法实现的类型流动和类型片段。
+
+这是因为 TypeScript 的设计目的之一是让你无缝与像 JavaScript 这类高动态的语言一起工作。在这里，我们介绍一些在 TypeScript 中使用移动类型的技巧。
+
+关键的动机：当你改变了其中一个时，其他相关的会自动更新，并且当有事情变糟糕时，你会得到一个友好的提示，就好像一个被精心设计过的约束系统。
+
+#### 复制类型和值
+
+如果你想移动一个类，你可能会想要做以下事情：
+```ts
+class Foo {}
+
+const Bar = Foo;
+
+let bar: Bar; // Error: 不能找到名称 'Bar'
+```
+
+这会得到一个错误，因为 `const` 仅仅是复制了 `Foo` 到一个变量声明空间，因此你无法把 `Bar` 当作一个类型声明使用。正确的方式是使用 `import` 关键字，请注意，如果你在使用 `namespace` 或者 `modules`，使用 `import` 是你唯一能用的方式：
+```ts
+namespace importing {
+  export class Foo {}
+}
+
+import Bar = importing.Foo;
+let bar: Bar; // ok
+```
+
+这个 `import` 技巧，仅适合于类型和变量。
+
+#### 捕获变量的类型
+
+你可以通过 `typeof` 操作符在类型注解中使用变量。这允许你告诉编译器，一个变量的类型与其他类型相同，如下所示：
+```ts
+let foo = 123;
+let bar: typeof foo; // 'bar' 类型与 'foo' 类型相同（在这里是： 'number'）
+
+bar = 456; // ok
+bar = '789'; // Error: 'string' 不能分配给 'number' 类型
+```
+
+#### 捕获类成员的类型
+
+与捕获变量的类型相似，你仅仅是需要声明一个变量用来捕获到的类型：
+```ts
+class Foo {
+  foo: number; // 我们想要捕获的类型
+}
+
+declare let _foo: Foo;
+
+// 与之前做法相同
+let bar: typeof _foo.foo;
+```
+
+#### 捕获字符串类型
+
+许多 JavaScript 库和框架都使用原始的 JavaScript 字符串，你可以使用 `const` 定义一个变量捕获它的类型：
+```ts
+// 捕获字符串的类型与值
+const foo = 'Hello World';
+
+// 使用一个捕获的类型
+let bar: typeof foo;
+
+// bar 仅能被赋值 'Hello World'
+bar = 'Hello World'; // ok
+bar = 'anything else'; // Error
+```
+
+在这个例子里，`bar` 有字面量类型 `Hello World`，我们在[字面量类型](#字面量类型)章节已经深入讨论。
+
+#### 捕获键的名称
+
+keyof 操作符能让你捕获一个类型的键。例如，你可以使用它来捕获变量的键名称，在通过使用 typeof 来获取类型之后：
+```ts
+const colors = {
+  red: 'red',
+  blue: 'blue'
+};
+
+type Colors = keyof typeof colors;
+
+let color: Colors; // color 的类型是 'red' | 'blue'
+color = 'red'; // ok
+color = 'blue'; // ok
+color = 'anythingElse'; // Error
+```
+
+这允许你很容易地拥有像字符串枚举+常量这样的类型，如上例所示。
+
 ### 异常处理
+
+JavaScript 有一个 `Error` 类，用于处理异常。你可以通过 `throw` 关键字来抛出一个错误。然后通过 `try/catch` 块来捕获此错误：
+```ts
+try {
+  throw new Error('Something bad happened');
+} catch (e) {
+  console.log(e);
+}
+```
+
+#### 错误的子类型
+
+除内置的 `Error` 类外，还有一些额外的内置错误，它们继承自 `Error` 类：
+
+##### RangeError
+
+当数字类型变量或者参数超出其有效范围时，出现 `RangeError` 的错误提示：
+```ts
+// 使用过多参数调用 console
+console.log.apply(console, new Array(1000000000)); // RangeError: 数组长度无效
+```
+
+##### ReferenceError
+
+当引用无效时，会出现 `ReferenceError` 的错误提示：
+```ts
+'use strict';
+console.log(notValidVar); // ReferenceError: notValidVar 未定义
+```
+
+##### SyntaxError
+
+当解析无效 JavaScript 代码时，会出现 `SyntaxError` 的错误提示：
+```ts
+1 *** 3   // SyntaxError: 无效的标记 *
+```
+
+##### TypeError
+
+变量或者参数不是有效类型时，会出现 `TypeError` 的错误提示：
+```ts
+'1.2'.toPrecision(1); // TypeError: '1.2'.toPrecision 不是函数。
+
+```
+
+##### URIError
+
+当传入无效参数至 `encodeURI()` 和 `decodeURI()` 时，会出现 `URIError` 的错误提示：
+```ts
+decodeURI('%'); // URIError: URL 异常
+```
+
+#### 使用 `Error`
+
+JavaScript 初学者可能有时候仅仅是抛出一个原始字符串：
+```ts
+let foo = ['World'];
+console.log(foo[0]); // World
+```
+
+**不要这么做，**使用 `Error` 对象的基本好处是，它能自动跟踪堆栈的属性构建以及生成位置。
+
+原始字符串会导致极差的调试体验，并且在分析日志时，将会变得错综复杂。
+
+#### 你并不需要 `throw` 抛出一个错误
+
+传递一个 `Error` 对象是没问题的，这种方式在 `Node.js` 回调函数中非常常见，它用第一个参数作为错误对象进行回调处理
+```ts
+function myFunction (callback: (e: Error)) {
+  doSomethingAsync(function () {
+    if (somethingWrong) {
+      callback(new Error('This is my error'));
+    } else {
+      callback();
+    }
+  })
+}
+```
+
+#### 优秀的用例
+
+「Exceptions should be exceptional」是计算机科学中常用用语。这里有一些原因说明在 JavaScript(TypeScript) 中也是如此。
+
+##### 不清楚从哪里抛出错误
+
+考虑如下代码块：
+```ts
+try {
+  const foo = runTask1();
+  const bar = runTask2();
+} catch (e) {
+  console.log('Error:', e);
+}
+```
+
+下一个开发者可能并不清楚哪个函数可能会抛出错误。在没有阅读 `task1/task2` 代码以及他们可能会调用的函数时，对代码 `review` 的人员可能也不会知道错误会从哪里抛出。
+
+##### 优雅的错误捕获
+
+你可以通过为每个可能抛出错误的代码显式捕获，来使其优雅：
+```ts
+try {
+  const foo = runTask1();
+} catch (e) {
+  console.log('Error:', e);
+}
+
+try {
+  const bar = runTask2();
+} catch (e) {
+  console.log('Error:', e);
+}
+```
+
+但是现在，如果你想从第一个任务中传递变量到第二个任务中，代码会变的混乱（注意：foo 变量需要用 let 显式注解它，因为它不能从 `runTask1` 中返回出来）：
+```ts
+let foo = ['World'];
+console.log(foo[0]); // World
+```
+
+##### 没有在类型系统中很好的表示
+
+考虑如下函数：
+```ts
+function validate(value: number) {
+  if (value < 0 || value > 100) {
+    throw new Error('Invalid value');
+  }
+}
+```
+
+在这种情境下使用 `Error` 不是一个好的主意。因为没有用来验证函数的类型定义（如：`(value: number) => void`），取而代之一个更好的方式是创建一个验证方法：
+```ts
+function validate(
+  value: number
+): {
+  error?: string;
+} {
+  if (value < 0 || value > 100) {
+    return { error: 'Invalid value' };
+  }
+}
+```
+
+现在它具有类型定义了。
+
+:::tip
+除非你想用以非常通用（try/catch）的方式处理错误，否则不要抛出错误。
+:::
 
 ### 混合
 
+TypeScript (和 JavaScript) 类只能严格的单继承，因此你不能做：
+```ts
+class User extends Tagged, Timestamped { // ERROR : 不能多重继承
+  // ..
+}
+```
+
+从可重用组件构建类的另一种方式是通过基类来构建它们，这种方式称为混合。
+
+这个主意是简单的，采用函数 B 接受一个类 A，并且返回一个带有新功能的类的方式来替代 A 类扩展 B 来获取 B 上的功能，前者中的 B 即是混合。
+
+:::tip
+「混合」是一个函数：
+- 传入一个构造函数；
+- 创建一个带有新功能，并且扩展构造函数的新类；
+- 返回这个新类。
+:::
+
+一个完整的例子：
+```ts
+// 所有 mixins 都需要
+type Constructor<T = {}> = new (...args: any[]) => T;
+
+/////////////
+// mixins 例子
+////////////
+
+// 添加属性的混合例子
+function TimesTamped<TBase extends Constructor>(Base: TBase) {
+  return class extends Base {
+    timestamp = Date.now();
+  };
+}
+
+// 添加属性和方法的混合例子
+function Activatable<TBase extends Constructor>(Base: TBase) {
+  return class extends Base {
+    isActivated = false;
+
+    activate() {
+      this.isActivated = true;
+    }
+
+    deactivate() {
+      this.isActivated = false;
+    }
+  };
+}
+
+///////////
+// 组合类
+///////////
+
+// 简单的类
+class User {
+  name = '';
+}
+
+// 添加 TimesTamped 的 User
+const TimestampedUser = TimesTamped(User);
+
+// Tina TimesTamped 和 Activatable 的类
+const TimestampedActivatableUser = TimesTamped(Activatable(User));
+
+//////////
+// 使用组合类
+//////////
+
+const timestampedUserExample = new TimestampedUser();
+console.log(timestampedUserExample.timestamp);
+
+const timestampedActivatableUserExample = new TimestampedActivatableUser();
+console.log(timestampedActivatableUserExample.timestamp);
+console.log(timestampedActivatableUserExample.isActivated);
+```
+
+让我们分解这个例子。
+
+#### 创建一个构造函数
+
+混合接受一个类，并且使用新功能扩展它。因此，我们需要定义构造函数的类型：
+```ts
+type Constructor<T = {}> = new (...args: any[]) => T;
+
+```
+
+#### 扩展一个类并且返回它
+
+```ts
+// 添加属性的混合例子
+function TimesTamped<TBase extends Constructor>(Base: TBase) {
+  return class extends Base {
+    timestamp = Date.now();
+  };
+}
+```
+
 ### ThisType
 
-## JSX
+通过 `ThisType` 我们可以在对象字面量中键入 `this`，并提供通过上下文类型控制 `this` 类型的便捷方式。它只有在 `--noImplicitThis` 的选项下才有效。
 
-### 支持 JSX
+现在，在对象字面量方法中的 `this` 类型，将由以下决定：
+- 如果这个方法显式指定了 `this` 参数，那么 `this` 具有该参数的类型。（下例子中 `bar`）
+- 否则，如果方法由带 `this` 参数的签名进行上下文键入，那么 `this` 具有该参数的类型。（下例子中 `foo`）
+- 否则，如果 `--noImplicitThis` 选项已经启用，并且对象字面量中包含由 `ThisType<T>` 键入的上下文类型，那么 `this` 的类型为 `T`。
+- 否则，如果 `--noImplicitThis` 选项已经启用，并且对象字面量中不包含由 `ThisType<T>` 键入的上下文类型，那么 `this` 的类型为该上下文类型。
+- 否则，如果 `--noImplicitThis` 选项已经启用，`this` 具有该对象字面量的类型。
+- 否则，`this` 的类型为 `any`。
 
-### React JSX
+一些例子：
+```ts
+// Compile with --noImplicitThis
 
-### 非 React JSX
+type Point = {
+  x: number;
+  y: number;
+  moveBy(dx: number, dy: number): void;
+};
 
-## TypeScript 错误提示
+let p: Point = {
+  x: 10,
+  y: 20,
+  moveBy(dx, dy) {
+    this.x += dx; // this has type Point
+    this.y += dy; // this has type Point
+  }
+};
 
-### 解读 Errors
+let foo = {
+  x: 'hello',
+  f(n: number) {
+    this; // { x: string, f(n: number): void }
+  }
+};
 
-### 常见的 Error
+let bar = {
+  x: 'hello',
+  f(this: { message: string }) {
+    this; // { message: string }
+  }
+};
+```
 
-## TIPs
+类似的方式，当使用 `--noImplicitThis` 时，函数表达式赋值给 `obj.xxx` 或者 `obj[xxx]` 的目标时，在函数中 `this` 的类型将会是 `obj`：
+```ts
+// Compile with --noImplicitThis
 
-### 基于字符串的枚举
+obj.f = function(n) {
+  return this.x - n; // 'this' has same type as 'obj'
+};
 
-### 名义化类型
+obj['f'] = function(n) {
+  return this.x - n; // 'this' has same type as 'obj'
+};
+```
 
-### 状态函数
+通过 API 转换参数的形式来生成 `this` 的值的情景下，可以通过创建一个新的 `ThisType<T>` 标记接口，可用于在上下文中表明转换后的类型。尤其是当字面量中的上下文类型为 `ThisType<T>` 或者是包含 `ThisType<T>` 的交集时，显得尤为有效，对象字面量方法中 `this` 的类型即为 `T`。
+```ts
+// Compile with --noImplicitThis
 
-### Bind 是有害的
+type ObjectDescriptor<D, M> = {
+  data?: D;
+  methods?: M & ThisType<D & M>; // Type of 'this' in methods is D & M
+};
 
-### 柯里化
+function makeObject<D, M>(desc: ObjectDescriptor<D, M>): D & M {
+  let data: object = desc.data || {};
+  let methods: object = desc.methods || {};
+  return { ...data, ...methods } as D & M;
+}
 
-### 范型的实例化类型
+let obj = makeObject({
+  data: { x: 0, y: 0 },
+  methods: {
+    moveBy(dx: number, dy: number) {
+      this.x += dx; // Strongly typed this
+      this.y += dy; // Strongly typed this
+    }
+  }
+});
 
-### 对象字面量的惰性初始化
+obj.x = 10;
+obj.y = 20;
+obj.moveBy(5, 5);
+```
 
-### 类是有用的
+在上面的例子中，`makeObject` 参数中的对象属性 `methods` 具有包含 `ThisType<D & M>` 的上下文类型，因此对象中 `methods` 属性下的方法的 `this` 类型为 `{ x: number, y: number } & { moveBy(dx: number, dy: number): number }`。
 
-### export default 被认为是有害的
-
-### 减少 setter 属性的使用
-
-### 创建数组
-
-### 谨慎使用 --outFile
-
-### TypeScript 中的静态构造函数
-
-### 单例模式
-
-### 函数参数
-
-### Truthy
-
-### 构建切换
-
-### 类型安全的 Event Emitter
-
-### Reflect Metadata
-
-### 协变与逆变
-
-### infer
+`ThisType<T>` 的接口，在 `lib.d.ts` 只是被声明为空的接口，除了可以在对象字面量上下文中可以被识别以外，该接口的作用等同于任意空接口。
 
 ## TypeScript 编译原理
 
 ### 概览
 
+TypeScript 编译器源文件位于 [`src/compiler`](https://github.com/Microsoft/TypeScript/tree/master/src/compiler) 目录下
+
+> 译注：Typescript Deep Dive 使用的源码应为 2016 年以前的源码。学习时请对照现有的源码
+
+它分为以下几个关键部分：
+- Scanner 扫描器（`scanner.ts`）
+- Parser 解析器（`parser.ts）`
+- Binder 绑定器（`binder.ts）`
+- Checker 检查器（`checker.ts`）
+- Emitter 发射器（`emitter.ts`）
+
+每个部分在源文件中均有独立文件，本章稍后会对这些部分做解释。
+
+#### BYOTS
+
+我们有个名为 [Bring Your Own TypeScript (BYOTS)](https://github.com/basarat/byots) 的项目，通过暴露内部接口让编译器 API 使用起来更简单。你可以在全局范围上暴露你 TypeScript 应用的本地变量。
+
+#### 语法和语义
+
+**语法**正确并不意味着语义上也正确。下面的 TypeScript 代码，语法合法，但是语义却不正确
+```ts
+var foo: number = 'not a number';
+```
+
+`语义` 从自然语言角度意味着有意义，理解这个概念对你很有用。
+
+#### 处理概览
+
+以下演示简单说明 TypeScript 编译器如何将上述几个关键部分组合在一起：
+```shell
+SourceCode（源码） ~~ 扫描器 ~~> Token 流
+```
+```shell
+Token 流 ~~ 解析器 ~~> AST（抽象语法树）
+```
+```shell
+AST ~~ 绑定器 ~~> Symbols（符号）
+```
+
+符号（`Symbol`）是 TypeScript 语义系统的主要构造块。如上所示，符号是绑定的结果。符号将 AST 中的声明节点与相同实体的其他声明相连。
+
+符号和 AST 是检查器用来验证源代码语义的
+```shell
+AST + 符号 ~~ 检查器 ~~> 类型验证
+```
+
+最后，需要输出 JavaScript 时：
+```shell
+AST + 检查器 ~~ 发射器 ~~> JavaScript 代码
+```
+
+TypeScript 编译器中还有一些其他文件，为我们接下来介绍的很多关键部分提供实用工具。
+
+#### 文件：Utilities
+
+`core.ts` ：TypeScript 编译器使用的核心工具集，重要的有：
+- `let objectAllocator: ObjectAllocator` 是一个定义为全局单例的变量。提供以下定义：
+  - `getNodeConstructor`（节点会在解析器 / AST 中介绍）
+  - `getSymbolConstructor`（符号会在绑定器中介绍）
+  - `getTypeConstructor`（类型会在检查器中介绍）
+  - `getSignatureConstructor`（签名是索引，调用和构造签名）
+
+#### 文件：关键数据结构
+
+`types.ts` 包含整个编译器中使用的关键数据结构和接口，这里列出一些关键部分：
+- `SyntaxKind` AST 节点类型通过 `SyntaxKind` 枚举进行识别
+- `TypeChecker` 类型检查器提供此接口
+- `CompilerHost` 用于程序（Program）和系统之间的交互
+- `Node` AST 节点
+
+#### 文件：系统
+
+`system.ts`，TypeScript 编译器与操作系统的所有交互均通过 `System` 接口进行。接口及其实现（`WScript` 和 `Node`） 均定义在 `system.ts` 中。你可以将其视为**操作环境（OE, Operating Environment）**。
+
+现在对主要文件有一个整体了解了，我们继续介绍程序（`Program`）的概念
+
 ### 程序
+
+程序定义在 `program.ts` 中。[编译上下文](#编译上下文)在 TypeScript 编译器中被视为一个 `Program`，它包含 `SourceFile` 和编译选项
+
+#### `CompilerHost` 的使用
+
+CompilerHost 是与操作环境（OE, Operating Enviornment）进行交互的机制：
+
+`Program` -使用-> `CompilerHost` -使用-> `System`
+
+用 `CompilerHost` 作中间层的原因是可以让接口对 `Program` 的需求进行细粒度的调整，而无需考虑操作环境的需求。（例如：`Program` 无需关心 `System` 的 `fileExists` 函数）
+
+对`System`而言还有其他的使用者（比如测试）
+
+#### SourceFile
+
+程序有个 API，用于获取 SourceFile：`getSourceFiles(): SourceFile[];`。得到的每个元素均是一棵抽象语法树的根节点（称做 `SourceFile`）
 
 ### 抽象语法树
 
+#### Node 节点
+
+节点是抽象语法树（AST） 的基本构造块。语法上，通常 `Node` 表示非末端（non-terminals）节点。但是，有些末端节点，如：标识符和字面量也会保留在树中。
+
+AST 节点文档由两个关键部分构成。一是节点的 `SyntaxKind` 枚举，用于标识 AST 中的类型。二是其接口，即实例化 AST 时节点提供的 API。
+
+这里是 `interface Node` 的一些关键成员：
+- `TextRange` 标识该节点在源文件中的起止位置。
+- `parent?: Node` 当前节点（在 AST 中）的父节点
+
+`Node` 还有一些其他的成员，标志（flags）和修饰符（modifiers）等。你可以在源码中搜索 `interface Node` 来查看，而上面提到对节点的遍历是非常重要的。
+
+##### SourceFile
+
+- `SyntaxKind.SourceFile`
+- `interface SourceFile`
+
+每个 `SourceFile` 都是一棵 AST 的顶级节点，它们包含在 `Program` 中。
+
+#### AST 技巧：访问子节点
+
+有个工具函数 `ts.forEachChild`，可以用来访问 AST 任一节点的所有子节点。
+
+下面是简化的代码片段，用于演示如何工作：
+```ts
+export function forEachChild<T>(node: Node, cbNode: (node: Node) => T, cbNodeArray?: (nodes: Node[]) => T): T {
+  if (!node) {
+      return;
+  }
+  switch (node.kind) {
+    case SyntaxKind.BinaryExpression:
+      return visitNode(cbNode, (<BinaryExpression>node).left) ||
+        visitNode(cbNode, (<BinaryExpression>node).operatorToken) ||
+        visitNode(cbNode, (<BinaryExpression>node).right);
+    case SyntaxKind.IfStatement:
+      return visitNode(cbNode, (<IfStatement>node).expression) ||
+        visitNode(cbNode, (<IfStatement>node).thenStatement) ||
+        visitNode(cbNode, (<IfStatement>node).elseStatement);
+
+    // .... 更多
+```
+
+该函数主要检查 `node.kind` 并据此判断 node 的接口，然后在其子节点上调用 `cbNode`。但是，要注意该函数不会为**所有**子节点调用 `visitNode`（例如：SyntaxKind.SemicolonToken）。想获得某 AST 节点的**所有**子节点，只要调用该节点的成员函数 `.getChildren`。
+
+如下函数会打印 AST 节点详细信息：
+```ts
+function printAllChildren(node: ts.Node, depth = 0) {
+  console.log(new Array(depth + 1).join('----'), ts.syntaxKindToName(node.kind), node.pos, node.end);
+  depth++;
+  node.getChildren().forEach(c => printAllChildren(c, depth));
+}
+```
+
+我们进一步讨论解析器时会看到该函数的使用示例。
+
+#### AST 技巧：SyntaxKind 枚举
+
+`SyntaxKind` 被定义为一个常量枚举，如下所示：
+```ts
+export const enum SyntaxKind {
+  Unknown,
+  EndOfFileToken,
+  SingleLineCommentTrivia,
+  // ... 更多
+```
+
+这是个[常量枚举](#常量枚举)，方便内联（例如：`ts.SyntaxKind.EndOfFileToken` 会变为 `1`），这样在使用 AST 时就不会有处理引用的额外开销。但编译时需要使用 --preserveConstEnums 编译标志，以便枚举**在运行时仍可用**。JavaScript 中你也可以根据需要使用 `ts.SyntaxKind.EndOfFileToken`。另外，可以用以下函数，将枚举成员转化为可读的字符串：
+```ts
+export function syntaxKindToName(kind: ts.SyntaxKind) {
+  return (<any>ts).SyntaxKind[kind];
+}
+```
+
+#### AST 杂项
+
+杂项（Trivia）是指源文本中对正常理解代码不太重要的部分，例如：空白，注释，冲突标记。（为了保持轻量）杂项**不会存储**在 AST 中。但是可以视需要使用一些 `ts.*` API 来获取。
+
+展示这些 API 前，你需要理解以下内容：
+
+##### 杂项所有权
+
+通常：
+- token 拥有它后面 同一行 到下一个 token 之前的所有杂项
+- 该行之后的注释都与下个的 token 相关
+
+对于文件中的前导（leading）和结束（ending）注释：
+- 源文件中的第一个 token 拥有所有开始的杂项
+- 而文件最后的一些列杂项则附加到文件结束符上，该 token 长度为 0
+
+##### 杂项 API
+
+注释在多数基本使用中，都是让人关注的杂项。节点的注释可以通过以下函数获取：
+| 函数 | 描述 |
+| :-: | :-: |
+| `ts.getLeadingCommentRanges` | 给定源文本及其位置，返回给定位置后第一个换行符到 token 本身之间的注释范围（可能需要结合 `ts.Node.getFullStart` 使用）。 |
+| `ts.getTrailingCommentRanges` | 给定源文本及其位置，返回给定位置后第一个换行符之前的注释范围（可能需要结合 `ts.Node.getEnd` 使用）。 |
+
+假设下面是某个源文件的一部分：
+```ts
+debugger;/*hello*/
+    //bye
+  /*hi*/    function
+```
+
+对 `function` `而言，getLeadingCommentRanges` 仅返回最后的两个注释 `//bye` 和 `/*hi*/`。 另外，而在 `debugger` 语句结束位置调用 `getTrailingCommentRanges` 会得到注释 `/*hello*/`。
+
+##### Token Start 和 Full Start 位置
+
+节点有所谓的 "token start" 和 "full start" 位置。
+- Token Start：比较自然的版本，即文件中一个 token 的文本开始的位置。
+- Full Start：是指扫描器从上一个重要 token 开始扫描的位置。
+
+AST 节点有 `getStart` 和 `getFullStart` API 用于获取以上两种位置，还是这个例子：
+```ts
+debugger;/*hello*/
+    //bye
+  /*hi*/    function
+```
+
+对 `function` 而言，token start 即 `function` 的位置，而 **full** start 是 `/*hello*/` 的位置。要注意，full start 甚至会包含前一节点拥有的杂项。
+
 ### 扫描器
+
+TypeScript 扫描器的源码均位于 `scanner.ts`。在内部，由解析器控制扫描器将源码转化为抽象语法树（AST）。期望结果如下：
+```shell
+SourceCode ~~ 扫描器 ~~> Token 流 ~~ 解析器 ~~> AST
+```
+
+#### 解析器对扫描器的使用
+
+为避免重复创建扫描器造成的开销，`parser.ts` 中创建了一个扫描器的**单例**。解析器根据需要使用 `initializeState` 函数准备该扫描器。
+
+下面是解析器中的实际代码的简化版，你可以运行它演示以上概念
+
+`code/compiler/scanner/runScanner.ts`
+```ts
+import * as ts from 'ntypescript';
+
+// 单例扫描器
+const scanner = ts.createScanner(ts.ScriptTarget.Latest, /* 忽略杂项 */ true);
+
+// 此函数与初始化使用的 `initializeState` 函数相似
+function initializeState(text: string) {
+  scanner.setText(text);
+  scanner.setOnError((message: ts.DiagnosticMessage, length: number) => {
+    console.error(message);
+  });
+  scanner.setScriptTarget(ts.ScriptTarget.ES5);
+  scanner.setLanguageVariant(ts.LanguageVariant.Standard);
+}
+
+// 使用示例
+initializeState(
+  `
+var foo = 123;
+`.trim()
+);
+
+// 开始扫描
+var token = scanner.scan();
+while (token != ts.SyntaxKind.EndOfFileToken) {
+  console.log(ts.formatSyntaxKind(token));
+  token = scanner.scan();
+}
+```
+
+该段代码输出以下内容：
+```shell
+VarKeyword
+Identifier
+FirstAssignment
+FirstLiteralToken
+SemicolonToken
+```
+
+#### 扫描器状态
+
+调用 `scan` 后，扫描器更新其局部状态（扫描位置，当前 token 详情等）。扫描器提供了一组工具函数获取当前扫描器状态。下例中，我们创建一个扫描器并用它识别 token 以及 token 在代码中的位置。
+
+`code/compiler/scanner/runScannerWithPosition.ts`
+```ts
+// 使用示例
+initializeState(
+  `
+var foo = 123;
+`.trim()
+);
+
+// 开始扫描
+var token = scanner.scan();
+while (token != ts.SyntaxKind.EndOfFileToken) {
+  let currentToken = ts.formatSyntaxKind(token);
+  let tokenStart = scanner.getStartPos();
+  token = scanner.scan();
+  let tokenEnd = scanner.getStartPos();
+  console.log(currentToken, tokenStart, tokenEnd);
+}
+```
+
+该代码输出以下内容：
+```shell
+VarKeyword 0 3
+Identifier 3 7
+FirstAssignment 7 9
+FirstLiteralToken 9 13
+SemicolonToken 13 14
+```
+
+#### 独立扫描器
+
+即便 TypeScript 解析器有单例扫描器，你仍可以使用 `createScanner` 创建独立的扫描器，然后可以用 `setText/setTextPos` 随意扫描文件的不同位置。
 
 ### 解析器
 
+TypeScript 解析器代码均位于 parser.ts 中。在内部，由解析器控制扫描器将源码转化为 AST。其期望结果如下：
+```shell
+源码 ~~ 扫描器 ~~> Token 流 ~~ 解析器 ~~> AST
+```
+
+解析器实现原理是单例模式（其原因类似扫描器，如果能重新初始化就不重新构建）。实际实现成 `namespace Parser`，包含解析器的各种状态变量和单例扫描器（`const scanner`）。该扫描器由解析器函数管理。
+
+#### 程序对解析器的使用
+
+解析器由程序间接驱动（通过之前提到过的 `CompilerHost`）。基本上，简化的调用栈如下所示：
+```shell
+程序 ->
+  CompilerHost.getSourceFile ->
+    (全局函数 parser.ts).createSourceFile ->
+      Parser.parseSourceFile
+```
+
+`parseSourceFile` 不仅准备好解析器的状态，还调用 `initializeState` 准备好扫描器的状态。然后使用 `parseSourceFileWorker` 继续解析源代码。
+
+#### 使用示例
+
+深入解析器的内部之前，这里有个使用 TypeScript 解析器的示例，（使用 `ts.createSourceFile`）获取一个源文件的 AST 并打印它。
+
+`code/compiler/parser/runParser.ts`
+```ts
+import * as ts from 'ntypescript';
+
+function printAllChildren(node: ts.Node, depth = 0) {
+  console.log(new Array(depth + 1).join('----'), ts.formatSyntaxKind(node.kind), node.pos, node.end);
+  depth++;
+  node.getChildren().forEach(c => printAllChildren(c, depth));
+}
+
+var sourceCode = `
+var foo = 123;
+`.trim();
+
+var sourceFile = ts.createSourceFile('foo.ts', sourceCode, ts.ScriptTarget.ES5, true);
+printAllChildren(sourceFile);
+```
+
+该段代码会打印以下内容：
+```ts
+SourceFile 0 14
+---- SyntaxList 0 14
+-------- VariableStatement 0 14
+------------ VariableDeclarationList 0 13
+---------------- VarKeyword 0 3
+---------------- SyntaxList 3 13
+-------------------- VariableDeclaration 3 13
+------------------------ Identifier 3 7
+------------------------ FirstAssignment 7 9
+------------------------ FirstLiteralToken 9 13
+------------ SemicolonToken 13 14
+---- EndOfFileToken 14 14
+```
+
+如果把头向左倾，这个看起来像棵（右侧）树
+
+#### 解析器函数
+
+如前所述，`parseSourceFile` 设置初始状态并将工作交给 `parseSourceFileWorker` 函数。
+
+##### `parseSourceFileWorker`
+
+该函数先创建一个 `SourceFile` AST 节点，然后从 `parseStatements` 函数开始解析源代码。一旦返回结果，就用额外信息（例如 `nodeCount`, `identifierCount`等） 完善 `SourceFile` 节点。
+
+##### `parseStatements`
+
+是最重要的 `parseXXX` 系函数之一（概念接下来介绍）。它根据扫描器返回的当前 token 来切换（调用相应的 `parseXXX` 函数），例如：如果当前 token 是一个 `SemicolonToken`（分号标记），就会调用 `paserEmptyStatement` 为空语句创建一个 AST 节点
+
+##### 节点创建
+
+解析器有一系列 `parseXXX` 函数用来创建相应类型为XXX的节点，通常在相应类型的节点出现时被（其他解析器函数）调用。该过程的典型示例是解析空语句（例如 `;;;;;;`）时要用的 `parseEmptyStatement()` 函数。下面是其全部代码：
+```ts
+function parseEmptyStatement(): Statement {
+  let node = <Statement>createNode(SyntaxKind.EmptyStatement);
+  parseExpected(SyntaxKind.SemicolonToken);
+  return finishNode(node);
+}
+```
+
+它展示了 3 个关键函数 `createNode`, `parseExpected` 和 `finishNode`.
+
+###### `createNode`
+
+解析器函数 `function createNode(kind: SyntaxKind, pos?: number): Node` 负责创建节点，设置传入的 `SyntaxKind`（语法类别），和初始位置（默认使用当前扫描器状态提供的位置信息）。
+
+###### `parseExpected`
+
+解析器的 `parseExpected` 函数 `function parseExpected(kind: SyntaxKind, diagnosticMessage?: DiagnosticMessage): boolean` 会检查解析器状态中的当前 token 是否与指定的 `SyntaxKind` 匹配。如果不匹配，则会向传入的 `diagnosticMessage`（诊断消息）报告，未传入则创建某种通用形式 `xxx expected`。该函数内部用 `parseErrorAtPosition` 函数（使用扫描位置）提供良好的错误报告。
+
+###### `finishNode`
+
+解析器的 `finishNode` 函数 `function finishNode<T extends Node>(node: T, end?: number): T` 设置节点的 `end` 位置，并添加一些有用的信息，例如上下文标志（`parserContextFlags`）以及解析该节点前出现的错误（如果有错的话，就不能在增量解析中重用此 AST 节点）。
+
 ### 绑定器
+
+大多数的 JavaScript 转译器（transpiler）都比 TypeScript 简单，因为它们几乎没提供代码分析的方法。典型的 JavaScript 转换器只有以下流程：
+```shell
+源码 ~~扫描器~~> Tokens ~~解析器~~> AST ~~发射器~~> JavaScript
+```
+
+上述架构确实对于简化 TypeScript 生成 JavaScript 的理解有帮助，但缺失了一个关键功能，即 TypeScript 的语义系统。为了协助（检查器执行）类型检查，绑定器将源码的各部分连接成一个相关的类型系统，供检查器使用。绑定器的主要职责是创建符号（Symbols）。
+
+#### 符号
+
+符号将 AST 中的声明节点与其它声明连接到相同的实体上。符号是语义系统的基本构造块。符号的构造器定义在 `core.ts`（绑定器实际上通过 `objectAllocator.getSymbolConstructor` 来获取构造器）。下面是符号构造器：
+```ts
+function Symbol(flags: SymbolFlags, name: string) {
+  this.flags = flags;
+  this.name = name;
+  this.declarations = undefined;
+}
+```
+
+`SymbolFlags` 符号标志是个标志枚举，用于识别额外的符号类别（例如：变量作用域标志 `FunctionScopedVariable` 或 `BlockScopedVariable` 等）
+
+#### 检查器对绑定器的使用
+
+实际上，绑定器被检查器在内部调用，而检查器又被程序调用。简化的调用栈如下所示：
+```ts
+program.getTypeChecker ->
+  ts.createTypeChecker（检查器中）->
+    initializeTypeChecker（检查器中） ->
+      for each SourceFile `ts.bindSourceFile`（绑定器中）
+      // followed by
+      for each SourceFile `ts.mergeSymbolTable`（检查器中）
+```
+
+SourceFile 是绑定器的工作单元，`binder.ts` 由 `checker.ts` 驱动。
+
+#### 绑定器函数
+
+`bindSourceFile` 和 `mergeSymbolTable` 是两个关键的绑定器函数，我们来看下：
+
+##### `bindSourceFile`
+
+该函数主要是检查 `file.locals` 是否定义，如果没有则交给（本地函数） `bind` 来处理。
+
+注意：`locals` 定义在节点上，其类型为 `SymbolTable`。`SourceFile` 也是一个节点（事实上是 AST 中的根节点）。
+
+提示：TypeScript 编译器大量使用本地函数。本地函数很可能使用来自父函数的变量（通过闭包捕获）。例如 `bind` 是 `bindSourceFile` 中的一个本地函数，它或它调用的函数会设置 `symbolCount` 和 `classifiableNames` 等状态，然后将其存在返回的 `SourceFile` 中
+
+##### `bind`
+
+bind 能处理任一节点（不只是 `SourceFile`），它做的第一件事是分配 `node.parent`（如果 `parent` 变量已设置，绑定器在 `bindChildren` 函数的处理中仍会再次设置）， 然后交给 `bindWorker` 做很多重活。最后调用 `bindChildren`（该函数简单地将绑定器的状态（如：`parent`）存入函数本地变量中，接着在每个子节点上调用 `bind`，然后再将状态转存回绑定器中）。现在我们看下 `bindWorker`，一个更有趣的函数。
+
+##### bindWorker
+
+该函数依据 `node.kind`（`SyntaxKind`类型）进行切换，并将工作委托给合适的 `bindXXX` 函数（也定义在`binder.ts`中）。例如：如果该节点是 `SourceFile` 则（最终且仅当节点是外部文件模块时）调用 `bindAnonymousDeclaration`
+
+##### `bindXXX` 函数
+
+`bindXXX` 系函数有一些通用的模式和工具函数。其中最常用的一个是 `createSymbol` 函数，全部代码展示如下：
+```ts
+function createSymbol(flags: SymbolFlags, name: string): Symbol {
+  symbolCount++;
+  return new Symbol(flags, name);
+}
+```
+
+如您所见，它简单地更新 `symbolCount`（一个 `bindSourceFile` 的本地变量），并使用指定的参数创建符号。
+
+#### 绑定器声明
+
+##### 符号与声明
+
+节点和符号间的链接由几个函数执行。其中一个用于绑定 `SourceFile` 节点到源文件符号（外部模块的情况下）的函数是 `addDeclarationToSymbol`
+
+注意：外部模块源文件的符号设置方式是 `flags : SymbolFlags.ValueModule` 和 `name: '"' + removeFileExtension(file.fileName) + '"'`.
+```ts
+function addDeclarationToSymbol(symbol: Symbol, node: Declaration, symbolFlags: SymbolFlags) {
+  symbol.flags |= symbolFlags;
+
+  // 创建 AST 节点到 symbol 的连接
+  node.symbol = symbol;
+
+  if (!symbol.declarations) {
+    symbol.declarations = [];
+  }
+  // 将该节点添加为该符号的一个声明
+  symbol.declarations.push(node);
+
+  if (symbolFlags & SymbolFlags.HasExports && !symbol.exports) {
+    symbol.exports = {};
+  }
+
+  if (symbolFlags & SymbolFlags.HasMembers && !symbol.members) {
+    symbol.members = {};
+  }
+
+  if (symbolFlags & SymbolFlags.Value && !symbol.valueDeclaration) {
+    symbol.valueDeclaration = node;
+  }
+}
+```
+
+上述代码主要执行的操作如下：
+- 创建一个从 AST 节点到符号的链接（`node.symbol`）
+- 将节点添加为该符号的一个声明
+
+##### 声明
+
+声明就是一个有可选的名字的节点。下面是 `types.ts` 中的定义：
+```ts
+interface Declaration extends Node {
+  _declarationBrand: any;
+  name?: DeclarationName;
+}
+```
+
+#### 绑定器容器
+
+AST 的节点可以被当作容器。这决定了节点及相关符号的 `SymbolTables` 的类别。容器是个抽象概念（没有相关的数据结构）。该概念由一些东西决定，`ContainerFlags` 枚举是其中之一。函数 `getContainerFlags`（位于 `binder.ts`） 驱动此标志，如下所示：
+```ts
+function getContainerFlags(node: Node): ContainerFlags {
+  switch (node.kind) {
+    case SyntaxKind.ClassExpression:
+    case SyntaxKind.ClassDeclaration:
+    case SyntaxKind.InterfaceDeclaration:
+    case SyntaxKind.EnumDeclaration:
+    case SyntaxKind.TypeLiteral:
+    case SyntaxKind.ObjectLiteralExpression:
+      return ContainerFlags.IsContainer;
+
+    case SyntaxKind.CallSignature:
+    case SyntaxKind.ConstructSignature:
+    case SyntaxKind.IndexSignature:
+    case SyntaxKind.MethodDeclaration:
+    case SyntaxKind.MethodSignature:
+    case SyntaxKind.FunctionDeclaration:
+    case SyntaxKind.Constructor:
+    case SyntaxKind.GetAccessor:
+    case SyntaxKind.SetAccessor:
+    case SyntaxKind.FunctionType:
+    case SyntaxKind.ConstructorType:
+    case SyntaxKind.FunctionExpression:
+    case SyntaxKind.ArrowFunction:
+    case SyntaxKind.ModuleDeclaration:
+    case SyntaxKind.SourceFile:
+    case SyntaxKind.TypeAliasDeclaration:
+      return ContainerFlags.IsContainerWithLocals;
+
+    case SyntaxKind.CatchClause:
+    case SyntaxKind.ForStatement:
+    case SyntaxKind.ForInStatement:
+    case SyntaxKind.ForOfStatement:
+    case SyntaxKind.CaseBlock:
+      return ContainerFlags.IsBlockScopedContainer;
+
+    case SyntaxKind.Block:
+      // 不要将函数内部的块直接当做块作用域的容器。
+      // 本块中的本地变量应当置于函数中，否则下例中的 'x' 不会重新声明为一个块作用域的本地变量：
+      //
+      //     function foo() {
+      //         var x;
+      //         let x;
+      //     }
+      //
+      // 如果将 'var x' 留在函数中，而将 'let x' 放到本块中（函数外），就不会有冲突了。
+      //
+      // 如果不在这里创建一个新的块作用域容器，'var x' 和 'let x' 都会进入函数容器本地中，这样就会有碰撞冲突。
+      return isFunctionLike(node.parent) ? ContainerFlags.None : ContainerFlags.IsBlockScopedContainer;
+  }
+
+  return ContainerFlags.None;
+}
+```
+
+该函数只在绑定器函数 `bindChildren` 中调用，会根据 `getContainerFlags` 的运行结果将节点设为 `container` 和（或） `blockScopedContainer`。函数 `bindChildren` 如下所示：
+```ts
+// 所有容器节点都以声明顺序保存在一个链表中。
+// 类型检查器中的 getLocalNameOfContainer 函数会使用该链表对容器使用的本地名称的唯一性做验证。
+function bindChildren(node: Node) {
+  // 在递归到子节点之前，我们先要保存父节点，容器和块容器。处理完弹出的子节点后，再将这些值存回原处。
+  let saveParent = parent;
+  let saveContainer = container;
+  let savedBlockScopeContainer = blockScopeContainer;
+
+  // 现在要将这个节点设为父节点，我们要递归它的子节点。
+  parent = node;
+
+  // 根据节点的类型，需要对当前容器或块容器进行调整。 如果当前节点是个容器，则自动将其视为当前的块容器。
+  // 由于我们知道容器可能包含本地变量，因此提前初始化 .locals 字段。
+  // 这样做是因为很可能需要将一些子（节点）置入 .locals 中（例如：函数参数或变量声明）。
+  //
+  // 但是，我们不会主动为块容器创建 .locals，因为通常块容器中不会有块作用域变量。
+  // 我们不想为遇到的每个块都分配一个对象，大多数情况没有必要。
+  //
+  // 最后，如果是个块容器，我们就清理该容器中可能存在的 .locals 对象。这种情况常在增量编译场景中发生。
+  // 由于我们可以重用上次编译的节点，而该节点可能已经创建了 locals 对象。
+  // 因此必须清理，以免意外地从上次的编译中移动了过时的数据。
+  let containerFlags = getContainerFlags(node);
+  if (containerFlags & ContainerFlags.IsContainer) {
+    container = blockScopeContainer = node;
+
+    if (containerFlags & ContainerFlags.HasLocals) {
+      container.locals = {};
+    }
+
+    addToContainerChain(container);
+  } else if (containerFlags & ContainerFlags.IsBlockScopedContainer) {
+    blockScopeContainer = node;
+    blockScopeContainer.locals = undefined;
+  }
+
+  forEachChild(node, bind);
+
+  container = saveContainer;
+  parent = saveParent;
+  blockScopeContainer = savedBlockScopeContainer;
+}
+```
+
+您可能还记得绑定器函数中的这部分：`bindChildren` 由 `bind` 函数调用。我们得到这样的递归绑定：`bind` 调用 `bindChildren`，而 bindChildren 又为其每个子节点调用 `bind`
+
+#### 绑定器符号表
+
+符号表（SymbolTable）是以一个简单的 HashMap 实现的，下面是其接口（`types.ts`）：
+```ts
+interface SymbolTable {
+  [index: string]: Symbol;
+}
+```
+
+符号表通过绑定进行初始化，这里是编译器使用的一些符号表：
+
+节点上：
+```ts
+locals?: SymbolTable;                   // 节点相关的本地变量
+```
+
+符号上：
+```ts
+members?: SymbolTable;                  // 类，接口或字面量实例成员
+exports?: SymbolTable;                  // 模块导出
+```
+
+请注意：`bindChildren` 基于 `ContainerFlags` 初始化 `locals`（为 `{}`）
+
+##### 符号表填充
+
+符号表使用符号来填充，主要是通过调用 declareSymbol 来进行，如下所示的是该函数的全部代码：
+```ts
+/**
+ * 为指定的节点声明一个符号并加入 symbols。标识名冲突时报告错误。
+ * @param symbolTable - 要将节点加入进的符号表
+ * @param parent - 指定节点的父节点的声明
+ * @param node - 要添加到符号表的（节点）声明
+ * @param includes - SymbolFlags，指定节点额外的声明类型（例如：export, ambient 等）
+ * @param excludes - 不能在符号表中声明的标志，用于报告禁止的声明
+ */
+function declareSymbol(
+  symbolTable: SymbolTable,
+  parent: Symbol,
+  node: Declaration,
+  includes: SymbolFlags,
+  excludes: SymbolFlags
+): Symbol {
+  Debug.assert(!hasDynamicName(node));
+
+  // 默认导出的函数节点或类节点的符号总是"default"
+  let name = node.flags & NodeFlags.Default && parent ? 'default' : getDeclarationName(node);
+
+  let symbol: Symbol;
+  if (name !== undefined) {
+    // 检查符号表中是否已有同名的符号。若没有，创建此名称的新符号并加入表中。
+    // 注意，我们尚未给新符号指定任何标志。这可以确保不会和传入的 excludes 标志起冲突。
+    //
+    // 如果已存在的一个符号，查看是否与要创建的新符号冲突。
+    // 例如：同一符号表中，'var' 符号和 'class' 符号会冲突。
+    // 如果有冲突，报告该问题给该符号的每个声明，然后为该声明创建一个新符号
+    //
+    // 如果我们创建的新符号既没在符号表中重名也没和现有符号冲突，就将该节点添加为新符号的唯一声明。
+    //
+    // 否则，就要（将新符号）合并进兼容的现有符号中（例如同一容器中有多个同名的 'var' 时）。这种情况下要把该节点添加到符号的声明列表中。
+    symbol = hasProperty(symbolTable, name)
+      ? symbolTable[name]
+      : (symbolTable[name] = createSymbol(SymbolFlags.None, name));
+
+    if (name && includes & SymbolFlags.Classifiable) {
+      classifiableNames[name] = name;
+    }
+
+    if (symbol.flags & excludes) {
+      if (node.name) {
+        node.name.parent = node;
+      }
+
+      // 报告每个重复声明的错误位置
+      // 报告之前遇到的声明错误
+      let message =
+        symbol.flags & SymbolFlags.BlockScopedVariable
+          ? Diagnostics.Cannot_redeclare_block_scoped_variable_0
+          : Diagnostics.Duplicate_identifier_0;
+      forEach(symbol.declarations, declaration => {
+        file.bindDiagnostics.push(
+          createDiagnosticForNode(declaration.name || declaration, message, getDisplayName(declaration))
+        );
+      });
+      file.bindDiagnostics.push(createDiagnosticForNode(node.name || node, message, getDisplayName(node)));
+
+      symbol = createSymbol(SymbolFlags.None, name);
+    }
+  } else {
+    symbol = createSymbol(SymbolFlags.None, '__missing');
+  }
+
+  addDeclarationToSymbol(symbol, node, includes);
+  symbol.parent = parent;
+
+  return symbol;
+}
+```
+
+填充哪个符号表，由此函数的第一个参数决定。例如：添加声明到类型为 `SyntaxKind.ClassDeclaration` 或 `SyntaxKind.ClassExpression` 的容器时，将会调用下面的函数 `declareClassMember`:
+```ts
+function declareClassMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
+  return node.flags & NodeFlags.Static
+    ? declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes)
+    : declareSymbol(container.symbol.members, container.symbol, node, symbolFlags, symbolExcludes);
+}
+```
+
+#### 绑定器错误报告
+
+绑定错误被添加到源文件的 `bindDiagnostics` 列表中
+
+一个绑定时错误检测的例子是在严格模式下使用 `eval` 或 `arguments` 作为变量名。下面展示了相关的全部代码（多个位置都会调用`checkStrictModeEvalOrArguments`，调用栈发自 `bindWorker`，该函数对不同节点的 `SyntaxKind` 调用不同的检查函数）：
+```ts
+function checkStrictModeEvalOrArguments(contextNode: Node, name: Node) {
+  if (name && name.kind === SyntaxKind.Identifier) {
+    let identifier = <Identifier>name;
+    if (isEvalOrArgumentsIdentifier(identifier)) {
+      // 首先检查名字是否在类声明或者类表达式中，如果是则给出明确消息，否则报告一般性错误
+      let span = getErrorSpanForNode(file, name);
+      file.bindDiagnostics.push(
+        createFileDiagnostic(
+          file,
+          span.start,
+          span.length,
+          getStrictModeEvalOrArgumentsMessage(contextNode),
+          identifier.text
+        )
+      );
+    }
+  }
+}
+
+function isEvalOrArgumentsIdentifier(node: Node): boolean {
+  return (
+    node.kind === SyntaxKind.Identifier &&
+    ((<Identifier>node).text === 'eval' || (<Identifier>node).text === 'arguments')
+  );
+}
+
+function getStrictModeEvalOrArgumentsMessage(node: Node) {
+  // 向用户提供特定消息，有助他们理解为何会处于严格模式。
+  if (getContainingClass(node)) {
+    return Diagnostics.Invalid_use_of_0_Class_definitions_are_automatically_in_strict_mode;
+  }
+
+  if (file.externalModuleIndicator) {
+    return Diagnostics.Invalid_use_of_0_Modules_are_automatically_in_strict_mode;
+  }
+
+  return Diagnostics.Invalid_use_of_0_in_strict_mode;
+}
+```
 
 ### 检查器
 
+如前所述，**检查器**使得 TypeScript 更独特，比**其它 JavaScript 转译器**更强大。检查器位于 `checker.ts` 中，当前有 23k 行以上的代码（编译器中最大的部分）
+
+#### 程序对检查器的使用
+
+检查器是由程序初始化，下面是调用栈示意（绑定器一节也展示过）：
+```shell
+program.getTypeChecker ->
+  ts.createTypeChecker（检查器中）->
+    initializeTypeChecker（检查器中） ->
+      for each SourceFile `ts.bindSourceFile`（绑定器中）
+      // 接着
+      for each SourceFile `ts.mergeSymbolTable`（检查器中）
+```
+
+#### 与发射器的联系
+
+真正的类型检查会在调用 getDiagnostics 时才发生。该函数被调用时（比如由 Program.emit 请求），检查器返回一个 EmitResolver（由程序调用检查器的 getEmitResolver 函数得到），EmitResolver 是 createTypeChecker 的一个本地函数的集合。介绍发射器时还会再次提到。
+
+下面是该过程直到 checkSourceFile 的调用栈（checkSourceFile 是 createTypeChecker 的一个本地函数）：
+```shell
+program.emit ->
+  emitWorker (program local) ->
+    createTypeChecker.getEmitResolver ->
+      // 第一次调用下面的几个 createTypeChecker 的本地函数
+      call getDiagnostics ->
+          getDiagnosticsWorker ->
+              checkSourceFile
+
+      // 接着
+      return resolver
+      // 通过对本地函数 createResolver() 的调用，resolver 已在 createTypeChecker 中初始化。
+```
+
+#### 全局命名空间合并
+
+`initializeTypeChecker` 中存在以下代码：
+```ts
+// 初始化全局符号表（SymbolTable）。
+forEach(host.getSourceFiles(), file => {
+  if (!isExternalModule(file)) {
+    mergeSymbolTable(globals, file.locals);
+  }
+});
+```
+
+基本上是将所有的 `global` 符号合并到 `let globals: SymbolTable = {}` 符号表中（位于 `createTypeChecker` 中）。 `mergeSymbolTable` 主要调用 `mergeSymbol` 函数。
+
+#### 检查器错误报告
+
+检查器使用本地的 `error` 函数报告错误，如下所示：
+```ts
+function error(location: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): void {
+  let diagnostic = location
+    ? createDiagnosticForNode(location, message, arg0, arg1, arg2)
+    : createCompilerDiagnostic(message, arg0, arg1, arg2);
+  diagnostics.add(diagnostic);
+}
+```
+
 ### 发射器
 
-## TypeScript FAQs
+TypeScript 编译器提供了两个发射器：
+- `emitter.ts`：可能是你最感兴趣的发射器，它是 TS -> JavaScript 的发射器
+- `declarationEmitter.ts`：这个发射器用于为 **TypeScript 源文件（`.ts`）** 创建**声明文件（`.d.ts`）**
 
-### 一些常见的「bug」并不是 bug
+本节我们介绍 `emitter.ts`
 
-### 一些常见的 Feature 需求
+#### Promgram 对发射器的作用
 
-### 类型系统的行为
+Program 提供了一个 `emit` 函数。该函数主要将功能委托给 `emitter.ts` 中的 `emitFiles` 函数。下面是调用栈：
+```shell
+Program.emit ->
+  `emitWorker` （在 program.ts 中的 createProgram） ->
+    `emitFiles` （emitter.ts 中的函数）
+```
 
-### 函数
+`emitWorker`（通过 `emitFiles` 参数）给发射器提供一个 `EmitResolver`。 `EmitResolver` 由程序的 `TypeChecker` 提供，基本上它是一个来自 createChecker 的本地函数的子集。
 
-### 类
+#### 发射器函数
 
-### 范型
+##### `emitFiles`
 
-### 模块
+定义在 `emitter.ts` 中，下面是该函数的签名：
+```ts
+// targetSourceFile 当用户想发射项目中的某个文件时指定，保存时编译（compileOnSave）功能使用此参数
+export function emitFiles(resolver: EmitResolver, host: EmitHost, targetSourceFile?: SourceFile): EmitResult {
+```
 
-### 枚举
+`EmitHost` 是 `CompilerHost` 的简化版（运行时，很多用例实际上都是 `CompilerHost`）
 
-### 类型守卫
+`emitFiles` 中的最有趣的调用栈如下所示：
+```shell
+emitFiles ->
+  emitFile(jsFilePath, targetSourceFile) ->
+    emitJavaScript(jsFilePath, targetSourceFile);
+```
 
-### JSX 和 React
+##### `emitJavaScript`
 
-### 一些不能按预期工作的代码
+该函数有良好的注释，我们下面给出它：
+```ts
+function emitJavaScript(jsFilePath: string, root?: SourceFile) {
+  let writer = createTextWriter(newLine);
+  let write = writer.write;
+  let writeTextOfNode = writer.writeTextOfNode;
+  let writeLine = writer.writeLine;
+  let increaseIndent = writer.increaseIndent;
+  let decreaseIndent = writer.decreaseIndent;
 
-### 命令行的行为
+  let currentSourceFile: SourceFile;
+  // 导出器函数的名称，如果文件是个系统外部模块的话
+  // System.register([...], function (<exporter>) {...})
+  // System 模块中的导出像这样：
+  // export var x; ... x = 1
+  // =>
+  // var x;... exporter("x", x = 1)
+  let exportFunctionForFile: string;
 
-### tsconfig.json 的行为
+  let generatedNameSet: Map<string> = {};
+  let nodeToGeneratedName: string[] = [];
+  let computedPropertyNamesToGeneratedNames: string[];
 
+  let extendsEmitted = false;
+  let decorateEmitted = false;
+  let paramEmitted = false;
+  let awaiterEmitted = false;
+  let tempFlags = 0;
+  let tempVariables: Identifier[];
+  let tempParameters: Identifier[];
+  let externalImports: (ImportDeclaration | ImportEqualsDeclaration | ExportDeclaration)[];
+  let exportSpecifiers: Map<ExportSpecifier[]>;
+  let exportEquals: ExportAssignment;
+  let hasExportStars: boolean;
 
+  /** 将发射输出写入磁盘 */
+  let writeEmittedFiles = writeJavaScriptFile;
 
+  let detachedCommentsInfo: { nodePos: number; detachedCommentEndPos: number }[];
 
+  let writeComment = writeCommentRange;
 
+  /** 发射一个节点 */
+  let emit = emitNodeWithoutSourceMap;
 
+  /** 在发射节点前调用 */
+  let emitStart = function(node: Node) {};
 
+  /** 发射结点完成后调用 */
+  let emitEnd = function(node: Node) {};
 
+  /** 从 startPos 位置开始，为指定的 token 发射文本。默认写入的文本由 tokenKind 提供，
+   * 但是如果提供了可选的 emitFn 回调，将使用该回调来代替默认方式发射文本。
+   * @param tokenKind 要搜索并发射的 token 的类别
+   * @param startPos 源码中搜索 token 的起始位置
+   * @param emitFn 如果给出，会被调用来进行文本的发射。
+   */
+  let emitToken = emitTokenText;
 
+  /** 该函数由于节点的缘故，在被发射的代码中的函数或类中，会在启用词法作用域前被调用
+   * @param scopeDeclaration 启动词法作用域的节点
+   * @param scopeName 可选的作用域的名称，默认从节点声明中推导
+   */
+  let scopeEmitStart = function(scopeDeclaration: Node, scopeName?: string) {};
 
+  /** 出了作用域后调用 */
+  let scopeEmitEnd = function() {};
 
+  /** 会被编码的 Sourcemap 数据 */
+  let sourceMapData: SourceMapData;
 
+  if (compilerOptions.sourceMap || compilerOptions.inlineSourceMap) {
+    initializeEmitterWithSourceMaps();
+  }
 
+  if (root) {
+    // 不要直接调用 emit，那样不会设置 currentSourceFile
+    emitSourceFile(root);
+  } else {
+    forEach(host.getSourceFiles(), sourceFile => {
+      if (!isExternalModuleOrDeclarationFile(sourceFile)) {
+        emitSourceFile(sourceFile);
+      }
+    });
+  }
 
+  writeLine();
+  writeEmittedFiles(writer.getText(), /*writeByteOrderMark*/ compilerOptions.emitBOM);
+  return;
 
+  /// 一批本地函数
+}
+```
 
+它主要设置了一批本地变量和函数（这些函数构成 `emitter.ts` 的大部分内容），接着交给本地函数 `emitSourceFile` 发射文本。`emitSourceFile` 函数设置 `currentSourceFile` 然后交给本地函数 `emit` 去处理。
+```ts
+function emitSourceFile(sourceFile: SourceFile): void {
+  currentSourceFile = sourceFile;
+  exportFunctionForFile = undefined;
+  emit(sourceFile);
+}
+```
 
+`emit` 函数处理 **注释** 和 **实际 JavaScript** 的发射。**实际 JavaScript** 的发射是 emitJavaScriptWorker 函数的工作。
 
+##### `emitJavaScriptWorker`
 
+完整的函数：
+```ts
+function emitJavaScriptWorker(node: Node) {
+  // 检查节点是否可以忽略 ScriptTarget 发射
+  switch (node.kind) {
+    case SyntaxKind.Identifier:
+      return emitIdentifier(<Identifier>node);
+    case SyntaxKind.Parameter:
+      return emitParameter(<ParameterDeclaration>node);
+    case SyntaxKind.MethodDeclaration:
+    case SyntaxKind.MethodSignature:
+      return emitMethod(<MethodDeclaration>node);
+    case SyntaxKind.GetAccessor:
+    case SyntaxKind.SetAccessor:
+      return emitAccessor(<AccessorDeclaration>node);
+    case SyntaxKind.ThisKeyword:
+      return emitThis(node);
+    case SyntaxKind.SuperKeyword:
+      return emitSuper(node);
+    case SyntaxKind.NullKeyword:
+      return write('null');
+    case SyntaxKind.TrueKeyword:
+      return write('true');
+    case SyntaxKind.FalseKeyword:
+      return write('false');
+    case SyntaxKind.NumericLiteral:
+    case SyntaxKind.StringLiteral:
+    case SyntaxKind.RegularExpressionLiteral:
+    case SyntaxKind.NoSubstitutionTemplateLiteral:
+    case SyntaxKind.TemplateHead:
+    case SyntaxKind.TemplateMiddle:
+    case SyntaxKind.TemplateTail:
+      return emitLiteral(<LiteralExpression>node);
+    case SyntaxKind.TemplateExpression:
+      return emitTemplateExpression(<TemplateExpression>node);
+    case SyntaxKind.TemplateSpan:
+      return emitTemplateSpan(<TemplateSpan>node);
+    case SyntaxKind.JsxElement:
+    case SyntaxKind.JsxSelfClosingElement:
+      return emitJsxElement(<JsxElement | JsxSelfClosingElement>node);
+    case SyntaxKind.JsxText:
+      return emitJsxText(<JsxText>node);
+    case SyntaxKind.JsxExpression:
+      return emitJsxExpression(<JsxExpression>node);
+    case SyntaxKind.QualifiedName:
+      return emitQualifiedName(<QualifiedName>node);
+    case SyntaxKind.ObjectBindingPattern:
+      return emitObjectBindingPattern(<BindingPattern>node);
+    case SyntaxKind.ArrayBindingPattern:
+      return emitArrayBindingPattern(<BindingPattern>node);
+    case SyntaxKind.BindingElement:
+      return emitBindingElement(<BindingElement>node);
+    case SyntaxKind.ArrayLiteralExpression:
+      return emitArrayLiteral(<ArrayLiteralExpression>node);
+    case SyntaxKind.ObjectLiteralExpression:
+      return emitObjectLiteral(<ObjectLiteralExpression>node);
+    case SyntaxKind.PropertyAssignment:
+      return emitPropertyAssignment(<PropertyDeclaration>node);
+    case SyntaxKind.ShorthandPropertyAssignment:
+      return emitShorthandPropertyAssignment(<ShorthandPropertyAssignment>node);
+    case SyntaxKind.ComputedPropertyName:
+      return emitComputedPropertyName(<ComputedPropertyName>node);
+    case SyntaxKind.PropertyAccessExpression:
+      return emitPropertyAccess(<PropertyAccessExpression>node);
+    case SyntaxKind.ElementAccessExpression:
+      return emitIndexedAccess(<ElementAccessExpression>node);
+    case SyntaxKind.CallExpression:
+      return emitCallExpression(<CallExpression>node);
+    case SyntaxKind.NewExpression:
+      return emitNewExpression(<NewExpression>node);
+    case SyntaxKind.TaggedTemplateExpression:
+      return emitTaggedTemplateExpression(<TaggedTemplateExpression>node);
+    case SyntaxKind.TypeAssertionExpression:
+      return emit((<TypeAssertion>node).expression);
+    case SyntaxKind.AsExpression:
+      return emit((<AsExpression>node).expression);
+    case SyntaxKind.ParenthesizedExpression:
+      return emitParenExpression(<ParenthesizedExpression>node);
+    case SyntaxKind.FunctionDeclaration:
+    case SyntaxKind.FunctionExpression:
+    case SyntaxKind.ArrowFunction:
+      return emitFunctionDeclaration(<FunctionLikeDeclaration>node);
+    case SyntaxKind.DeleteExpression:
+      return emitDeleteExpression(<DeleteExpression>node);
+    case SyntaxKind.TypeOfExpression:
+      return emitTypeOfExpression(<TypeOfExpression>node);
+    case SyntaxKind.VoidExpression:
+      return emitVoidExpression(<VoidExpression>node);
+    case SyntaxKind.AwaitExpression:
+      return emitAwaitExpression(<AwaitExpression>node);
+    case SyntaxKind.PrefixUnaryExpression:
+      return emitPrefixUnaryExpression(<PrefixUnaryExpression>node);
+    case SyntaxKind.PostfixUnaryExpression:
+      return emitPostfixUnaryExpression(<PostfixUnaryExpression>node);
+    case SyntaxKind.BinaryExpression:
+      return emitBinaryExpression(<BinaryExpression>node);
+    case SyntaxKind.ConditionalExpression:
+      return emitConditionalExpression(<ConditionalExpression>node);
+    case SyntaxKind.SpreadElementExpression:
+      return emitSpreadElementExpression(<SpreadElementExpression>node);
+    case SyntaxKind.YieldExpression:
+      return emitYieldExpression(<YieldExpression>node);
+    case SyntaxKind.OmittedExpression:
+      return;
+    case SyntaxKind.Block:
+    case SyntaxKind.ModuleBlock:
+      return emitBlock(<Block>node);
+    case SyntaxKind.VariableStatement:
+      return emitVariableStatement(<VariableStatement>node);
+    case SyntaxKind.EmptyStatement:
+      return write(';');
+    case SyntaxKind.ExpressionStatement:
+      return emitExpressionStatement(<ExpressionStatement>node);
+    case SyntaxKind.IfStatement:
+      return emitIfStatement(<IfStatement>node);
+    case SyntaxKind.DoStatement:
+      return emitDoStatement(<DoStatement>node);
+    case SyntaxKind.WhileStatement:
+      return emitWhileStatement(<WhileStatement>node);
+    case SyntaxKind.ForStatement:
+      return emitForStatement(<ForStatement>node);
+    case SyntaxKind.ForOfStatement:
+    case SyntaxKind.ForInStatement:
+      return emitForInOrForOfStatement(<ForInStatement>node);
+    case SyntaxKind.ContinueStatement:
+    case SyntaxKind.BreakStatement:
+      return emitBreakOrContinueStatement(<BreakOrContinueStatement>node);
+    case SyntaxKind.ReturnStatement:
+      return emitReturnStatement(<ReturnStatement>node);
+    case SyntaxKind.WithStatement:
+      return emitWithStatement(<WithStatement>node);
+    case SyntaxKind.SwitchStatement:
+      return emitSwitchStatement(<SwitchStatement>node);
+    case SyntaxKind.CaseClause:
+    case SyntaxKind.DefaultClause:
+      return emitCaseOrDefaultClause(<CaseOrDefaultClause>node);
+    case SyntaxKind.LabeledStatement:
+      return emitLabelledStatement(<LabeledStatement>node);
+    case SyntaxKind.ThrowStatement:
+      return emitThrowStatement(<ThrowStatement>node);
+    case SyntaxKind.TryStatement:
+      return emitTryStatement(<TryStatement>node);
+    case SyntaxKind.CatchClause:
+      return emitCatchClause(<CatchClause>node);
+    case SyntaxKind.DebuggerStatement:
+      return emitDebuggerStatement(node);
+    case SyntaxKind.VariableDeclaration:
+      return emitVariableDeclaration(<VariableDeclaration>node);
+    case SyntaxKind.ClassExpression:
+      return emitClassExpression(<ClassExpression>node);
+    case SyntaxKind.ClassDeclaration:
+      return emitClassDeclaration(<ClassDeclaration>node);
+    case SyntaxKind.InterfaceDeclaration:
+      return emitInterfaceDeclaration(<InterfaceDeclaration>node);
+    case SyntaxKind.EnumDeclaration:
+      return emitEnumDeclaration(<EnumDeclaration>node);
+    case SyntaxKind.EnumMember:
+      return emitEnumMember(<EnumMember>node);
+    case SyntaxKind.ModuleDeclaration:
+      return emitModuleDeclaration(<ModuleDeclaration>node);
+    case SyntaxKind.ImportDeclaration:
+      return emitImportDeclaration(<ImportDeclaration>node);
+    case SyntaxKind.ImportEqualsDeclaration:
+      return emitImportEqualsDeclaration(<ImportEqualsDeclaration>node);
+    case SyntaxKind.ExportDeclaration:
+      return emitExportDeclaration(<ExportDeclaration>node);
+    case SyntaxKind.ExportAssignment:
+      return emitExportAssignment(<ExportAssignment>node);
+    case SyntaxKind.SourceFile:
+      return emitSourceFileNode(<SourceFile>node);
+  }
+}
+```
 
+通过简单地调用相应的 `emitXXX` 函数来完成递归，例如 `emitFunctionDeclaration`
+```ts
+function emitFunctionDeclaration(node: FunctionLikeDeclaration) {
+  if (nodeIsMissing(node.body)) {
+    return emitOnlyPinnedOrTripleSlashComments(node);
+  }
 
+  if (node.kind !== SyntaxKind.MethodDeclaration && node.kind !== SyntaxKind.MethodSignature) {
+    // 会把注释当做方法声明的一部分去发射。
+    emitLeadingComments(node);
+  }
 
+  // 目标为 es6 之前时，使用 function 关键字来发射类函数（functions-like）声明，包括箭头函数
+  // 目标为 es6 时，可以发射原生的 ES6 箭头函数，并使用宽箭头代替 function 关键字.
+  if (!shouldEmitAsArrowFunction(node)) {
+    if (isES6ExportedDeclaration(node)) {
+      write('export ');
+      if (node.flags & NodeFlags.Default) {
+        write('default ');
+      }
+    }
 
+    write('function');
+    if (languageVersion >= ScriptTarget.ES6 && node.asteriskToken) {
+      write('*');
+    }
+    write(' ');
+  }
 
+  if (shouldEmitFunctionName(node)) {
+    emitDeclarationName(node);
+  }
 
+  emitSignatureAndBody(node);
+  if (
+    languageVersion < ScriptTarget.ES6 &&
+    node.kind === SyntaxKind.FunctionDeclaration &&
+    node.parent === currentSourceFile &&
+    node.name
+  ) {
+    emitExportMemberAssignments((<FunctionDeclaration>node).name);
+  }
+  if (node.kind !== SyntaxKind.MethodDeclaration && node.kind !== SyntaxKind.MethodSignature) {
+    emitTrailingComments(node);
+  }
+}
+```
 
+#### 发射器源映射（SourceMaps）
 
+如前所述 `emitter.ts` 中的大部分代码是函数 `emitJavaScript`（我们之前展示过该函数的初始化例程）。 它主要是设置一批本地变量并交给 `emitSourceFile` 处理。下面我们再看一遍这个函数，这次我们重点关注 `SourceMap` 的部分：
+```ts
+function emitJavaScript(jsFilePath: string, root?: SourceFile) {
+
+    // 无关代码 ........... 已移除
+    let writeComment = writeCommentRange;
+
+    /** 将发射的输出写到磁盘上 */
+    let writeEmittedFiles = writeJavaScriptFile;
+
+    /** 发射一个节点 */
+    let emit = emitNodeWithoutSourceMap;
+
+    /** 节点发射前调用 */
+    let emitStart = function (node: Node) { };
+
+    /** 节点发射完成后调用 */
+    let emitEnd = function (node: Node) { };
+
+    /** 从 startPos 位置开始，为指定的 token 发射文本。默认写入的文本由 tokenKind 提供，
+      * 但是如果提供了可选的 emitFn 回调，将使用该回调来代替默认方式发射文本。
+      * @param tokenKind 要搜索并发射的 token 的类别
+      * @param startPos 源码中搜索 token 的起始位置
+      * @param emitFn 如果给出，会被调用来进行文本的发射。*/
+    let emitToken = emitTokenText;
+
+    /** 该函数因为节点，会在发射的代码中于函数或类中启用词法作用域前调用
+      * @param scopeDeclaration 启动词法作用域的节点
+      * @param scopeName 可选的作用域的名称，而不是从节点声明中推导
+      */
+    let scopeEmitStart = function(scopeDeclaration: Node, scopeName?: string) { };
+
+    /** 出了作用域后调用 */
+    let scopeEmitEnd = function() { };
+
+    /** 会被编码的 Sourcemap 数据 */
+    let sourceMapData: SourceMapData;
+
+    if (compilerOptions.sourceMap || compilerOptions.inlineSourceMap) {
+        initializeEmitterWithSourceMaps();
+    }
+
+    if (root) {
+        // 不要直接调用 emit，那样不会设置 currentSourceFile
+        emitSourceFile(root);
+    }
+    else {
+        forEach(host.getSourceFiles(), sourceFile => {
+            if (!isExternalModuleOrDeclarationFile(sourceFile)) {
+                emitSourceFile(sourceFile);
+            }
+        });
+    }
+
+    writeLine();
+    writeEmittedFiles(writer.getText(), /*writeByteOrderMark*/ compilerOptions.emitBOM);
+    return;
+```
+
+重要的函数调用： `initializeEmitterWithSourceMaps`，该函数是 `emitJavaScript` 的本地函数，它覆盖了部分已定义的本地函数。 覆盖的函数可以在 `initalizeEmitterWithSourceMap` 的底部找到：
+```ts
+// `initializeEmitterWithSourceMaps` 函数的最后部分
+
+writeEmittedFiles = writeJavaScriptAndSourceMapFile;
+emit = emitNodeWithSourceMap;
+emitStart = recordEmitNodeStartSpan;
+emitEnd = recordEmitNodeEndSpan;
+emitToken = writeTextWithSpanRecord;
+scopeEmitStart = recordScopeNameOfNode;
+scopeEmitEnd = recordScopeNameEnd;
+writeComment = writeCommentRangeWithMap;
+```
+
+就是说大部分的发射器代码不关心 `SourceMap`，它们以相同的方式使用这些（带或不带 SourceMap 的）本地函数。
 
 <cite>[-- 《深入理解 TypeScript》](https://jkchao.github.io/typescript-book-chinese/project/compilationContext.html#tsconfig-json)</cite>
