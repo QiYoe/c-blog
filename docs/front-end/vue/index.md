@@ -604,6 +604,943 @@ app.component('custom-input', {
 
 ## 深入组件
 
+### Prop 类型
+
+1. 数组
+```js
+props: ['title', 'likes', 'isPublished', 'commentIds', 'author']
+```
+
+2. 对象: 这不仅为你的组件提供了文档，还会在它们遇到错误的类型时从浏览器的 JavaScript 控制台提示用户。
+```js
+function Person(firstName, lastName) {
+  this.firstName = firstName
+  this.lastName = lastName
+}
+
+props: {
+  // 基础的类型检查 (`null` 和 `undefined` 会通过任何类型验证)
+  title: String,
+  likes: Number,
+  isPublished: Boolean,
+  commentIds: Array,
+  author: Object,
+  callback: Function,
+  contactsPromise: Promise, // 或任何其他构造函数
+  propO: Person,  // 自定义构造函数  用于验证 propO prop 的值是否是通过 new Person 创建的。
+  propA: Date,
+  propB: [String, Number],
+  // 必填的字符串
+  propC: {
+    type: String,
+    required: true
+  },
+  // 带有默认值的数字
+  propD: {
+    type: Number,
+    default: 100
+  },
+  // 带有默认值的对象
+  propE: {
+    type: Object,
+    // 对象或数组默认值必须从一个工厂函数获取
+    default() {
+      return { message: 'hello' }
+    }
+  },
+  // 自定义验证函数
+  propF: {
+    validator(value) {
+      // 这个值必须匹配下列字符串中的一个
+      return ['success', 'warning', 'danger'].includes(value)
+    }
+  },
+  // 具有默认值的函数
+  propG: {
+    type: Function,
+    // 与对象或数组默认值不同，这不是一个工厂函数 —— 这是一个用作默认值的函数
+    default() {
+      return 'Default function'
+    }
+  }
+}
+```
+
+:::tip
+子组件里不要修改 prop 的值, 因为这会修改父组件状态, 从而导致你的应用的数据流难以理解
+
+注意那些 prop 会在一个组件实例创建之前进行验证，所以实例的 property (如 `data`、`computed` 等) 在 `default` 或 `validator` 函数中是不可用的。
+
+prop 值为驼峰命名法
+HTML 中为短横线命名法
+:::
+
+### 非 Prop 的 Attribute
+
+一个非 prop 的 attribute 是指传向一个组件，但是该组件并没有相应 [props](#prop-类型) 或 emits 定义的 attribute。常见的示例包括 `class`、`style` 和 `id` 属性。
+
+#### Attribute 继承
+
+当组件返回单个根节点时，非 prop attribute 将自动添加到根节点的 attribute 中。例如，在 `<date-picker>` 组件的实例中：
+```js
+app.component('date-picker', {
+  template: `
+    <div class="date-picker">
+      <input type="datetime-local" />
+    </div>
+  `
+})
+```
+
+如果我们需要通过 `data-status` attribute 定义 `<date-picker>` 组件的状态，它将应用于根节点 (即 `div.date-picker`)。
+```html
+<!-- 具有非prop attribute的Date-picker组件-->
+<date-picker data-status="activated"></date-picker>
+
+<!-- 渲染 date-picker 组件 -->
+<div class="date-picker" data-status="activated">
+  <input type="datetime-local" />
+</div>
+```
+
+同样的规则也适用于事件监听器：
+```html
+<date-picker @change="submitChange"></date-picker>
+```
+```js
+app.component('date-picker', {
+  created() {
+    console.log(this.$attrs) // { onChange: () => {}  }
+  }
+})
+```
+
+当有一个具有 `change` 事件的 HTML 元素将作为 `date-picker` 的根元素时，这可能会有帮助。
+```js
+app.component('date-picker', {
+  template: `
+    <select>
+      <option value="1">Yesterday</option>
+      <option value="2">Today</option>
+      <option value="3">Tomorrow</option>
+    </select>
+  `
+})
+```
+
+在这种情况下，`change` 事件监听器从父组件传递到子组件，它将在原生 `select` 的 `change` 事件上触发。我们不需要显式地从 `date-picker` 发出事件：
+```html
+<div id="date-picker" class="demo">
+  <date-picker @change="showChange"></date-picker>
+</div>
+```
+```js
+const app = Vue.createApp({
+  methods: {
+    showChange(event) {
+      console.log(event.target.value) // 将记录所选选项的值
+    }
+  }
+})
+```
+
+#### 禁用 Attribute 继承
+
+如果你不希望组件的根元素继承 attribute，你可以在组件的选项中设置 `inheritAttrs: false`。例如：
+
+禁用 attribute 继承的常见情况是需要将 attribute 应用于根节点之外的其他元素。
+
+通过将 `inheritAttrs` 选项设置为 `false`，你可以访问组件的 `$attrs` property，该 property 包括组件 `props` 和 `emits` property 中未包含的所有属性 (例如，`class`、`style`、`v-on` 监听器等)。
+
+使用上一节中的 date-picker 组件示例，如果需要将所有非 prop attribute 应用于 `input` 元素而不是根 `div` 元素，则可以使用 `v-bind` 缩写来完成。
+```js
+app.component('date-picker', {
+  inheritAttrs: false,
+  template: `
+    <div class="date-picker">
+      <input type="datetime-local" v-bind="$attrs" />
+    </div>
+  `
+})
+```
+
+有了这个新配置，`data-status` attribute 将应用于 `input` 元素！
+```html
+<!-- Date-picker 组件 使用非 prop attribute -->
+<date-picker data-status="activated"></date-picker>
+
+<!-- 渲染 date-picker 组件 -->
+<div class="date-picker">
+  <input type="datetime-local" data-status="activated" />
+</div>
+```
+
+#### 多个根节点上的 Attribute 继承
+
+与单个根节点组件不同，具有多个根节点的组件不具有自动 attribute [fallthrough (隐式贯穿)](https://en.wiktionary.org/wiki/fall-through#English) 行为。如果未显式绑定 `$attrs`，将发出运行时警告。
+```html
+<custom-layout id="custom-layout" @click="changeValue"></custom-layout>
+```
+```js
+// 这将发出警告
+app.component('custom-layout', {
+  template: `
+    <header>...</header>
+    <main>...</main>
+    <footer>...</footer>
+  `
+})
+
+// 没有警告，$attrs被传递到<main>元素
+app.component('custom-layout', {
+  template: `
+    <header>...</header>
+    <main v-bind="$attrs">...</main>
+    <footer>...</footer>
+  `
+})
+```
+
+### 自定义事件
+
+#### 事件名
+
+与组件和 prop 一样，事件名提供了自动的大小写转换。如果用驼峰命名的子组件中触发一个事件，你将可以在父组件中添加一个 kebab-case (短横线分隔命名) 的监听器。
+```js
+this.$emit('myEvent')
+```
+```html
+<my-component @my-event="doSomething"></my-component>
+```
+
+与 props 的命名一样，当你使用 DOM 模板时，我们建议使用 kebab-case 事件监听器。如果你使用的是字符串模板，这个限制就不适用。
+
+#### 定义自定义事件
+
+可以通过 `emits` 选项在组件上定义发出的事件。
+```js
+app.component('custom-form', {
+  emits: ['inFocus', 'submit']
+})
+```
+
+当在 `emits` 选项中定义了原生事件 (如 `click`) 时，将使用组件中的事件**替代**原生事件侦听器。
+
+:::tip
+建议定义所有发出的事件，以便更好地记录组件应该如何工作。
+:::
+
+#### 验证抛出的事件
+
+与 prop 类型验证类似，如果使用对象语法而不是数组语法定义发出的事件，则可以验证它。
+
+要添加验证，将为事件分配一个函数，该函数接收传递给 `$emit` 调用的参数，并返回一个布尔值以指示事件是否有效。
+```js
+app.component('custom-form', {
+  emits: {
+    // 没有验证
+    click: null,
+
+    // 验证submit 事件
+    submit: ({ email, password }) => {
+      if (email && password) {
+        return true
+      } else {
+        console.warn('Invalid submit event payload!')
+        return false
+      }
+    }
+  },
+  methods: {
+    submitForm(email, password) {
+      this.$emit('submit', { email, password })
+    }
+  }
+})
+```
+
+#### `v-model` 参数
+
+默认情况下，组件上的 `v-model` 使用 `modelValue` 作为 prop 和 `update:modelValue` 作为事件。我们可以通过向 `v-model` 传递参数来修改这些名称：
+```html
+<my-component v-model:title="bookTitle"></my-component>
+```
+
+在本例中，子组件将需要一个 `title` prop 并发出 `update:title` 要同步的事件：
+```js
+app.component('my-component', {
+  props: {
+    title: String
+  },
+  emits: ['update:title'],
+  template: `
+    <input
+      type="text"
+      :value="title"
+      @input="$emit('update:title', $event.target.value)">
+  `
+})
+```
+```html
+<my-component v-model:title="bookTitle"></my-component>
+```
+
+#### 多个 `v-model` 绑定
+
+通过利用以特定 prop 和事件为目标的能力，正如我们之前在 v-model 参数中所学的那样，我们现在可以在单个组件实例上创建多个 v-model 绑定。
+
+每个 v-model 将同步到不同的 prop，而不需要在组件中添加额外的选项：
+```html
+<user-name
+  v-model:first-name="firstName"
+  v-model:last-name="lastName"
+></user-name>
+```
+```js
+app.component('user-name', {
+  props: {
+    firstName: String,
+    lastName: String
+  },
+  emits: ['update:firstName', 'update:lastName'],
+  template: `
+    <input 
+      type="text"
+      :value="firstName"
+      @input="$emit('update:firstName', $event.target.value)">
+
+    <input
+      type="text"
+      :value="lastName"
+      @input="$emit('update:lastName', $event.target.value)">
+  `
+})
+```
+
+#### 处理 `v-model` 修饰符
+
+当我们学习表单输入绑定时，我们看到 `v-model` 有[内置修饰符](#表单输入绑定)——`.trim`、`.number` 和 `.lazy`。但是，在某些情况下，你可能还需要添加自己的自定义修饰符。
+
+让我们创建一个示例自定义修饰符 `capitalize`，它将 `v-model` 绑定提供的字符串的第一个字母大写。
+
+添加到组件 `v-model` 的修饰符将通过 `modelModifiers` prop 提供给组件。在下面的示例中，我们创建了一个组件，其中包含默认为空对象的 `modelModifiers` prop。
+
+请注意，当组件的 `created` 生命周期钩子触发时，`modelModifiers` prop 会包含 `capitalize`，且其值为 `true`——因为 `capitalize` 被设置在了写为 `v-model.capitalize="myText"` 的 `v-model` 绑定上。
+```html
+<my-component v-model.capitalize="myText"></my-component>
+```
+```js
+app.component('my-component', {
+  props: {
+    modelValue: String,
+    modelModifiers: {
+      default: () => ({})
+    }
+  },
+  emits: ['update:modelValue'],
+  template: `
+    <input type="text"
+      :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)">
+  `,
+  created() {
+    console.log(this.modelModifiers) // { capitalize: true }
+  }
+})
+```
+
+现在我们已经设置了 prop，我们可以检查 `modelModifiers` 对象键并编写一个处理器来更改发出的值。在下面的代码中，每当 `<input/>` 元素触发 `input` 事件时，我们都将字符串大写。
+```html
+<div id="app">
+  <my-component v-model.capitalize="myText"></my-component>
+  {{ myText }}
+</div>
+```
+```js
+const app = Vue.createApp({
+  data() {
+    return {
+      myText: ''
+    }
+  }
+})
+
+app.component('my-component', {
+  props: {
+    modelValue: String,
+    modelModifiers: {
+      default: () => ({})
+    }
+  },
+  emits: ['update:modelValue'],
+  methods: {
+    emitValue(e) {
+      let value = e.target.value
+      if (this.modelModifiers.capitalize) {
+        value = value.charAt(0).toUpperCase() + value.slice(1)
+      }
+      this.$emit('update:modelValue', value)
+    }
+  },
+  template: `<input
+    type="text"
+    :value="modelValue"
+    @input="emitValue">`
+})
+
+app.mount('#app')
+```
+
+对于带参数的 `v-model` 绑定，生成的 prop 名称将为 `arg + "Modifiers"`：
+```html
+<my-component v-model:description.capitalize="myText"></my-component>
+```
+```js
+app.component('my-component', {
+  props: ['description', 'descriptionModifiers'],
+  emits: ['update:description'],
+  template: `
+    <input type="text"
+      :value="description"
+      @input="$emit('update:description', $event.target.value)">
+  `,
+  created() {
+    console.log(this.descriptionModifiers) // { capitalize: true }
+  }
+})
+```
+
+### 插槽
+
+#### 插槽内容
+
+它允许你像这样合成组件：
+```html
+<todo-button>
+  Add todo
+</todo-button>
+```
+
+然后在 `<todo-button>` 的模板中，你可能有：
+```html
+<!-- todo-button 组件模板 -->
+<button class="btn-primary">
+  <slot></slot>
+</button>
+```
+
+当组件渲染的时候，`<slot></slot>` 将会被替换为“Add Todo”。
+```html
+<!-- 渲染 HTML -->
+<button class="btn-primary">
+  Add todo
+</button>
+```
+
+不过，字符串只是开始！插槽还可以包含任何模板代码，包括 HTML：
+```html
+<todo-button>
+  <!-- 添加一个Font Awesome 图标 -->
+  <i class="fas fa-plus"></i>
+  Add todo
+</todo-button>
+```
+
+或其他组件
+```hml
+<todo-button>
+    <!-- 添加一个图标的组件 -->
+  <font-awesome-icon name="plus"></font-awesome-icon>
+  Add todo
+</todo-button>
+```
+
+如果 `<todo-button>` 的 template 中没有包含一个 `<slot>` 元素，则该组件起始标签和结束标签之间的任何内容都会被抛弃
+```html
+<!-- todo-button 组件模板 -->
+
+<button class="btn-primary">
+  Create a new item
+</button>
+```
+```html
+<todo-button>
+  <!-- 以下文本不会渲染 -->
+  Add todo
+</todo-button>
+```
+
+:::danger
+父级模板里的所有内容都是在父级作用域中编译的；子模板里的所有内容都是在子作用域中编译的。
+:::
+
+#### 备用内容
+
+有时为一个插槽设置具体的备用 (也就是默认的) 内容是很有用的，它只会在没有提供内容的时候被渲染。例如在一个 `<submit-button>` 组件中：
+```html
+<button type="submit">
+  <slot></slot>
+</button>
+```
+
+我们可能希望这个 `<button>` 内绝大多数情况下都渲染文本“Submit”。为了将“Submit”作为备用内容，我们可以将它放在 `<slot>` 标签内：
+```html
+<button type="submit">
+  <slot>Submit</slot>
+</button>
+```
+
+现在当我们在一个父级组件中使用 `<submit-button>` 并且不提供任何插槽内容时：
+```html
+<submit-button></submit-button>
+```
+
+备用内容“Submit”将会被渲染：
+```html
+<button type="submit">
+  Submit
+</button>
+```
+
+但是如果我们提供内容：
+```html
+<submit-button>
+  Save
+</submit-button>
+```
+
+则这个提供的内容将会被渲染从而取代备用内容：
+```html
+<button type="submit">
+  Save
+</button>
+```
+
+#### 具名插槽
+
+有时我们需要多个插槽。例如对于一个带有如下模板的 `<base-layout>` 组件：
+```html
+<div class="container">
+  <header>
+    <!-- 我们希望把页头放这里 -->
+  </header>
+  <main>
+    <!-- 我们希望把主要内容放这里 -->
+  </main>
+  <footer>
+    <!-- 我们希望把页脚放这里 -->
+  </footer>
+</div>
+```
+
+对于这样的情况，`<slot>` 元素有一个特殊的 attribute：`name`。这个 attribute 可以用来定义额外的插槽：
+```html
+<div class="container">
+  <header>
+    <slot name="header"></slot>
+  </header>
+  <main>
+    <slot></slot>
+  </main>
+  <footer>
+    <slot name="footer"></slot>
+  </footer>
+</div>
+```
+
+一个不带 `name` 的 `<slot>` 出口会带有隐含的名字“default”。
+
+在向具名插槽提供内容的时候，我们可以在一个 `<template>` 元素上使用 `v-slot` 指令，并以 `v-slot` 的参数的形式提供其名称：
+```html
+<base-layout>
+  <template v-slot:header>
+    <h1>Here might be a page title</h1>
+  </template>
+
+  <template v-slot:default>
+    <p>A paragraph for the main content.</p>
+    <p>And another one.</p>
+  </template>
+
+  <template v-slot:footer>
+    <p>Here's some contact info</p>
+  </template>
+</base-layout>
+```
+
+现在 `<template>` 元素中的所有内容都将会被传入相应的插槽。
+
+渲染的 HTML 将会是：
+```html
+<div class="container">
+  <header>
+    <h1>Here might be a page title</h1>
+  </header>
+  <main>
+    <p>A paragraph for the main content.</p>
+    <p>And another one.</p>
+  </main>
+  <footer>
+    <p>Here's some contact info</p>
+  </footer>
+</div>
+```
+
+注意，`v-slot` 只能添加在 `<template>` 上 ([只有一种例外情况](#独占默认插槽的缩写语法))
+
+### 作用域插槽
+
+有时让插槽内容能够访问子组件中才有的数据是很有用的。当一个组件被用来渲染一个项目数组时，这是一个常见的情况，我们希望能够自定义每个项目的渲染方式。
+
+例如，我们有一个组件，包含 todo-items 的列表。
+```js
+app.component('todo-list', {
+  data() {
+    return {
+      items: ['Feed a cat', 'Buy milk']
+    }
+  },
+  template: `
+    <ul>
+      <li v-for="(item, index) in items">
+        {{ item }}
+      </li>
+    </ul>
+  `
+})
+```
+
+要使 `item` 可用于父级提供的插槽内容，我们可以添加一个 `<slot>` 元素并将其作为一个 attribute 绑定：
+```html
+<ul>
+  <li v-for="( item, index ) in items">
+    <slot :item="item" :index="index" :another-attribute="anotherAttribute"></slot>
+  </li>
+</ul>
+```
+
+绑定在 `<slot>` 元素上的 attribute 被称为**插槽 prop**。现在在父级作用域中，我们可以使用带值的 `v-slot` 来定义我们提供的插槽 prop 的名字：
+```html
+<todo-list>
+  <template v-slot:default="slotProps">
+    <i class="fas fa-check"></i>
+    <span class="green">{{ slotProps.item }}</span>
+  </template>
+</todo-list>
+```
+
+在这个例子中，我们选择将包含所有插槽 prop 的对象命名为 `slotProps`，但你也可以使用任意你喜欢的名字。
+
+#### 独占默认插槽的缩写语法
+
+在上述情况下，当被提供的内容只有默认插槽时，组件的标签才可以被当作插槽的模板来使用。这样我们就可以把 `v-slot` 直接用在组件上：
+```html
+<todo-list v-slot:default="slotProps">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ slotProps.item }}</span>
+</todo-list>
+```
+
+这种写法还可以更简单。就像假定未指明的内容对应默认插槽一样，不带参数的 `v-slot` 被假定对应默认插槽：
+```html
+<todo-list v-slot="slotProps">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ slotProps.item }}</span>
+</todo-list>
+```
+
+注意默认插槽的缩写语法不能和具名插槽混用，因为它会导致作用域不明确：
+```html
+<!-- 无效，会导致警告 -->
+<todo-list v-slot="slotProps">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ slotProps.item }}</span>
+  
+  <template v-slot:other="otherSlotProps">
+    slotProps is NOT available here
+  </template>
+</todo-list>
+```
+
+只要出现多个插槽，请始终为所有的插槽使用完整的基于 `<template>` 的语法：
+```html
+<todo-list>
+  <template v-slot:default="slotProps">
+    <i class="fas fa-check"></i>
+    <span class="green">{{ slotProps.item }}</span>
+  </template>
+
+  <template v-slot:other="otherSlotProps">
+    ...
+  </template>
+</todo-list>
+```
+
+#### 解构插槽 Prop
+
+作用域插槽的内部工作原理是将你的插槽内容包括在一个传入单个参数的函数里：
+```js
+function (slotProps) {
+  // ... 插槽内容 ...
+}
+```
+
+这意味着 `v-slot` 的值实际上可以是任何能够作为函数定义中的参数的 JavaScript 表达式。你也可以使用 ES2015 解构来传入具体的插槽 prop，如下：
+```html
+<todo-list v-slot="{ item }">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ item }}</span>
+</todo-list>
+```
+
+这样可以使模板更简洁，尤其是在该插槽提供了多个 prop 的时候。它同样开启了 prop 重命名等其它可能，例如将 `item` 重命名为 `todo`：
+```html
+<todo-list v-slot="{ item: todo }">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ todo }}</span>
+</todo-list>
+```
+
+你甚至可以定义备用内容，用于插槽 prop 是 undefined 的情形：
+```html
+<todo-list v-slot="{ item = 'Placeholder' }">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ item }}</span>
+</todo-list>
+```
+
+### 动态插槽名
+
+动态指令参数也可以用在 `v-slot` 上，来定义动态的插槽名：
+```html
+<base-layout>
+  <template v-slot:[dynamicSlotName]>
+    ...
+  </template>
+</base-layout>
+```
+
+### 具名插槽的缩写
+
+跟 `v-on` 和 `v-bind` 一样，`v-slot` 也有缩写，即把参数之前的所有内容 (`v-slot:`) 替换为字符 `#`。例如 `v-slot:header` 可以被重写为 `#header`：
+```html
+<base-layout>
+  <template #header>
+    <h1>Here might be a page title</h1>
+  </template>
+
+  <template #default>
+    <p>A paragraph for the main content.</p>
+    <p>And another one.</p>
+  </template>
+
+  <template #footer>
+    <p>Here's some contact info</p>
+  </template>
+</base-layout>
+```
+
+然而，和其它指令一样，该缩写只在其有参数的时候才可用。这意味着以下语法是无效的：
+```html
+<!-- This will trigger a warning -->
+
+<todo-list #="{ item }">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ item }}</span>
+</todo-list>
+```
+
+如果你希望使用缩写的话，你必须始终以明确插槽名取而代之：
+```html
+<todo-list #default="{ item }">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ item }}</span>
+</todo-list>
+```
+
+### Provide / Inject
+
+```js
+const app = Vue.createApp({})
+
+app.component('todo-list', {
+  data() {
+    return {
+      todos: ['Feed a cat', 'Buy tickets']
+    }
+  },
+  provide: {
+    user: 'John Doe'
+  },
+  template: `
+    <div>
+      {{ todos.length }}
+      <!-- 模板的其余部分 -->
+    </div>
+  `
+})
+
+app.component('todo-list-statistics', {
+  inject: ['user'],
+  created() {
+    console.log(`Injected property: ${this.user}`) // > 注入 property: John Doe
+  }
+})
+```
+
+要访问组件实例 property，我们需要将 `provide` 转换为返回对象的函数
+```js
+app.component('todo-list', {
+  data() {
+    return {
+      todos: ['Feed a cat', 'Buy tickets']
+    }
+  },
+  provide() {
+    return {
+      todoLength: this.todos.length
+    }
+  },
+  template: `
+    ...
+  `
+})
+```
+
+默认情况下，`provide/inject` 绑定并不是响应式的。我们可以通过传递一个 `ref` property 或 `reactive` 对象给 `provide` 来改变这种行为。在我们的例子中，如果我们想对祖先组件中的更改做出响应，我们需要为 provide 的 `todoLength` 分配一个组合式 API `computed` property：
+```js
+app.component('todo-list', {
+  // ...
+  provide() {
+    return {
+      todoLength: Vue.computed(() => this.todos.length)
+    }
+  }
+})
+
+app.component('todo-list-statistics', {
+  inject: ['todoLength'],
+  created() {
+    console.log(`Injected property: ${this.todoLength.value}`) // > Injected property: 5
+  }
+})
+```
+
+### 在动态组件上使用 `keep-alive`
+
+`is` 会重新创建动态组件:
+```html
+<component :is="currentTabComponent"></component>
+```
+
+`<keep-alive>` 缓存:
+```html
+<!-- 失活的组件将会被缓存！-->
+<keep-alive>
+  <component :is="currentTabComponent"></component>
+</keep-alive>
+```
+
+### 异步组件
+
+在大型应用中，我们可能需要将应用分割成小一些的代码块，并且只在需要的时候才从服务器加载一个模块。为了简化，Vue 有一个 `defineAsyncComponent` 方法：
+```js
+const { createApp, defineAsyncComponent } = Vue
+
+const app = createApp({})
+
+const AsyncComp = defineAsyncComponent(
+  () =>
+    new Promise((resolve, reject) => {
+      resolve({
+        template: '<div>I am async!</div>'
+      })
+    })
+)
+
+app.component('async-example', AsyncComp)
+```
+
+如你所见，此方法接受返回 `Promise` 的工厂函数。从服务器检索组件定义后，应调用 `Promise` 的 `resolve` 回调。你也可以调用 `reject(reason)`，来表示加载失败。
+
+你也可以在工厂函数中返回一个 `Promise`，把 webpack 2 和 ES2015 语法相结合后，我们就可以这样使用动态地导入：
+```js
+import { defineAsyncComponent } from 'vue'
+
+const AsyncComp = defineAsyncComponent(() =>
+  import('./components/AsyncComponent.vue')
+)
+
+app.component('async-component', AsyncComp)
+```
+
+当在局部注册组件时，你也可以使用 `defineAsyncComponent`
+```js
+import { createApp, defineAsyncComponent } from 'vue'
+
+createApp({
+  // ...
+  components: {
+    AsyncComponent: defineAsyncComponent(() =>
+      import('./components/AsyncComponent.vue')
+    )
+  }
+})
+```
+
+### 模板引用
+
+尽管存在 prop 和事件，但有时你可能仍然需要直接访问 JavaScript 中的子组件。为此，可以使用 `ref` attribute 为子组件或 HTML 元素指定引用 ID。例如：
+```html
+<input ref="input" />
+```
+
+例如，你希望在组件挂载时，以编程的方式 focus 到这个 input 上，这可能有用
+```js
+const app = Vue.createApp({})
+
+app.component('base-input', {
+  template: `
+    <input ref="input" />
+  `,
+  methods: {
+    focusInput() {
+      this.$refs.input.focus()
+    }
+  },
+  mounted() {
+    this.focusInput()
+  }
+})
+```
+
+此外，还可以向组件本身添加另一个 `ref`，并使用它从父组件触发 `focusInput` 事件：
+```js
+<base-input ref="usernameInput"></base-input>
+this.$refs.usernameInput.focusInput()
+```
+
+:::warning
+`$refs` 只会在组件渲染完成之后生效。这仅作为一个用于直接操作子元素的“逃生舱”——你应该避免在模板或计算属性中访问 `$refs`。
+:::
+
+## 过渡 & 动画
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 <cite>[-- 《vue3官方文档》](https://v3.cn.vuejs.org/)</cite>
