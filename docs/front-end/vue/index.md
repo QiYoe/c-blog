@@ -1047,7 +1047,7 @@ app.component('my-component', {
 ```
 
 或其他组件
-```hml
+```html
 <todo-button>
     <!-- 添加一个图标的组件 -->
   <font-awesome-icon name="plus"></font-awesome-icon>
@@ -1526,21 +1526,336 @@ this.$refs.usernameInput.focusInput()
 
 ## 过渡 & 动画
 
+### 硬件加速
 
+如果要对一个元素进行硬件加速，可以应用以下任何一个 property (并不是需要全部，任意一个就可以)：
+```css
+perspective: 1000px;
+backface-visibility: hidden;
+transform: translateZ(0);
+```
 
+许多像 GreenSock 这样的 JS 库都会默认你需要硬件加速，并在默认情况下应用，所以你不需要手动设置它们。
 
+### Timing
 
+对于简单 UI 过渡，即从一个状态到另一个没有中间状态的状态，通常使用 0.1s 到 0.4s 之间的计时，大多数人发现 0.25s 是一个最佳选择。
 
+你也可能会发现，起始动画比结束动画的时间稍长一些，看起来会更好一些。用户通常是在动画开始时被引导的，而在动画结束时没有那么多耐心，因为他们想继续他们的动作。
 
+### Easing
 
+asing 是在动画中表达深度的一个重要方式。动画新手最常犯的一个错误是在起始动画节点使用 ease-in，在结束动画节点使用 ease-out。实际上你需要的是反过来的。
+```css
+.button {
+  background: #1b8f5a;
+  /* 应用于初始状态，因此此转换将应用于返回状态 */
+  transition: background 0.25s ease-in;
+}
 
+.button:hover {
+  background: #3eaf7c;
+  /* 应用于悬停状态，因此在触发悬停时将应用此过渡 */
+  transition: background 0.35s ease-out;
+}
+```
 
+[cubic bezier](https://cubic-bezier.com)
 
+[greensock API(GSAP)](https://greensock.com/)
 
+[ease-visualizer](https://greensock.com/ease-visualizer)
 
+## 可复用 & 组合
 
+### 组合式 API
 
+#### 介绍
 
+新的 setup 选项在组件**创建之前**执行，一旦 `props` 被解析，就将作为组合式 API 的入口。
 
+:::warning
+在 `setup` 中你应该避免使用 `this`，因为它不会找到组件实例。`setup` 的调用发生在 `data` `property、computed` property 或 `methods` 被解析之前，所以它们无法在 `setup` 中被获取。
+:::
+
+`setup` 选项是一个接收 `props` 和 `context` 的函数，我们将在之后进行讨论。此外，我们将 `setup` 返回的所有内容都暴露给组件的其余部分 (计算属性、方法、生命周期钩子等等) 以及组件的模板。
+```js
+// src/components/UserRepositories.vue
+import { fetchUserRepositories } from '@/api/repositories'
+import { ref, onMounted, watch, toRefs, computed } from 'vue'
+
+export default {
+  components: { RepositoriesFilters, RepositoriesSortBy, RepositoriesList },
+  props: {
+    user: {
+      type: String,
+      required: true
+    }
+  },
+  setup (props, context) {
+     // 使用 `toRefs` 创建对prop的 `user` property 的响应式引用
+    const { user } = toRefs(props)
+
+    const repositories = ref([])
+    const getUserRepositories = async () => {
+      // 更新 `prop.user` 到 `user.value` 访问引用值
+      repositories.value = await fetchUserRepositories(user.value)
+
+      // repositories.value = await fetchUserRepositories(props.user)
+    }
+
+    onMounted(getUserRepositories) // 在 `mounted` 时调用 `getUserRepositories`
+
+     // 在 user prop 的响应式引用上设置一个侦听器
+    watch(user, getUserRepositories)
+
+    const searchQuery = ref('')
+    const repositoriesMatchingSearchQuery = computed(() => {
+      return repositories.value.filter(
+        repository => repository.name.includes(searchQuery.value)
+      )
+    })
+
+    return {
+      repositories,
+      getUserRepositories,
+      searchQuery,
+      repositoriesMatchingSearchQuery
+    }
+  },
+  data () {
+    return {
+      filters: { ... }, // 3
+      // searchQuery: '' // 2
+    }
+  },
+  computed: {
+    filteredRepositories () { ... }, // 3
+    // repositoriesMatchingSearchQuery () { ... }, // 2
+  },
+  // watch: {
+  //   user: 'getUserRepositories' // 1
+  // },
+  methods: {
+    updateFilters () { ... }, // 3
+  },
+  // mounted () {
+  //   this.getUserRepositories() // 1
+  // }
+}
+```
+
+我们已经将第一个逻辑关注点中的几个部分移到了 `setup` 方法中，它们彼此非常接近。剩下的就是在 `mounted` 钩子中调用 `getUserRepositories`，并设置一个监听器，以便在 `user` prop 发生变化时执行此操作。
+
+我们首先要将上述代码提取到一个独立的**组合式函数**中。让我们从创建 `useUserRepositories` 函数开始：
+```js
+// src/composables/useUserRepositories.js
+
+import { fetchUserRepositories } from '@/api/repositories'
+import { ref, onMounted, watch } from 'vue'
+
+export default function useUserRepositories(user) {
+  const repositories = ref([])
+  const getUserRepositories = async () => {
+    repositories.value = await fetchUserRepositories(user.value)
+  }
+
+  onMounted(getUserRepositories)
+  watch(user, getUserRepositories)
+
+  return {
+    repositories,
+    getUserRepositories
+  }
+}
+```
+
+然后是搜索功能：
+```js
+// src/composables/useRepositoryNameSearch.js
+
+import { ref, computed } from 'vue'
+
+export default function useRepositoryNameSearch(repositories) {
+  const searchQuery = ref('')
+  const repositoriesMatchingSearchQuery = computed(() => {
+    return repositories.value.filter(repository => {
+      return repository.name.includes(searchQuery.value)
+    })
+  })
+
+  return {
+    searchQuery,
+    repositoriesMatchingSearchQuery
+  }
+}
+```
+
+**现在我们有了两个单独的功能模块，接下来就可以开始在组件中使用它们了。以下是如何做到这一点：**
+```js
+// src/components/UserRepositories.vue
+import useUserRepositories from '@/composables/useUserRepositories'
+import useRepositoryNameSearch from '@/composables/useRepositoryNameSearch'
+import { toRefs } from 'vue'
+
+export default {
+  components: { RepositoriesFilters, RepositoriesSortBy, RepositoriesList },
+  props: {
+    user: {
+      type: String,
+      required: true
+    }
+  },
+  setup (props) {
+    const { user } = toRefs(props)
+
+    const { repositories, getUserRepositories } = useUserRepositories(user)
+
+    const {
+      searchQuery,
+      repositoriesMatchingSearchQuery
+    } = useRepositoryNameSearch(repositories)
+
+    return {
+      // 因为我们并不关心未经过滤的仓库
+      // 我们可以在 `repositories` 名称下暴露过滤后的结果
+      repositories: repositoriesMatchingSearchQuery,
+      getUserRepositories,
+      searchQuery,
+    }
+  },
+  data () {
+    return {
+      filters: { ... }, // 3
+    }
+  },
+  computed: {
+    filteredRepositories () { ... }, // 3
+  },
+  methods: {
+    updateFilters () { ... }, // 3
+  }
+}
+```
+
+此时，你可能已经知道了其中的奥妙，所以让我们跳到最后，迁移剩余的过滤功能。我们不需要深入了解实现细节，因为这并不是本指南的重点。
+```js
+// src/components/UserRepositories.vue
+import { toRefs } from 'vue'
+import useUserRepositories from '@/composables/useUserRepositories'
+import useRepositoryNameSearch from '@/composables/useRepositoryNameSearch'
+import useRepositoryFilters from '@/composables/useRepositoryFilters'
+
+export default {
+  components: { RepositoriesFilters, RepositoriesSortBy, RepositoriesList },
+  props: {
+    user: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
+    const { user } = toRefs(props)
+
+    const { repositories, getUserRepositories } = useUserRepositories(user)
+
+    const {
+      searchQuery,
+      repositoriesMatchingSearchQuery
+    } = useRepositoryNameSearch(repositories)
+
+    const {
+      filters,
+      updateFilters,
+      filteredRepositories
+    } = useRepositoryFilters(repositoriesMatchingSearchQuery)
+
+    return {
+      // 因为我们并不关心未经过滤的仓库
+      // 我们可以在 `repositories` 名称下暴露过滤后的结果
+      repositories: filteredRepositories,
+      getUserRepositories,
+      searchQuery,
+      filters,
+      updateFilters
+    }
+  }
+}
+```
+
+#### Setup
+
+· 函数中的第一个参数是 `props`。正如在一个标准组件中所期望的那样，· 函数中的 `props` 是响应式的，当传入新的 prop 时，它将被更新。
+```js
+// MyBook.vue
+
+export default {
+  props: {
+    title: String
+  },
+  setup(props) {
+    console.log(props.title)
+  }
+}
+```
+
+:::warning
+但是，因为 `props` 是响应式的，你**不能使用 ES6 解构**，它会消除 prop 的响应性。
+:::
+
+如果需要解构 prop，可以在 setup 函数中使用 toRefs 函数来完成此操作：
+```js
+// MyBook.vue
+
+import { toRefs } from 'vue'
+
+setup(props) {
+  const { title } = toRefs(props)
+
+  console.log(title.value)
+}
+```
+
+如果 `title` 是可选的 prop，则传入的 `props` 中可能没有 `title` 。在这种情况下，`toRefs` 将不会为 `title` 创建一个 ref 。你需要使用 `toRef` 替代它：
+```js
+// MyBook.vue
+import { toRef } from 'vue'
+setup(props) {
+  const title = toRef(props, 'title')
+  console.log(title.value)
+}
+```
+
+传递给 `setup` 函数的第二个参数是 `context`。`context` 是一个普通的 JavaScript 对象，它暴露组件的三个 property：
+```js
+// MyBook.vue
+
+export default {
+  setup(props, context) {
+    // Attribute (非响应式对象)
+    console.log(context.attrs)
+
+    // 插槽 (非响应式对象)
+    console.log(context.slots)
+
+    // 触发事件 (方法)
+    console.log(context.emit)
+  }
+}
+```
+
+`context` 是一个普通的 JavaScript 对象，也就是说，它不是响应式的，这意味着你可以安全地对 `context` 使用 ES6 解构。
+```js
+// MyBook.vue
+export default {
+  setup(props, { attrs, slots, emit }) {
+    ...
+  }
+}
+```
+
+`attrs` 和 `slots` 是有状态的对象，它们总是会随组件本身的更新而更新。这意味着你应该避免对它们进行解构，并始终以 `attrs.x` 或 `slots.x` 的方式引用 property。请注意，与 `props` 不同，`attrs` 和 `slots` 是非响应式的。如果你打算根据 `attrs` 或 `slots` 更改应用副作用，那么应该在 onUpdated 生命周期钩子中执行此操作。
+
+#### 生命周期钩子
 
 <cite>[-- 《vue3官方文档》](https://v3.cn.vuejs.org/)</cite>
