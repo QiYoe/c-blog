@@ -1858,4 +1858,1022 @@ export default {
 
 #### 生命周期钩子
 
+setup () 内部调用生命周期钩子：
+| 选项式 API | Hook inside `setup` |
+| - | - |
+| `beforeCreate` | **Not needed*** |
+| `created` | **Not needed*** |
+| `beforeMount` | `onBeforeMount` |
+| `mounted` | `onMounted` |
+| `beforeUpdate` | `onBeforeUpdate` |
+| `updated` | `onUpdated` |
+| `beforeUnmount` | `onBeforeUnmount` |
+| `unmounted` | `onUnmounted` |
+| `errorCaptured` | `onErrorCaptured` |
+| `renderTracked` | `onRenderTracked` |
+| `renderTriggered` | `onRenderTriggered` |
+| `activated` | `onActivated` |
+| `deactivated` | `onDeactivated` |
+
+:::tip
+因为 `setup` 是围绕 `beforeCreate` 和 `created` 生命周期钩子运行的，所以不需要显式地定义它们。换句话说，在这些钩子中编写的任何代码都应该直接在 `setup` 函数中编写。
+:::
+
+#### Provide / Inject
+
+- Provide
+
+`provide` 函数允许你通过两个参数定义 property：
+1. name (`<String>` 类型)
+2. value
+
+```vue{7,15-22}
+<!-- src/components/MyMap.vue -->
+<template>
+  <MyMarker />
+</template>
+
+<script>
+import { provide, reactive, ref } from 'vue'
+import MyMarker from './MyMarker.vue'
+
+export default {
+  components: {
+    MyMarker
+  },
+  setup() {
+    const location = ref('North Pole')
+    const geolocation = reactive({
+      longitude: 90,
+      latitude: 135
+    })
+
+    provide('location', location)
+    provide('geolocation', geolocation)
+  }
+}
+</script>
+```
+
+- Inject
+
+`inject` 函数有两个参数：
+1. 要 inject 的 property 的 name
+2. 默认值 (**可选**)
+
+```vue{3,6-14}
+<!-- src/components/MyMarker.vue -->
+<script>
+import { inject } from 'vue'
+
+export default {
+  setup() {
+    const userLocation = inject('location', 'The Universe')
+    const userGeolocation = inject('geolocation')
+
+    return {
+      userLocation,
+      userGeolocation
+    }
+  }
+}
+</script>
+```
+
+:::tip
+当使用响应式 provide / inject 值时，**建议尽可能将对响应式 property 的所有修改限制在定义 provide 的组件内部。**
+```vue
+<!-- src/components/MyMap.vue -->
+<template>
+  <MyMarker />
+</template>
+
+<script>
+import { provide, reactive, readonly, ref } from 'vue'
+import MyMarker from './MyMarker.vue'
+
+export default {
+  components: {
+    MyMarker
+  },
+  setup() {
+    const location = ref('North Pole')
+    const geolocation = reactive({
+      longitude: 90,
+      latitude: 135
+    })
+
+    const updateLocation = () => {
+      location.value = 'South Pole'
+    }
+
+    provide('location', readonly(location))
+    provide('geolocation', readonly(geolocation))
+    provide('updateLocation', updateLocation)
+
+    return {
+      location
+    }
+  },
+  methods: {
+    updateLocation() {
+      this.location = 'South Pole'
+    }
+  }
+}
+</script>
+```
+```vue
+<!-- src/components/MyMarker.vue -->
+<script>
+import { inject } from 'vue'
+
+export default {
+  setup() {
+    const userLocation = inject('location', 'The Universe')
+    const userGeolocation = inject('geolocation')
+    const updateUserLocation = inject('updateLocation')
+
+    return {
+      userLocation,
+      userGeolocation,
+      updateUserLocation
+    }
+  }
+}
+</script>
+```
+:::
+
+#### 模板引用
+
+```html
+<template> 
+  <div ref="root">This is a root element</div>
+</template>
+
+<script>
+  import { ref, onMounted } from 'vue'
+
+  export default {
+    setup() {
+      const root = ref(null)
+
+      onMounted(() => {
+        // DOM 元素将在初始渲染后分配给 ref
+        console.log(root.value) // <div>This is a root element</div>
+      })
+
+      // watchEffect(() => {
+      //   console.log(root.value) // => <div>This is a root element</div>
+      // }, 
+      // {
+      //   flush: 'post'
+      // })
+
+      return {
+        root
+      }
+    }
+  }
+</script>
+```
+
+这里我们在渲染上下文中暴露 `root`，并通过 ref="root"，将其绑定到 div 作为其 ref。在虚拟 DOM 补丁算法中，如果 VNode 的 ref 键对应于渲染上下文中的 ref，则 VNode 的相应元素或组件实例将被分配给该 ref 的值。这是在虚拟 DOM 挂载/打补丁过程中执行的，因此模板引用只会在初始渲染之后获得赋值。
+
+作为模板使用的 ref 的行为与任何其他 ref 一样：它们是响应式的，可以传递到 (或从中返回) 复合函数中。
+
+### Mixin
+
+同名钩子函数将合并为一个数组，因此都将被调用。另外，mixin 对象的钩子将在组件自身钩子**之前**调用。
+```js
+const myMixin = {
+  created() {
+    console.log('mixin 对象的钩子被调用')
+  }
+}
+
+const app = Vue.createApp({
+  mixins: [myMixin],
+  created() {
+    console.log('组件钩子被调用')
+  }
+})
+
+// => "mixin 对象的钩子被调用"
+// => "组件钩子被调用"
+```
+
+### 自定义指令
+
+一个指令定义对象可以提供如下几个钩子函数 (均为可选)：
+- `created`：在绑定元素的 attribute 或事件监听器被应用之前调用。在指令需要附加须要在普通的 `v-on` 事件监听器前调用的事件监听器时，这很有用。
+- `beforeMount`：当指令第一次绑定到元素并且在挂载父组件之前调用。
+- `mounted`：在绑定元素的父组件被挂载后调用。
+- `beforeUpdate`：在更新包含组件的 VNode 之前调用。
+- `updated`：在包含组件的 VNode 及其子组件的 VNode 更新后调用。
+- `beforeUnmount`：在卸载绑定元素的父组件之前调用
+- `unmounted`：当指令与元素解除绑定且父组件已卸载时，只调用一次。
+
+```html{4}
+<div id="dynamicexample">
+  <h2>Scroll down the page</h2>
+  <input type="range" min="0" max="500" v-model="pinPadding">
+  <p v-pin:[direction]="pinPadding">Stick me {{ pinPadding + 'px' }} from the {{ direction || 'top' }} of the page</p>
+</div>
+```
+```js{5}
+const app = Vue.createApp({
+  data() {
+    return {
+      direction: 'right',
+      pinPadding: 200
+    }
+  }
+})
+```
+```js{7-10}
+app.directive('pin', {
+  mounted(el, binding) {
+    el.style.position = 'fixed'
+    const s = binding.arg || 'top'
+    el.style[s] = binding.value + 'px'
+  },
+  updated(el, binding) {
+    const s = binding.arg || 'top'
+    el.style[s] = binding.value + 'px'
+  }
+})
+
+// 函数简写
+// app.directive('pin', (el, binding) => {
+//   el.style.position = 'fixed'
+//   const s = binding.arg || 'top'
+//   el.style[s] = binding.value + 'px'
+// })
+```
+
+### 渲染函数
+
+让我们深入一个简单的例子，这个例子里 `render` 函数很实用。假设我们要生成一些带锚点的标题：
+```html
+<h1>
+  <a name="hello-world" href="#hello-world">
+    Hello world!
+  </a>
+</h1>
+```
+
+锚点标题的使用非常频繁，我们应该创建一个组件：
+```html
+<anchored-heading :level="1">Hello world!</anchored-heading>
+```
+
+当开始写一个只能通过 `level` prop 动态生成标题 (heading) 的组件时，我们很快就可以得出这样的结论：
+```js
+const { createApp } = Vue
+
+const app = createApp({})
+
+app.component('anchored-heading', {
+  template: `
+    <h1 v-if="level === 1">
+      <slot></slot>
+    </h1>
+    <h2 v-else-if="level === 2">
+      <slot></slot>
+    </h2>
+    <h3 v-else-if="level === 3">
+      <slot></slot>
+    </h3>
+    <h4 v-else-if="level === 4">
+      <slot></slot>
+    </h4>
+    <h5 v-else-if="level === 5">
+      <slot></slot>
+    </h5>
+    <h6 v-else-if="level === 6">
+      <slot></slot>
+    </h6>
+  `,
+  props: {
+    level: {
+      type: Number,
+      required: true
+    }
+  }
+})
+```
+
+我们来尝试使用 `render` 函数重写上面的例子：
+```js
+const { createApp, h } = Vue
+
+const app = createApp({})
+
+app.component('anchored-heading', {
+  render() {
+    return h(
+      'h' + this.level, // tag name
+      {}, // props/attributes
+      this.$slots.default() // array of children
+    )
+  },
+  props: {
+    level: {
+      type: Number,
+      required: true
+    }
+  }
+})
+```
+
+#### DOM 树
+
+[DOM 节点树](https://zh.javascript.info/dom-nodes)
+
+希望页面上的 HTML 是什么，这可以是在一个模板里：
+```html
+<h1>{{ blogTitle }}</h1>
+```
+
+或者一个渲染函数里：
+```js
+render() {
+  return h('h1', {}, this.blogTitle)
+}
+```
+
+#### 虚拟 DOM 树
+
+Vue 通过建立一个**虚拟 DOM** 来追踪自己要如何改变真实 DOM。请仔细看这行代码：
+```js
+return h('h1', {}, this.blogTitle)
+```
+`h()` 到底会返回什么呢？其实不是一个实际的 DOM 元素。它更准确的名字可能是 createNodeDescription，因为它所包含的信息会**告诉 Vue 页面上需要渲染什么样的节点，包括及其子节点的描述信息**。我们把这样的节点描述为“虚拟节点 (virtual node)”，也常简写它为 `VNode`。“虚拟 DOM”是我们对由 Vue 组件树建立起来的整个 VNode 树的称呼。
+
+#### `h()` 参数
+
+`h()` 函数是一个用于创建 vnode 的实用程序。也许可以更准确地将其命名为 `createVNode()`，但由于频繁使用和简洁，它被称为 `h()` 。它接受三个参数：
+```js
+// @returns {VNode}
+h(
+  // {String | Object | Function} tag
+  // 一个 HTML 标签名、一个组件、一个异步组件、或
+  // 一个函数式组件。
+  //
+  // 必需的。
+  'div',
+
+  // {Object} props
+  // 与 attribute、prop 和事件相对应的对象。
+  // 我们会在模板中使用。
+  //
+  // 可选的。
+  {},
+
+  // {String | Array | Object} children
+  // 子 VNodes, 使用 `h()` 构建,
+  // 或使用字符串获取 "文本 Vnode" 或者
+  // 有插槽的对象。
+  //
+  // 可选的。
+  [
+    'Some text comes first.',
+    h('h1', 'A headline'),
+    h(MyComponent, {
+      someProp: 'foobar'
+    })
+  ]
+)
+```
+
+如果没有 prop，那么通常可以将 children 作为第二个参数传入。如果会产生歧义，可以将 `null` 作为第二个参数传入，将 children 作为第三个参数传入。
+```js
+const { createApp, h } = Vue
+
+const app = createApp({})
+
+/** 递归地从子节点获取文本 */
+function getChildrenTextContent(children) {
+  return children
+    .map(node => {
+      return typeof node.children === 'string'
+        ? node.children
+        : Array.isArray(node.children)
+        ? getChildrenTextContent(node.children)
+        : ''
+    })
+    .join('')
+}
+
+app.component('anchored-heading', {
+  render() {
+    // 从 children 的文本内容中创建短横线分隔 (kebab-case) id。
+    const headingId = getChildrenTextContent(this.$slots.default())
+      .toLowerCase()
+      .replace(/\W+/g, '-') // 用短横线替换非单词字符
+      .replace(/(^-|-$)/g, '') // 删除前后短横线
+
+    return h('h' + this.level, [
+      h(
+        'a',
+        {
+          name: headingId,
+          href: '#' + headingId
+        },
+        this.$slots.default()
+      )
+    ])
+  },
+  props: {
+    level: {
+      type: Number,
+      required: true
+    }
+  }
+})
+```
+
+#### JSX
+
+特别是对应的模板如此简单的情况下：
+```html
+<anchored-heading :level="1"> <span>Hello</span> world! </anchored-heading>
+```
+
+这就是为什么会有一个 [Babel 插件](https://github.com/vuejs/jsx-next)，用于在 Vue 中使用 JSX 语法，它可以让我们回到更接近于模板的语法上。
+```js
+import AnchoredHeading from './AnchoredHeading.vue'
+
+const app = createApp({
+  render() {
+    return (
+      <AnchoredHeading level={1}>
+        <span>Hello</span> world!
+      </AnchoredHeading>
+    )
+  }
+})
+
+app.mount('#demo')
+```
+
+## 高阶指南
+
+### 响应性
+
+#### 深入响应性原理
+
+1. **当一个值被读取时进行追踪：**proxy 的 `get` 处理函数中 `track` 函数记录了该 property 和当前副作用。
+2. **当某个值改变时进行检测：**在 proxy 上调用 `set` 处理函数。
+3. **重新运行代码来读取原始值：**`trigger` 函数查找哪些副作用依赖于该 property 并执行它们。
+```js
+const dinner = {
+  meal: 'tacos'
+}
+
+const handler = {
+  get(target, property, receiver) {
+    track(target, property)
+    const value = Reflect.get(...arguments)
+    if (isObject(value)) {
+      // 将嵌套对象包裹在自己的响应式代理中
+      return reactive(value)
+    } else {
+      return value
+    }
+  },
+  set(target, property, value, receiver) {
+    trigger(target, property)
+    return Reflect.set(...arguments)
+  }
+}
+
+const proxy = new Proxy(dinner, handler)
+console.log(proxy.meal)
+
+// tacos
+```
+
+#### 响应性基础
+
+- 声明响应式状态(`reactive`)
+
+要为 JavaScript `对象`创建响应式状态，可以使用 `reactive` 方法：
+```js
+import { reactive } from 'vue'
+
+// 响应式状态
+const state = reactive({
+  count: 0
+})
+```
+
+当从组件中的 `data()` 返回一个对象时，它在内部交由 `reactive()` 使其成为响应式对象。
+
+- 创建独立的响应式值作为 `refs` (`refs`)
+
+独立的原始值 (例如，一个字符串)，我们想让它变成响应式的。
+```js
+import { ref } from 'vue'
+
+const count = ref(0)
+console.log(count.value) // 0
+
+count.value++
+console.log(count.value) // 1
+```
+
+`ref` 会返回一个可变的响应式对象，该对象作为一个响应式的引用维护着它内部的值，这就是 `ref` 名称的来源。
+
+当 ref 作为渲染上下文 (从 setup() 中返回的对象) 上的 property 返回并可以在模板中被访问时，它将自动浅层次解包内部值。只有访问嵌套的 ref 时需要在模板中添加 `.value`：
+```js
+<template>
+  <div>
+    <span>{{ count }}</span>
+    <button @click="count ++">Increment count</button>
+    <button @click="nested.count.value ++">Nested Increment count</button>
+  </div>
+</template>
+
+<script>
+  import { ref } from 'vue'
+  export default {
+    setup() {
+      const count = ref(0)
+      return {
+        count,
+
+        nested: {
+          count
+        }
+      }
+    }
+  }
+</script>
+```
+
+当 `ref` 作为响应式对象的 property 被访问或更改时，为使其行为类似于普通 property，它会自动解包内部值：
+```js
+const count = ref(0)
+const state = reactive({
+  count
+})
+
+console.log(state.count) // 0
+
+state.count = 1
+console.log(count.value) // 1
+```
+
+如果将新的 ref 赋值给现有 ref 的 property，将会替换旧的 ref：
+```js
+const otherCount = ref(2)
+
+state.count = otherCount
+console.log(state.count) // 2
+console.log(count.value) // 1
+```
+
+Ref 解包仅发生在被响应式 `Object` 嵌套的时候。当从 `Array` 或原生集合类型如 `Map` 访问 ref 时，不会进行解包：
+```js
+const books = reactive([ref('Vue 3 Guide')])
+// 这里需要 .value
+console.log(books[0].value)
+
+const map = reactive(new Map([['count', ref(0)]]))
+// 这里需要 .value
+console.log(map.get('count').value)
+```
+
+我们需要将我们的响应式对象转换为一组 ref。这些 ref 将保留与源对象的响应式关联：
+```js
+import { reactive, toRefs } from 'vue'
+
+const book = reactive({
+  author: 'Vue Team',
+  year: '2020',
+  title: 'Vue 3 Guide',
+  description: 'You are reading this book right now ;)',
+  price: 'free'
+})
+
+let { author, title } = toRefs(book)
+
+title.value = 'Vue 3 Detailed Guide' // 我们需要使用 .value 作为标题，现在是 ref
+console.log(book.title) // 'Vue 3 Detailed Guide'
+```
+
+#### 响应式计算和侦听
+
+##### `computed`
+
+它接受 getter 函数并为 getter 返回的值返回一个不可变的响应式 ref 对象。
+```js
+const count = ref(1)
+const plusOne = computed(() => count.value + 1)
+
+console.log(plusOne.value) // 2
+
+plusOne.value++ // error
+```
+```js
+const count = ref(1)
+const plusOne = computed({
+  get: () => count.value + 1,
+  set: val => {
+    count.value = val - 1
+  }
+})
+
+plusOne.value = 1
+console.log(count.value) // 0
+```
+
+`computed` 可接受一个带有 `onTrack` 和 `onTrigger` 选项的对象作为第二个参数：
+- `onTrack` 会在某个响应式 property 或 ref 作为依赖被追踪时调用。
+- `onTrigger` 会在侦听回调被某个依赖的修改触发时调用。
+
+所有回调都会收到一个 debugger 事件，其中包含了一些依赖相关的信息。推荐在这些回调内放置一个 `debugger` 语句以调试依赖。
+```js
+const plusOne = computed(() => count.value + 1, {
+  onTrack(e) {
+    // 当 count.value 作为依赖被追踪时触发
+    debugger
+  },
+  onTrigger(e) {
+    // 当 count.value 被修改时触发
+    debugger
+  }
+})
+// 访问 plusOne，应该触发 onTrack
+console.log(plusOne.value)
+// 修改 count.value，应该触发 onTrigger
+count.value++
+```
+
+onTrack 和 onTrigger 仅在开发模式下生效。
+
+##### `watchEffect`
+
+为了根据响应式状态自动应用和重新应用副作用，我们可以使用 `watchEffect` 方法。它立即执行传入的一个函数，同时响应式追踪其依赖，并在其依赖变更时重新运行该函数。
+```js
+const count = ref(0)
+
+watchEffect(() => console.log(count.value))
+// -> logs 0
+
+setTimeout(() => {
+  count.value++
+  // -> logs 1
+}, 100)
+```
+
+当 watchEffect 在组件的 setup() 函数或生命周期钩子被调用时，侦听器会被链接到该组件的生命周期，并在组件卸载时自动停止。
+
+在一些情况下，也可以显式调用返回值以停止侦听：
+```js
+const stop = watchEffect(() => {
+  /* ... */
+})
+
+// later
+stop()
+```
+
+侦听副作用传入的函数可以接收一个 `onInvalidate` 函数作入参，用来注册清理失效时的回调。当以下情况发生时，这个失效回调会被触发：
+- 副作用即将重新执行时
+- 侦听器被停止 (如果在 `setup()` 或生命周期钩子函数中使用了 `watchEffect`，则在组件卸载时)
+```js
+watchEffect(onInvalidate => {
+  const token = performAsyncOperation(id.value)
+  onInvalidate(() => {
+    // id has changed or watcher is stopped.
+    // invalidate previously pending async operation
+    token.cancel()
+  })
+})
+```
+
+我们之所以是通过传入一个函数去注册失效回调，而不是从回调返回它，是因为返回值对于异步错误处理很重要。
+
+在执行数据请求时，副作用函数往往是一个异步函数：
+```js
+const data = ref(null)
+watchEffect(async onInvalidate => {
+  onInvalidate(() => {
+    /* ... */
+  }) // 我们在Promise解析之前注册清除函数
+  data.value = await fetchData(props.id)
+})
+```
+
+我们知道异步函数都会隐式地返回一个 Promise，但是清理函数必须要在 Promise 被 resolve 之前被注册。另外，Vue 依赖这个返回的 Promise 来自动处理 Promise 链上的潜在错误。
+
+下面这个例子中：
+- `count` 会在初始运行时同步打印出来
+- 更改 `count` 时，将在组件**更新前**执行副作用。
+```js
+<template>
+  <div>{{ count }}</div>
+</template>
+
+<script>
+export default {
+  setup() {
+    const count = ref(0)
+
+    watchEffect(() => {
+      console.log(count.value)
+    }, {
+      // 在组件更新(例如：当与模板引用一起)后重新运行侦听器副作用
+      // 默认为 'pre'
+      flush: 'post',
+      onTrigger(e) {
+        debugger
+      }
+    })
+
+    return {
+      count
+    }
+  }
+}
+</script>
+```
+
+`onTrack` 和 `onTrigger` 选项可用于调试侦听器的行为。
+- `onTrack` 将在响应式 property 或 ref 作为依赖项被追踪时被调用。
+- `onTrigger` 将在依赖项变更导致副作用被触发时被调用。
+
+从 Vue 3.2.0 开始，`watchPostEffect` 和 `watchSyncEffect` 别名也可以用来让代码意图更加明显。
+
+##### `watch`
+
+与 watchEffect 比较，watch 允许我们：
+- 懒执行副作用；
+- 更具体地说明什么状态应该触发侦听器重新运行；
+- 访问侦听状态变化前后的值。
+
+侦听器数据源可以是返回值的 getter 函数，也可以直接是 ref：
+```js
+// 侦听一个 getter
+const state = reactive({ count: 0 })
+watch(
+  () => state.count,
+  (count, prevCount) => {
+    /* ... */
+  }
+)
+
+// 直接侦听ref
+const count = ref(0)
+watch(count, (count, prevCount) => {
+  /* ... */
+})
+```
+
+侦听器还可以使用数组同时侦听多个源：
+```js
+const firstName = ref('')
+const lastName = ref('')
+
+watch([firstName, lastName], (newValues, prevValues) => {
+  console.log(newValues, prevValues)
+})
+
+firstName.value = 'John' // logs: ["John", ""] ["", ""]
+lastName.value = 'Smith' // logs: ["John", "Smith"] ["John", ""]
+```
+
+尽管如此，如果你在同一个方法里同时改变这些被侦听的来源，侦听器仍只会执行一次：
+```js
+setup() {
+  const firstName = ref('')
+  const lastName = ref('')
+
+  watch([firstName, lastName], (newValues, prevValues) => {
+    console.log(newValues, prevValues)
+  })
+
+  const changeValues = () => {
+    firstName.value = 'John'
+    lastName.value = 'Smith'
+    // 打印 ["John", "Smith"] ["", ""]
+  }
+
+  return { changeValues }
+}
+```
+
+注意多个同步更改只会触发一次侦听器。
+
+通过更改设置 `flush: 'sync'`，我们可以为每个更改都强制触发侦听器，尽管这通常是不推荐的。或者，可以用 `nextTick` 等待侦听器在下一步改变之前运行。例如：
+```js
+const changeValues = async () => {
+  firstName.value = 'John' // 打印 ["John", ""] ["", ""]
+  await nextTick()
+  lastName.value = 'Smith' // 打印 ["John", "Smith"] ["John", ""]
+}
+```
+
+使用侦听器来比较一个数组或对象的值，这些值是响应式的，要求它有一个由值构成的副本。
+```js
+const numbers = reactive([1, 2, 3, 4])
+
+watch(
+  () => [...numbers],
+  (numbers, prevNumbers) => {
+    console.log(numbers, prevNumbers)
+  }
+)
+
+numbers.push(5) // logs: [1,2,3,4,5] [1,2,3,4]
+```
+
+尝试检查深度嵌套对象或数组中的 property 变化时，仍然需要 `deep` 选项设置为 true。
+```js
+const state = reactive({ 
+  id: 1,
+  attributes: { 
+    name: '',
+  }
+})
+
+watch(
+  () => state,
+  (state, prevState) => {
+    console.log('not deep', state.attributes.name, prevState.attributes.name)
+  }
+)
+
+watch(
+  () => state,
+  (state, prevState) => {
+    console.log('deep', state.attributes.name, prevState.attributes.name)
+  },
+  { deep: true }
+)
+
+state.attributes.name = 'Alex' // 日志: "deep" "Alex" "Alex"
+```
+
+然而，**侦听一个响应式对象或数组将始终返回该对象的当前值和上一个状态值的引用**。为了完全侦听深度嵌套的对象和数组，可能需要对值进行深拷贝。这可以通过诸如 lodash.cloneDeep 这样的实用工具来实现。
+```js
+import _ from 'lodash'
+
+const state = reactive({
+  id: 1,
+  attributes: {
+    name: '',
+  }
+})
+
+watch(
+  () => _.cloneDeep(state),
+  (state, prevState) => {
+    console.log(state.attributes.name, prevState.attributes.name)
+  }
+)
+
+state.attributes.name = 'Alex' // 日志: "Alex" ""
+```
+
+:::tip
+`watch` 与 `watchEffect` 共享停止侦听，清除副作用 (相应地 `onInvalidate` 会作为回调的第三个参数传入)、副作用刷新时机和侦听器调试行为。
+:::
+
+## 工具
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <cite>[-- 《vue3官方文档》](https://v3.cn.vuejs.org/)</cite>
