@@ -20,9 +20,12 @@
   "scripts": {
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
-    "serve": "vitepress serve docs"
+    "serve": "vitepress serve docs",
+    "cz": "git cz"
   },
   "devDependencies": {
+    "commitizen": "^4.2.4",
+    "conventional-changelog-cli": "^2.1.1",
     "markdown-it-ins": "^3.0.1",
     "markdown-it-multimd-table": "^4.1.0",
     "markdown-it-textual-uml": "^0.1.8",
