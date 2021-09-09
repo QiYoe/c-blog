@@ -21,7 +21,7 @@
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
     "serve": "vitepress serve docs",
-    "cz": "git cz"
+    "commit": "cz"
   },
   "devDependencies": {
     "commitizen": "^4.2.4",
