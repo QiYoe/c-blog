@@ -13,6 +13,7 @@ module.exports = {
       ariaLabel: '前端',
       items: [
         { text: '博客相关', link: '/front-end/blog-build/' },
+        { text: '前端代码风格规范', link: '/front-end/lint/' },
         { text: 'SwaggerHub', link: '/front-end/swagger-hub/' },
         { text: 'Linux相关', link: '/front-end/linux/' },
         { text: 'Vue', link: '/front-end/vue/' },
@@ -89,6 +90,16 @@ function getFrontEndSidebar() {
         { text: '百度收录', link: '/front-end/blog-build/baidu-include' },
         { text: 'SEO优化', link: '/front-end/blog-build/seo-optimize' },
         { text: '阿里云域名', link: '/front-end/blog-build/aliyun-domin' },
+      ]
+    },
+    {
+      text: '前端代码风格规范',
+      children: [
+        { text: '介绍', link: '/front-end/lint/' },
+        { text: 'Husky', link: '/front-end/lint/husky' },
+        { text: 'Commitlint', link: '/front-end/lint/commitlint' },
+        { text: 'Commitizen', link: '/front-end/lint/commitizen' },
+        { text: 'Lint-staged', link: '/front-end/lint/lint-staged' },
       ]
     },
     {
