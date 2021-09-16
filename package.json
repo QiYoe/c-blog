@@ -18,26 +18,55 @@
     "blog"
   ],
   "scripts": {
+    "bootstrap": "yarn install",
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
     "serve": "vitepress serve docs",
-    "prepare": "husky install"
+    "log": "conventional-changelog -p angular -i CHANGELOG.md -s",
+    "prepare": "husky install",
+    "cz": "cz",
+    "lint:eslint": "eslint --cache --max-warnings 0  \"{docs,mock}/**/*.{vue,ts,tsx}\" --fix",
+    "lint:prettier": "prettier --write  \"docs/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",
+    "lint:lint-staged": "lint-staged -c ./.husky/lintstagedrc.js",
+    "lint:pretty": "pretty-quick --staged",
+    "reinstall": "rimraf yarn.lock && rimraf package.lock.json && rimraf node_modules && npm run bootstrap"
   },
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
+    "@typescript-eslint/eslint-plugin": "^4.31.1",
+    "@typescript-eslint/parser": "^4.31.1",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.1.1",
-    "cz-conventional-changelog": "^3.3.0",
+    "cz-conventional-changelog-zh": "^0.0.2",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-define-config": "^1.0.9",
+    "eslint-plugin-jest": "^24.4.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-vue": "^7.17.0",
     "husky": "^7.0.2",
+    "lint-staged": "^11.1.2",
     "markdown-it-ins": "^3.0.1",
     "markdown-it-multimd-table": "^4.1.0",
     "markdown-it-textual-uml": "^0.1.8",
-    "vitepress": "^0.16.0"
+    "prettier": "2.4.0",
+    "pretty-quick": "^3.1.1",
+    "rimraf": "^3.0.2",
+    "stylelint": "^13.13.1",
+    "stylelint-config-prettier": "^8.0.2",
+    "stylelint-config-standard": "^22.0.0",
+    "stylelint-order": "^4.1.0",
+    "typescript": "^4.4.3",
+    "vitepress": "^0.16.0",
+    "vue-eslint-parser": "^7.11.0"
   },
   "config": {
     "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
+      "path": "./node_modules/cz-conventional-changelog-zh"
     }
+  },
+  "dependencies": {
+    "vue": "^2.6.14"
   }
 }
