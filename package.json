@@ -1,6 +1,6 @@
 {
   "name": "c-blog",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "vitepress blog",
   "main": "index.js",
   "repository": {
