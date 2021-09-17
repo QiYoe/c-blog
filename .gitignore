@@ -1,12 +1,14 @@
 .DS_Store
 node_modules
 dist
-CONTRIBUTING.md
 .npmrc
 .cache
 
 yarn.lock
 package-lock.json
+
+tests/server/static
+tests/server/static/upload
 test/unit/coverage
 test/e2e/reports
 
@@ -17,9 +19,10 @@ test/e2e/reports
 .eslintcache
 
 # Log files
-npm-debug.log
+npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 selenium-debug.log
 pnpm-debug.log*
 

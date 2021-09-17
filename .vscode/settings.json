@@ -73,7 +73,7 @@
   "telemetry.enableCrashReporter": false,
   "workbench.settings.enableNaturalLanguageSearch": false,
   "path-intellisense.mappings": {
-    "/@/": "${workspaceRoot}/src"
+    "/@/": "${workspaceRoot}/docs"
   },
   "prettier.requireConfig": true,
   "typescript.updateImportsOnFileMove.enabled": "always",

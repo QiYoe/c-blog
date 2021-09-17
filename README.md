@@ -1,6 +1,7 @@
 [![Build Status](https://www.travis-ci.com/QiYoe/c-blog.svg?branch=master)](https://www.travis-ci.com/QiYoe/c-blog)
-[![license](https://img.shields.io/github/license/qiyoe/vite2.0-vue3.svg)](LICENSE)
+[![license](https://img.shields.io/github/license/qiyoe/c-blog.svg)](LICENSE)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+[![Build Status](https://github.com/stylelint/stylelint/workflows/CI/badge.svg)](https://github.com/qiyoe/c-blog/actions)
 
 # c-blog
 
