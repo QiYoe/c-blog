@@ -25,7 +25,7 @@
     "log": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "prepare": "husky install",
     "cz": "cz",
-    "lint:eslint": "eslint --cache --max-warnings 0  \"{docs,mock}/**/*.{vue,ts,tsx}\" --fix",
+    "lint:eslint": "eslint --cache --max-warnings 0  \"{docs,mock}/**/*.{vue,ts,tsx,md}\" --fix",
     "lint:prettier": "prettier --write  \"docs/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",
     "lint:lint-staged": "lint-staged -c ./.husky/lintstagedrc.js",
     "lint:pretty": "pretty-quick --staged",
