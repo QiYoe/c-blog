@@ -1,1 +1,0 @@
-import{o as t,c as e}from"./app.e234469c.js";const r='{"title":"","description":"","frontmatter":{},"relativePath":"front-end/lint/lint-staged.md","lastUpdated":1631844829616}',a={};a.render=function(r,a,n,d,i,o){return t(),e("div")};export{r as __pageData,a as default};
