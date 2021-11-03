@@ -32,34 +32,34 @@
     "reinstall": "rimraf yarn.lock && rimraf package.lock.json && rimraf node_modules && npm run bootstrap"
   },
   "devDependencies": {
-    "@commitlint/cli": "^13.1.0",
-    "@commitlint/config-conventional": "^13.1.0",
-    "@typescript-eslint/eslint-plugin": "^4.31.1",
-    "@typescript-eslint/parser": "^4.31.1",
+    "@commitlint/cli": "^14.1.0",
+    "@commitlint/config-conventional": "^14.1.0",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.1.1",
     "cz-conventional-changelog-zh": "^0.0.2",
-    "eslint": "^7.32.0",
+    "eslint": "^8.1.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-define-config": "^1.0.9",
-    "eslint-plugin-jest": "^24.4.0",
+    "eslint-plugin-jest": "^25.2.2",
     "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-vue": "^7.17.0",
+    "eslint-plugin-vue": "^8.0.3",
     "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
     "markdown-it-ins": "^3.0.1",
     "markdown-it-multimd-table": "^4.1.0",
     "markdown-it-textual-uml": "^0.1.8",
-    "prettier": "2.4.0",
+    "prettier": "2.4.1",
     "pretty-quick": "^3.1.1",
     "rimraf": "^3.0.2",
-    "stylelint": "^13.13.1",
-    "stylelint-config-prettier": "^8.0.2",
-    "stylelint-config-standard": "^22.0.0",
-    "stylelint-order": "^4.1.0",
+    "stylelint": "^14.0.1",
+    "stylelint-config-prettier": "^9.0.3",
+    "stylelint-config-standard": "^23.0.0",
+    "stylelint-order": "^5.0.0",
     "typescript": "^4.4.3",
-    "vitepress": "^0.16.0",
-    "vue-eslint-parser": "^7.11.0"
+    "vitepress": "^0.20.0",
+    "vue-eslint-parser": "^8.0.1"
   },
   "config": {
     "commitizen": {
@@ -67,6 +67,7 @@
     }
   },
   "dependencies": {
-    "vue": "^2.6.14"
+    "string": "^3.3.3",
+    "vue": "^3.2.21"
   }
 }

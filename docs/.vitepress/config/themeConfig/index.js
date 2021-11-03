@@ -55,6 +55,13 @@ module.exports = {
       ]
     },
     {
+      text: 'GIS',
+      ariaLabel: 'GIS',
+      items: [
+        {text: 'Cesium离线加载', link: '/gis/clb' },
+      ]
+    },
+    {
       text: '其他',
       ariaLabel: '其他',
       // link: '/other/'
@@ -78,6 +85,7 @@ module.exports = {
     '/other/': getOtherSidebar(),
     '/algorithm/': getAlgorithmSidebar(),
     '/devops/': getDevOpsSidebar(),
+    '/gis/': getGISSidebar(),
   }
 }
 
@@ -219,6 +227,16 @@ function getDevOpsSidebar() {
       text: 'DevOps',
       children: [
         { text: 'Jira', link: '/devops/jira' },
+      ]
+    }
+  ]
+}
+function getGISSidebar() {
+  return [
+    {
+      text: 'GIS',
+      children: [
+        { text: 'Cesium离线加载', link: '/gis/clb' },
       ]
     }
   ]

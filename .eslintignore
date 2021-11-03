@@ -8,7 +8,7 @@ node_modules
 .idea
 dist
 /public
-/docs
+# /docs
 .husky
 .local
 /bin

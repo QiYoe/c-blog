@@ -1,5 +1,6 @@
 const head = require('./config/head')
 const themeConfig = require('./config/themeConfig')
+const string = require('string')
 
 module.exports = {
   lang: 'zh-CN',
@@ -15,7 +16,8 @@ module.exports = {
     anchor: {  
       permalink: true,
       permalinkBefore: true,
-      permalinkSymbol: '#'
+      permalinkSymbol: '#',
+      slugify: (s) => string(s).slugify().toString()
     },
 
     // options for markdown-it-toc
