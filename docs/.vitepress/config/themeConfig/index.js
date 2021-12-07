@@ -55,10 +55,11 @@ module.exports = {
       ]
     },
     {
-      text: 'GIS',
-      ariaLabel: 'GIS',
+      text: 'Cesium',
+      ariaLabel: 'Cesium',
       items: [
-        {text: 'Cesium离线加载', link: '/gis/clb' },
+        {text: 'Cesium离线加载', link: '/cesium/clb' },
+        {text: 'Cesium用例', link: '/cesium/examples' },
       ]
     },
     {
@@ -85,7 +86,7 @@ module.exports = {
     '/other/': getOtherSidebar(),
     '/algorithm/': getAlgorithmSidebar(),
     '/devops/': getDevOpsSidebar(),
-    '/gis/': getGISSidebar(),
+    '/cesium/': getCesiumSidebar(),
   }
 }
 
@@ -231,12 +232,13 @@ function getDevOpsSidebar() {
     }
   ]
 }
-function getGISSidebar() {
+function getCesiumSidebar() {
   return [
     {
-      text: 'GIS',
+      text: 'Cesium',
       children: [
-        { text: 'Cesium离线加载', link: '/gis/clb' },
+        { text: 'Cesium离线加载', link: '/cesium/clb' },
+        { text: 'Cesium用例', link: '/cesium/examples' },
       ]
     }
   ]
