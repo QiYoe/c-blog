@@ -58,7 +58,7 @@ module.exports = {
       text: 'Cesium',
       ariaLabel: 'Cesium',
       items: [
-        {text: 'Cesium离线加载', link: '/cesium/clb' },
+        {text: 'Cesium加载', link: '/cesium/clb' },
         {text: 'Cesium用例', link: '/cesium/examples' },
       ]
     },
@@ -235,10 +235,15 @@ function getDevOpsSidebar() {
 function getCesiumSidebar() {
   return [
     {
-      text: 'Cesium',
+      text: 'Cesium加载',
       children: [
-        { text: 'Cesium离线加载', link: '/cesium/clb' },
-        { text: 'Cesium用例', link: '/cesium/examples' },
+        { text: '离线加载', link: '/cesium/clb' },
+      ]
+    },
+    {
+      text: 'Cesium用例',
+      children: [
+        { text: 'Entity', link: '/cesium/examples/entity' },
       ]
     }
   ]
