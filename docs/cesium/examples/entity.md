@@ -36,3 +36,11 @@ head:
 ## Polylines(多段线)
 
 <CodePen title="corridor" slug="BawKbXW" height="480" />
+
+## Polyline Volumes(线体积)
+
+<CodePen title="polyline-volumes" slug="oNGLvMq" height="480" />
+
+## Rectangles(矩形)
+
+<CodePen title="rectangles" slug="NWarWbN" height="480" />
