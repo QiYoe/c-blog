@@ -41,6 +41,10 @@ head:
 
 <CodePen title="polyline-volumes" slug="oNGLvMq" height="480" />
 
-## Rectangles(矩形)
+## Spheres and Ellipsoids(球和椭圆体)
 
-<CodePen title="rectangles" slug="NWarWbN" height="480" />
+<CodePen title="rectangles" slug="JjrKNmr" height="480" />
+
+## Walls(墙)
+
+<CodePen title="walls" slug="rNGLmgy" height="480" />
