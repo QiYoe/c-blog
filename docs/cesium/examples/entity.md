@@ -48,3 +48,19 @@ head:
 ## Walls(墙)
 
 <CodePen title="walls" slug="rNGLmgy" height="480" />
+
+## Billboards(广告牌)
+
+<CodePen title="billboards" slug="KKXMGrw" height="480" />
+
+## Labels(标签)
+
+<CodePen title="labels" slug="NWadyRa" height="480" />
+
+## Planes(平面)
+
+<CodePen title="planes" slug="YzrNeOp" height="480" />
+
+## Models(模型)
+
+<CodePen title="Models" slug="wvrgmXO" height="480" />
