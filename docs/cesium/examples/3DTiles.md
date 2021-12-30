@@ -9,7 +9,7 @@ head:
       content: cesium 3D Tiles
 ---
 
-<!-- ## Points(点)
+## 3D Tiles Feature Styling(3D瓦片特性设计)
 
-<CodePen title="points" slug="JjrXdPN" height="480" /> -->
+<CodePen title="feature-styling" slug="ExwQRrP" height="480" />
 
