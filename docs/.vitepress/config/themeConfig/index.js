@@ -243,8 +243,9 @@ function getCesiumSidebar() {
     {
       text: 'Cesium用例',
       children: [
-        { text: 'Entity', link: '/cesium/examples/entity' },
+        { text: 'Beginner', link: '/cesium/examples/beginner' },
         { text: '3D Tiles', link: '/cesium/examples/3DTiles' },
+        { text: 'ImageryProvider', link: '/cesium/examples/imageryProvider' },
       ]
     }
   ]
