@@ -9,7 +9,5 @@ head:
       content: cesium 3D Tiles
 ---
 
-## 3D Tiles Feature Styling(3D瓦片特性设计)
 
-<CodePen title="feature-styling" slug="ExwQRrP" height="480" />
 
