@@ -57,6 +57,22 @@ head:
 
 <CodePen title="Imagery-layers-Split" slug="xxXaXvy" height="480" />
 
+## Imagery Layers Texture Filters
+
+<CodePen title="Imagery-Layers-Texture-Filters" slug="xxXaXvy" height="480" />
+
+## Imagery Layers
+
+<CodePen title="Imagery-Layers" slug="bGoxZKr" height="480" />
+
+## Labels(标签)
+
+<CodePen title="labels" slug="NWadyRa" height="480" />
+
+## Map Labels
+
+<CodePen title="Map-Labels" slug="MWEqRNa" height="480" />
+
 ## Points(点)
 
 <CodePen title="points" slug="JjrXdPN" height="480" />
@@ -98,10 +114,6 @@ head:
 <CodePen title="walls" slug="rNGLmgy" height="480" />
 
 
-
-## Labels(标签)
-
-<CodePen title="labels" slug="NWadyRa" height="480" />
 
 ## Planes(平面)
 
