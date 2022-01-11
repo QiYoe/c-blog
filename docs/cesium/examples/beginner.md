@@ -69,9 +69,21 @@ head:
 
 <CodePen title="labels" slug="NWadyRa" height="480" />
 
-## Map Labels
+## Map Pins
 
 <CodePen title="Map-Labels" slug="MWEqRNa" height="480" />
+
+## Multiple Synced Views
+
+<CodePen title="Multiple-Synced-Views" slug="BawqJwr" height="480" />
+
+## Offine
+
+<CodePen title="Offine" slug="VwMEyyP" height="480" />
+
+## Particle System Fireworks
+
+<CodePen title="Particle-System-Fireworks" slug="VwMEyyP" height="480" />
 
 ## Points(点)
 
