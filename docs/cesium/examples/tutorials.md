@@ -11,4 +11,4 @@ head:
 
 ## 3D Models
 
-<CodePen title="3D-Models" slug="dyVEgQb" height="480" />
+<CodePen title="3D-Models" slug="dyVEgQb" :height="480" />

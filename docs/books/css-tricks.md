@@ -144,7 +144,7 @@ head:
 
 - `light`主题：`filter: drop-shadow()`
 
-<CodePen title="poptip-light" slug="LYyaebm" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="poptip-light" slug="LYyaebm" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 什么是“CSS Filter Effects”？
 
@@ -154,7 +154,7 @@ head:
 
 > 背景知识：:point_right: [box-sizing](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-sizing), [transform](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform)
 
-<CodePen title="polygon" slug="OJmqaBB" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="polygon" slug="OJmqaBB" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ## 视觉效果
 
@@ -162,13 +162,13 @@ head:
 
 > 背景知识：:point_right: [box-shadow](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-shadow)
 
-<CodePen title="single-projection" slug="VwbRqbG" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="single-projection" slug="VwbRqbG" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 不规则投影
 
 > 背景知识：:point_right: [filter](https://developer.mozilla.org/zh-CN/docs/Web/CSS/filter), [radial-gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/radial-gradient), [border-image](https://developer.mozilla.org/zh-CN/docs/Web/CSS/border-image)
 
-<CodePen title="irregular-projection" slug="VwbRqbG" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="irregular-projection" slug="VwbRqbG" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 毛玻璃投影
 
@@ -180,29 +180,29 @@ background: `background-color`, `background-image`, `background-repeat`, `backgr
 font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `font-family`
 :::
 
-<CodePen title="frosted-glass" slug="YzVmORx" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="frosted-glass" slug="YzVmORx" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 斑马条纹
 
 > 背景知识：:point_right: [linear-gradient](https://developer.mozilla.org/zh-CN/docs/Web/CSS/linear-gradient)
 
-<CodePen title="zebra-stripes" slug="eYWqQqQ" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="zebra-stripes" slug="eYWqQqQ" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 文字特效
 
 > 背景知识：:point_right: [text-shadow](https://developer.mozilla.org/zh-CN/docs/Web/CSS/text-shadow), [filter](https://developer.mozilla.org/zh-CN/docs/Web/CSS/filter), [-webkit-text-fill-color](https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-text-fill-color), [-webkit-text-stroke](https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-text-stroke)
 
-<CodePen title="text-effects" slug="ExmqGvx" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="text-effects" slug="ExmqGvx" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 文本截断（溢出）
 
-<CodePen title="text-overflow" slug="eYROZMd" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="text-overflow" slug="eYROZMd" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 环形文字
 
 > 背景知识：:point_right: [SVG](https://developer.mozilla.org/zh-CN/docs/Web/SVG), [transition](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transition)
 
-<CodePen title="circular-text" slug="Rwgbaeq" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="circular-text" slug="Rwgbaeq" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 插入换行
 
@@ -210,7 +210,7 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 在[Unicode](http://www.ssec.wisc.edu/~tomw/java/unicode.html)中，`0x000A`字符是专门控制换行的。在`CSS`中，我们可以写为`\000A`或`\A`,我们可以用它来作为`::after`伪元素的内容，并将其添加到指定元素的尾部，实现换行效果。
 
-<CodePen title="circular-text" slug="mdwbEEZ" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="circular-text" slug="mdwbEEZ" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 :::warning 注意
 上述代码中，通过伪元素在多个`span.bold`元素间添加的逗号前面会有一个空格，负外边距`margin-left: -.25em;`的作用是抵消所出现的空隙。
@@ -220,7 +220,7 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 > 背景知识：:point_right: [resize](https://developer.mozilla.org/zh-CN/docs/Web/CSS/resize), HTML < [input[type=range]](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range) >
 
-<CodePen title="circular-text" slug="yLXBJEP" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="circular-text" slug="yLXBJEP" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 > 创造良好的用户体验应当养成一种习惯~
 
@@ -232,25 +232,25 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 > 背景知识：:point_right: [cursor](https://developer.mozilla.org/zh-CN/docs/Web/CSS/cursor)
 
-<CodePen title="mouse-cursor" slug="QWgLmLj" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="mouse-cursor" slug="QWgLmLj" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 扩大可点击区域
 
 > 背景知识：:point_right: [box-shadow](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-shadow), [filter](https://developer.mozilla.org/zh-CN/docs/Web/CSS/filter)
 
-<CodePen title="mouse-cursor" slug="XWgrEKz" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="mouse-cursor" slug="XWgrEKz" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 自定义复选框
 
 > 背景知识：:point_right: [transition](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transition), [transform](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform)
 
-<CodePen title="custom-checkbox" slug="YzQKaNg" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="custom-checkbox" slug="YzQKaNg" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 自定义单选框
 
 > 背景知识：:point_right: [transition](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transition), [transform](https://developer.mozilla.org/zh-CN/docs/Web/CSS/transform)
 
-<CodePen title="custom-radio" slug="MWogVLQ" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="custom-radio" slug="MWogVLQ" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 自定义开关选择器
 
@@ -258,23 +258,23 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 同自定义复选框或自定义单选框类似，都是利用一个隐藏的`input(:checked)`元素 + 一个关联的`label`元素，通过`label`元素及其伪元素模拟switch选择器，通过`input`的`:checked`属性来模拟`switch`状态是否开启。
 
-<CodePen title="custom-radio" slug="abwoYrP" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="custom-radio" slug="abwoYrP" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 输入框完美居中
 
-<CodePen title="input-align" slug="yLXBEem" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="input-align" slug="yLXBEem" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 通过阴影弱化背景
 
 > 背景知识：:point_right: [css-boxshadow](https://developer.mozilla.org/zh-CN/docs/Web/CSS/css-boxshadow), HTML < [dialog](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/dialog) >
 
-<CodePen title="shadow-weaken-background" slug="jOwNKMo" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="shadow-weaken-background" slug="jOwNKMo" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 通过模糊弱化背景
 
 > 背景知识：:point_right: [css-boxshadow](https://developer.mozilla.org/zh-CN/docs/Web/CSS/css-boxshadow), HTML < [dialog](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/dialog) >
 
-<CodePen title="blurry-weaken-background" slug="NWgKzMZ" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="blurry-weaken-background" slug="NWgKzMZ" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 自定义文字下划线
 
@@ -284,17 +284,17 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 - `box-shadow`模拟下划线效果
 
-<CodePen title="underline-solid-cn-shadow" slug="ZEyzRwp" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="underline-solid-cn-shadow" slug="ZEyzRwp" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 伪元素`after`模拟下划线效果
 
-<CodePen title="underline-solid-cn-after" slug="MWogXxe" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="underline-solid-cn-after" slug="MWogXxe" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 自定义scroll滚动条
 
 > 背景知识：:point_right: [box-shadow](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-shadow), [::-webkit-scrollbar](https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar)
 
-<CodePen title="scrollbar" slug="xxrKzoP" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="scrollbar" slug="xxrKzoP" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 :::warning 注意
 兼容性很差，并且很多样式不可控，建议在生产环境中采用类似 [perfect-scrollbar](https://github.com/utatti/perfect-scrollbar) 的方案。
@@ -308,7 +308,7 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 将元素左右padding设置为父元素宽度的50%减去等宽内容的一半即可，无需设置width～
 
-<CodePen title="fluidFixed" slug="KKqPBMg" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="fluidFixed" slug="KKqPBMg" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 绝对底部
 
@@ -322,11 +322,11 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 - 利用计算函数 `calc()` 计算（视窗高度 - 页头高度 - 页脚高度）赋予内容区最小高度
 
-<CodePen title="sticky-calc" slug="JjJPBEZ" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="sticky-calc" slug="JjJPBEZ" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - Flexbox `display: flex`:thumbsup:
 
-<CodePen title="sticky-flex" slug="MWogBpm" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="sticky-flex" slug="MWogBpm" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 水平垂直居中
 
@@ -334,31 +334,31 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 - `display: flex` + `margin: auto` 不限定宽高 :thumbsup:
 
-<CodePen title="flex" slug="xxrKJWa" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="flex" slug="xxrKJWa" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - `display: grid` 不限定宽高 :thumbsup:
 
-<CodePen title="grid" slug="NWgKBMR" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="grid" slug="NWgKBMR" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 绝对定位 `position: absolute` 限定宽高
 
-<CodePen title="position" slug="abwojKa" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="position" slug="abwojKa" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 绝对定位 `position: absolute` + `calc()` 限定宽高
 
-<CodePen title="calc" slug="NWgKBLb" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="calc" slug="NWgKBLb" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 绝对定位 `position: absolute` + `translate` 不限定宽高 :thumbsup:
 
-<CodePen title="translate" slug="YzQKjOm" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="translate" slug="YzQKjOm" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 仿table布局 `display: table/table-cell` + `vertical-align: middle` 不限定宽高
 
-<CodePen title="table" slug="MWogBPr" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="table" slug="MWogBPr" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 伪元素 `:after` + `vertical-align:middle` 不限定宽高
 
-<CodePen title="after" slug="LYLPBga" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="after" slug="LYLPBga" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 使用`vertical-align`实现居中时，居中元素`display`的值，必须为`inline-block/inline`，否则无法垂直居中，这是因为`vertical-align`只能用来指定行内元素`（inline）`或表格单元格`（table-cell）`元素的垂直对齐方式。更多请查看[MDN vertical-align](https://developer.mozilla.org/zh-CN/docs/Web/CSS/vertical-align)
 
@@ -366,13 +366,13 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 此布局一般的需求为两边等宽，中间自适应的三栏布局。
 
-<CodePen title="holy-grail-layout" slug="BaZBbKB" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="holy-grail-layout" slug="BaZBbKB" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 双飞翼布局
 
 此布局的需求同[圣杯布局](https://lhammer.cn/You-need-to-know-css/#/holy-grail-layout)一样，都为两边等宽，中间自适应的三栏布局，源自淘宝UED
 
-<CodePen title="double-wing-layout" slug="VwWZRzg" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="double-wing-layout" slug="VwWZRzg" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 :::tip 圣杯布局和双飞翼布局的区别
 圣杯布局和双飞翼布局解决问题的方案在前一半是相同的，也就是三栏全部float浮动，但左右两栏加上负margin让其跟中间栏div并排，以形成三栏布局。
@@ -392,11 +392,11 @@ font: `font-style`, `font-variant`, `font-weight`, `font-size/line-height`, `fon
 
 - 伪元素 `:after` + `vertical-align:middle` 方案
 
-<CodePen title="class-order-layout" slug="rNwBRdJ" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="class-order-layout" slug="rNwBRdJ" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 伪元素 `display: flex` 方案
 
-<CodePen title="dlayout-flexbox" slug="ZEyzZYR" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="dlayout-flexbox" slug="ZEyzZYR" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### Flex布局
 
@@ -425,7 +425,7 @@ flex-direction: row | row-reverse | column | column-reverse;
 > - column：主轴为垂直方向，从上向下排列
 > - column-reverse：主轴为垂直方向，从下向上排列
 
-<CodePen title="flexDirection" slug="zYzOXry" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="flexDirection" slug="zYzOXry" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 容器属性
   - flex-wrap 属性
@@ -440,7 +440,7 @@ flex-wrap: nowrap | wrap | wrap-reverse;
 > - wrap：换行，第一行在上方
 > - row-reverse：换行，第一行在下方
 
-<CodePen title="flexWrap" slug="wvewbbL" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="flexWrap" slug="wvewbbL" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 容器属性
   - flex-flow 属性
@@ -472,7 +472,7 @@ justify-content: flex-start | flex-end | center | space-between | space-round |
 > - space-around：每个项目两侧间隔相等
 > - space-between：两端对齐，项目之间间隔相等
 
-<CodePen title="justifyContent" slug="MWogMKJ" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="justifyContent" slug="MWogMKJ" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 容器属性
   - align-items 属性
@@ -489,7 +489,7 @@ align-items: flex-start | flex-end | center | baseline | stretch;
 > - baseline：项目第一行文字的基线对齐
 > - stretch：默认值，项目未设置固定高度时，将占满整个容器
 
-<CodePen title="alignItems" slug="Rwgbzav" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="alignItems" slug="Rwgbzav" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 容器属性
   - align-content 属性
@@ -508,7 +508,7 @@ align-content: flex-start | flex-end | center | space-between | space-around |
 > - space-around：每根轴线两侧的间隔都相等
 > - stretch：默认值，轴线占满整个交叉轴
 
-<CodePen title="alignContent" slug="ExXYBmQ" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="alignContent" slug="ExXYBmQ" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 项目属性
   - order 属性
@@ -521,7 +521,7 @@ order: <number>;
 
 > - `<number>`：值为整数，数值越小，排列越靠前，默认为 0
 
-<CodePen title="order" slug="xxrKoLz" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="order" slug="xxrKoLz" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 项目属性
   - order 属性
@@ -534,7 +534,7 @@ order: <number>;
 
 > - `<number>`：值为整数，数值越小，排列越靠前，默认为 0
 
-<CodePen title="order" slug="xxrKoLz" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="order" slug="xxrKoLz" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 项目属性
   - flex-grow 属性
@@ -547,7 +547,7 @@ flex-grow: <number>;
 
 > - `<number>`：值为整数，数值越大，项目占据空间越大，默认为 0
 
-<CodePen title="flexGrow" slug="xxrKopJ" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="flexGrow" slug="xxrKopJ" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 项目属性
   - flex-shrink 属性
@@ -560,7 +560,7 @@ flex-shrink: <number>;
 
 > - `<number>`：值为整数，数值越大，项目占据空间越小，默认为 1
 
-<CodePen title="flexShrink" slug="abwogqK" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="flexShrink" slug="abwogqK" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 项目属性
   - flex-basis 属性
@@ -573,7 +573,7 @@ flex-basis: <length> | auto;
 
 > - `<length>`：默认为 auto，即项目的原始尺寸；也可设置和 width 或 height 属性一样的值（比如 329px），则项目将占据固定空间。
 
-<CodePen title="flexBasis" slug="XWgrLEZ" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="flexBasis" slug="XWgrLEZ" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 项目属性
   - flex 属性 :thumbsup:
@@ -604,7 +604,7 @@ align-self: auto | flex-start | flex-end | center | baseline | stretch;
 > - baseline：项目第一行文字的基线对齐
 > - stretch：未设置固定高度是，将占满整个容器
 
-<CodePen title="alignSelf" slug="PojYraq" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="alignSelf" slug="PojYraq" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ## 动画过渡
 
@@ -616,7 +616,7 @@ align-self: auto | flex-start | flex-end | center | baseline | stretch;
 
 <div align="center"><img src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/css-secrets/cubic-bezier.jpeg" width="100%" align="center"/></div>
 
-<CodePen title="bounce" slug="yLXBdRz" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="bounce" slug="yLXBdRz" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 弹性过渡
 
@@ -626,11 +626,11 @@ align-self: auto | flex-start | flex-end | center | baseline | stretch;
 
 - `animation`方案 :thumbsup:
 
-<CodePen title="elastic-animation" slug="xxrxKWq" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="elastic-animation" slug="xxrxKWq" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - 三次贝塞尔`cubic-bezier` + `transition`方案
 
-<CodePen title="elastic-transtion" slug="jOwONdO" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="elastic-transtion" slug="jOwONdO" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 三次贝塞尔曲线`cubic-bezier`主要是为`animation`生成速度曲线的函数，语法是`cubic-bezier(<x1>, <y1>, <x2>, <y2>)`，更多请参考：[Lea Verou](http://lea.verou.me/about/)的图形化工具[cubic-bezier](http://cubic-bezier.com/#)
 
@@ -642,13 +642,13 @@ align-self: auto | flex-start | flex-end | center | baseline | stretch;
 
 <div align="center"><img src="https://cdn.jsdelivr.net/gh/qiyoe/qiyoe.github.io/c-blog/css-secrets/animation-direction.jpeg" width="60%" align="center"/></div><br />
 
-<CodePen title="blink" slug="wvevwOb" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="blink" slug="wvevwOb" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 打字效果
 
 > 背景知识：:point_right: [animation](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation), [animation-timing-function](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-timing-function)
 
-<CodePen title="typing" slug="MWoWWge" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="typing" slug="MWoWWge" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 :::danger 注意
 此方法仅限**单行等宽**字体~
@@ -660,11 +660,11 @@ align-self: auto | flex-start | flex-end | center | baseline | stretch;
 
 - See [百度](https://www.baidu.com/s?wd=%E6%8A%96%E5%8A%A8&rsv_spt=1&rsv_iqid=0xe9f337870004f38a&issp=1&f=8&rsv_bp=0&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_enter=1&rsv_sug3=11&rsv_sug1=15&rsv_sug7=101&rsv_sug2=0&inputT=3789&rsv_sug4=4507)
 
-<CodePen title="shakeBaidu" slug="ExXxxVw" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="shakeBaidu" slug="ExXxxVw" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 - See [CSShake](https://github.com/elrumordelaluz/csshake)
 
-<CodePen title="CSShake" slug="dyRyyGj" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="CSShake" slug="dyRyyGj" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 无缝平滑效果
 
@@ -672,13 +672,13 @@ align-self: auto | flex-start | flex-end | center | baseline | stretch;
 
 - 图片平滑效果
 
-<CodePen title="single-projection" slug="JjJjjKL" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="single-projection" slug="JjJjjKL" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 > 上图为两张左右对称的图片拼接而成，效果不是很完美，在开发中，只需使用一张左右可以无缝对接（类似360°全景图）的图片即可更完美。
 
 - 块平滑效果
 
-<CodePen title="block-smooth" slug="VwWwwmV" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="block-smooth" slug="VwWwwmV" tab="js,result" :editable="true" :preview="true" :height="480" />
 
 ### 延轨迹平滑效果
 
@@ -686,4 +686,4 @@ align-self: auto | flex-start | flex-end | center | baseline | stretch;
 
 **transform-origin 只是一个语法糖而已。实际上你总是可以用 translate() 来代替它。**
 
-<CodePen title="circular-smooth" slug="NWgWWpG" tab="js,result" :editable="true" :preview="true" height="480" />
+<CodePen title="circular-smooth" slug="NWgWWpG" tab="js,result" :editable="true" :preview="true" :height="480" />

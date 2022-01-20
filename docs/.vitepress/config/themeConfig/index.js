@@ -59,7 +59,7 @@ module.exports = {
       ariaLabel: 'Cesium',
       items: [
         {text: 'Cesium加载', link: '/cesium/clb' },
-        {text: 'Cesium用例', link: '/cesium/examples/entity' },
+        {text: 'Cesium用例', link: '/cesium/examples/beginner' },
       ]
     },
     {
