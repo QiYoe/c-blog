@@ -244,6 +244,7 @@ function getCesiumSidebar() {
       text: 'Cesium用例',
       children: [
         { text: 'Beginner', link: '/cesium/examples/beginner' },
+        { text: 'Tutorials', link: '/cesium/examples/tutorials' },
         { text: '3D Tiles', link: '/cesium/examples/3DTiles' },
         { text: 'ImageryProvider', link: '/cesium/examples/imageryProvider' },
       ]
