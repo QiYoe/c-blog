@@ -83,7 +83,19 @@ head:
 
 ## Particle System Fireworks
 
-<CodePen title="Particle-System-Fireworks" slug="VwMEyyP" height="480" />
+<CodePen title="Particle-System-Fireworks" slug="poWYddo" height="480" />
+
+## Particle System Tails
+
+<CodePen title="Particle-System-Tails" slug="ZEXZEJY" height="480" />
+
+## Particle System Weather
+
+<CodePen title="Particle-System-Weather" slug="MWERoJM" height="480" />
+
+## Particle System
+
+<CodePen title="Particle-System" slug="MWERoJM" height="480" />
 
 ## Web Map Tile Service with Time
 
