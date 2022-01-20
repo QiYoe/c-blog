@@ -59,7 +59,7 @@ module.exports = {
       ariaLabel: 'Cesium',
       items: [
         {text: 'Cesium加载', link: '/cesium/clb' },
-        {text: 'Cesium用例', link: '/cesium/examples/entity' },
+        {text: 'Cesium用例', link: '/cesium/examples/beginner' },
       ]
     },
     {
@@ -244,6 +244,7 @@ function getCesiumSidebar() {
       text: 'Cesium用例',
       children: [
         { text: 'Beginner', link: '/cesium/examples/beginner' },
+        { text: 'Turotials', link: '/cesium/examples/turotials' },
         { text: '3D Tiles', link: '/cesium/examples/3DTiles' },
         { text: 'ImageryProvider', link: '/cesium/examples/imageryProvider' },
       ]
