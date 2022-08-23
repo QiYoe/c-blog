@@ -36,7 +36,7 @@ jobs:
             ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
             TARGET_REPO: c-blog/qiyoe.github.io
             BRANCH: gh-pages
-            FOLDER: docs/.vitepress/dist
+            FOLDER: .vitepress/dist
     # 设置阿里云OSS的 id/secret，存储到 github 的 secrets 中
 #     - name: setup aliyun oss
 #       uses: manyuanrong/setup-ossutil@master
@@ -45,4 +45,4 @@ jobs:
 #         access-key-id: ${{ secrets.OSS_KEY_ID }}
 #         access-key-secret: ${{ secrets.OSS_KEY_SECRET }}
 #     - name: cp files to aliyun
-#       run: ossutil cp -rf docs/.vitepress/dist oss://qiyoe-blog/
+#       run: ossutil cp -rf .vitepress/dist oss://qiyoe-blog/

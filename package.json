@@ -1,10 +1,8 @@
 {
-  "name": "vite",
+  "name": "c-blog",
   "version": "1.0.0",
-  "description": "",
-  "type": "module",
+  "description": "vitepress blog",
   "packageManager": "pnpm@7.5.2",
-  "main": "dist/node/index.js",
   "types": "types/index.d.ts",
   "engines": {
     "node": ">=14.6.0"
@@ -15,15 +13,19 @@
     "serve": "vitepress serve"
   },
   "keywords": [
-    "vitepress"
+    "vite",
+    "vue3",
+    "vitepress",
+    "blog"
   ],
-  "homepage": "https://github.com/vuejs/vitepress/tree/main/#readme",
+  "homepage": "https://github.com/QiYoe/c-blog/master/#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vuejs/vitepress.git"
+    "url": "git+https://github.com/QiYoe/c-blog.git"
   },
   "author": "QiYoe",
   "license": "MIT",
+  "private": true,
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.3",
     "chalk": "^5.0.1",
