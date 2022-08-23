@@ -27,8 +27,13 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.3",
     "chalk": "^5.0.1",
+    "commitizen": "^4.2.5",
+    "cz-conventional-changelog-zh": "^0.0.2",
     "markdown-it": "^13.0.1",
     "markdown-it-anchor": "^8.6.4",
+    "markdown-it-ins": "^3.0.1",
+    "markdown-it-multimd-table": "^4.2.0",
+    "markdown-it-textual-uml": "^0.12.0",
     "shiki": "^0.10.1",
     "vite": "^3.0.7",
     "vitepress": "1.0.0-alpha.4",
@@ -41,5 +46,10 @@
     "*": [
       "prettier --write --ignore-unknown"
     ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog-zh"
+    }
   }
 }
