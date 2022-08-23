@@ -30,9 +30,9 @@ head:
 
 首页添加description
 
-``` warning
+::: warning
 vitepress把文章内的很多属性废弃了，比如description、tags等等，所以通常只加在首页就可以了
-```
+:::
 
 ## 查看SEO评分
 

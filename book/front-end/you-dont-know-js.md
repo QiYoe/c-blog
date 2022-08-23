@@ -1613,7 +1613,7 @@ console.log( a + b ); // 42
 
 ### 回调
 
-[顺序的大脑](/quotations/#顺序的大脑)
+[顺序的大脑](/book/quotations#顺序的大脑)
 
 回调地狱(毁灭金字塔)：
 

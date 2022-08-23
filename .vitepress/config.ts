@@ -15,6 +15,8 @@ export default defineConfig({
   description: '学无止境',
 
   head,
+  
+  ignoreDeadLinks: true,
 
   vue: {
     reactivityTransform: true
