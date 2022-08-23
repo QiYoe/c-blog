@@ -31,12 +31,11 @@ jobs:
       - run: pnpm run build
       - run: |
           name: Deploy
-          uses: JamesIves/github-pages-deploy-action@releases/v3
+          uses: JamesIves/github-pages-deploy-action@releases/v4
           with:
-            ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-            TARGET_REPO: c-blog/qiyoe.github.io
-            BRANCH: gh-pages
-            FOLDER: .vitepress/dist
+            token: ${{ secrets.ACCESS_TOKEN }}
+            branch: gh-pages
+            folder: .vitepress/dist
     # 设置阿里云OSS的 id/secret，存储到 github 的 secrets 中
 #     - name: setup aliyun oss
 #       uses: manyuanrong/setup-ossutil@master
