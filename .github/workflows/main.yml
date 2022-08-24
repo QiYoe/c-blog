@@ -28,14 +28,15 @@ jobs:
       - name: Install deps
         run: pnpm install
 
-      - run: pnpm run build
-      - run: |
-          name: Deploy
-          uses: JamesIves/github-pages-deploy-action@v4
-          with:
-            token: ${{ secrets.ACCESS_TOKEN }}
-            branch: gh-pages
-            folder: .vitepress/dist
+      - name: Build
+        run: pnpm run build
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          branch: gh-pages
+          folder: .vitepress/dist
     # 设置阿里云OSS的 id/secret，存储到 github 的 secrets 中
 #     - name: setup aliyun oss
 #       uses: manyuanrong/setup-ossutil@master
