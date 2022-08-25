@@ -1,8 +1,8 @@
 {
   "name": "c-blog",
   "version": "1.0.0",
-  "description": "vitepress blog",
-  "packageManager": "pnpm@7.5.2",
+  "description": "c-blog",
+  "packageManager": "pnpm@7.6.0",
   "types": "types/index.d.ts",
   "engines": {
     "node": ">=14.6.0"

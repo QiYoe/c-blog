@@ -17,7 +17,7 @@ hero:
       link: /code/front-end/blog-build/
     - theme: alt
       text: 在GitHub上查看
-      link: #
+      link: https://github.com/QiYoe/c-blog
 
 features:
   - icon: 🧑‍💻

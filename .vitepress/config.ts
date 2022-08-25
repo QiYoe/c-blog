@@ -39,6 +39,7 @@ export default defineConfig({
       '/code/': sidebarCode(),
       '/book/': sidebarBook(),
       '/money/': sidebarMoney(),
+      '/video/': sidebarVideo(),
     },
 
     editLink: {
@@ -59,7 +60,7 @@ export default defineConfig({
 
     footer: {
       message: '根据 MIT 许可证发布。',
-      copyright: 'Copyright © 2021-present QiYoe'
+      copyright: 'Copyright © 2022-present QiYoe'
     },
 
     // algolia: {
@@ -270,6 +271,18 @@ function sidebarMoney() {
       collapsible: true,
       items: [
         { text: '基金', link: '/money/' },
+      ]
+    }
+  ]
+}
+
+function sidebarVideo() {
+  return [
+    {
+      text: '短视频',
+      collapsible: true,
+      items: [
+        { text: '抖音', link: '/douyin/' },
       ]
     }
   ]
