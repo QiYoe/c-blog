@@ -2,7 +2,8 @@
   <div id="gitalk-container"></div>
 </template>
 
-<script setup>
+<script lang="ts" setup>
+import { reactive, toRefs, onMounted } from 'vue'
 import 'gitalk/dist/gitalk.css'
 import Gitalk from 'gitalk'
 
@@ -12,10 +13,12 @@ const gitalk = new Gitalk({
   repo: 'https://github.com/QiYoe/c-blog',
   owner: 'QiYoe',
   admin: ['QiYoe'],
-  id: location.pathname,      // Ensure uniqueness and length less than 50
+  id: decodeURI(location.pathname),      // Ensure uniqueness and length less than 50
   distractionFreeMode: true,  // Facebook-like distraction free mode
   language: 'zh-CN'
 })
 
-gitalk.render('gitalk-container')
+onMounted(() => {
+  gitalk.render('gitalk-container')
+})
 </script>
