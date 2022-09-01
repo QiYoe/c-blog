@@ -99,7 +99,7 @@ docker rm <the-container-id>
 ```bash
 docker run -dp 3000:3000 getting-started
 ```
-在你的浏览器上刷新http://localhost:3000，你就会看到更新的帮助文本！
+在你的浏览器上刷新 `http://localhost:5173`，你就会看到更新的帮助文本！
 
 ### Share the application
 
