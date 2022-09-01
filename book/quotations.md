@@ -37,3 +37,4 @@
 我不会在每次可能被打断的时候都转而投入到其他“进程”中（这值得庆幸，否则我根本没法写完本书！）。但是，中断的发生经常频繁到让我觉得我的大脑几乎是不停地切换到不同的上下文（即“进程”）中。很可能 JavaScript 引擎也是这种感觉。
 
 <cite>[-- 你不知道的JavaScript系列](https://github.com/getify/You-Dont-Know-JS/blob/1ed-zh-CN/async%20%26%20performance/ch2.md#%E9%A1%BA%E5%BA%8F%E7%9A%84%E5%A4%A7%E8%84%91)</cite>
+

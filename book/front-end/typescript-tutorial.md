@@ -3977,3 +3977,5 @@ interface Alarm {
 类的合并与接口的合并规则一致。
 
 <cite>[-- 《TypeScript 入门教程》](https://ts.xcatliu.com/)</cite>
+
+

@@ -1,7 +1,9 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '-': ^0.0.1
   '@vitejs/plugin-vue': ^3.0.3
+  D: ^1.0.0
   chalk: ^5.0.1
   commitizen: ^4.2.5
   cz-conventional-changelog-zh: ^0.0.2
@@ -13,6 +15,7 @@ specifiers:
   markdown-it-ins: ^3.0.1
   markdown-it-multimd-table: ^4.2.0
   markdown-it-textual-uml: ^0.12.0
+  md5: ^2.3.0
   shiki: ^0.11.1
   vite: ^3.0.9
   vitepress: 1.0.0-alpha.13
@@ -20,6 +23,9 @@ specifiers:
   vue-cusdis: ^2.1.1
 
 dependencies:
+  '-': registry.npmmirror.com/-/0.0.1
+  D: registry.npmmirror.com/D/1.0.0
+  md5: registry.npmmirror.com/md5/2.3.0
   vue-cusdis: registry.npmmirror.com/vue-cusdis/2.1.1
 
 devDependencies:
@@ -41,6 +47,12 @@ devDependencies:
   vue: registry.npmmirror.com/vue/3.2.38
 
 packages:
+
+  registry.npmmirror.com/-/0.0.1:
+    resolution: {integrity: sha512-3HfneK3DGAm05fpyj20sT3apkNcvPpCuccOThOPdzz8sY7GgQGe0l93XH9bt+YzibcTIgUAIMoyVJI740RtgyQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/-/-/--0.0.1.tgz}
+    name: '-'
+    version: 0.0.1
+    dev: false
 
   registry.npmmirror.com/@algolia/autocomplete-core/1.7.1:
     resolution: {integrity: sha512-eiZw+fxMzNQn01S8dA/hcCpoWCOCwcIIEUtHHdzN5TGB3IpzLbuhqFeTfh2OUhhgkE8Uo17+wH+QJ/wYyQmmzg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@algolia/autocomplete-core/-/autocomplete-core-1.7.1.tgz}
@@ -661,6 +673,13 @@ packages:
       - vue
     dev: true
 
+  registry.npmmirror.com/D/1.0.0:
+    resolution: {integrity: sha512-nQvrCBu7K2pSSEtIM0EEF03FVjcczCXInMt3moLNFbjlWx6bZrX72uT6/1uAXDbnzGUAx9gTyDiQ+vrFi663oA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/D/-/D-1.0.0.tgz}
+    name: D
+    version: 1.0.0
+    deprecated: Package no longer supported. Contact support@npmjs.com for more info.
+    dev: false
+
   registry.npmmirror.com/acorn-walk/8.2.0:
     resolution: {integrity: sha512-k+iyHEuPgSw6SbuDpGQM+06HQUa04DZ3o+F6CSzXMvvI5KMvnaEqXe+YVe555R9nn6GPt404fos4wcgpw12SDA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/acorn-walk/-/acorn-walk-8.2.0.tgz}
     name: acorn-walk
@@ -909,6 +928,12 @@ packages:
     version: 0.7.0
     dev: true
 
+  registry.npmmirror.com/charenc/0.0.2:
+    resolution: {integrity: sha512-yrLQ/yVUFXkzg7EDQsPieE/53+0RlaWTs+wBrvW36cyilJ2SaDWfl4Yj7MtLTXleV9uEKefbAGUPv2/iWSooRA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/charenc/-/charenc-0.0.2.tgz}
+    name: charenc
+    version: 0.0.2
+    dev: false
+
   registry.npmmirror.com/cli-cursor/3.1.0:
     resolution: {integrity: sha512-I/zHAwsKf9FqGoXM4WWRACob9+SNukZTd94DWF57E4toouRulbCxcUh6RKUEOQlYTHJnzkPMySvPNaaSLNfLZw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/cli-cursor/-/cli-cursor-3.1.0.tgz}
     name: cli-cursor
@@ -1061,6 +1086,12 @@ packages:
     version: 1.1.1
     dev: true
     optional: true
+
+  registry.npmmirror.com/crypt/0.0.2:
+    resolution: {integrity: sha512-mCxBlsHFYh9C+HVpiEacem8FEBnMXgU9gy4zmNC+SXAZNB/1idgp/aulFJ4FgCi7GPEVbfyng092GqL2k2rmow==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/crypt/-/crypt-0.0.2.tgz}
+    name: crypt
+    version: 0.0.2
+    dev: false
 
   registry.npmmirror.com/csstype/2.6.20:
     resolution: {integrity: sha512-/WwNkdXfckNgw6S5R125rrW8ez139lBHWouiBvX8dfMFtcn6V81REDqnH7+CRpRipfYlyU1CmOnOxrmGcFOjeA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/csstype/-/csstype-2.6.20.tgz}
@@ -2025,6 +2056,12 @@ packages:
       has-tostringtag: registry.npmmirror.com/has-tostringtag/1.0.0
     dev: true
 
+  registry.npmmirror.com/is-buffer/1.1.6:
+    resolution: {integrity: sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/is-buffer/-/is-buffer-1.1.6.tgz}
+    name: is-buffer
+    version: 1.1.6
+    dev: false
+
   registry.npmmirror.com/is-callable/1.2.4:
     resolution: {integrity: sha512-nsuwtxZfMX67Oryl9LCQ+upnC0Z0BgpwntpS89m1H/TLF0zNfzfLMV/9Wa/6MZsj0acpEjAO0KF1xT6ZdLl95w==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/is-callable/-/is-callable-1.2.4.tgz}
     name: is-callable
@@ -2365,6 +2402,16 @@ packages:
       mdurl: registry.npmmirror.com/mdurl/1.0.1
       uc.micro: registry.npmmirror.com/uc.micro/1.0.6
     dev: true
+
+  registry.npmmirror.com/md5/2.3.0:
+    resolution: {integrity: sha512-T1GITYmFaKuO91vxyoQMFETst+O71VUPEU3ze5GNzDm0OWdP8v1ziTaAEPUr/3kLsY3Sftgz242A1SetQiDL7g==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/md5/-/md5-2.3.0.tgz}
+    name: md5
+    version: 2.3.0
+    dependencies:
+      charenc: registry.npmmirror.com/charenc/0.0.2
+      crypt: registry.npmmirror.com/crypt/0.0.2
+      is-buffer: registry.npmmirror.com/is-buffer/1.1.6
+    dev: false
 
   registry.npmmirror.com/mdurl/1.0.1:
     resolution: {integrity: sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/mdurl/-/mdurl-1.0.1.tgz}

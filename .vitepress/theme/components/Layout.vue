@@ -1,15 +1,7 @@
 <template>
   <Layout>
-    <!-- <template #doc-footer-before>
-      <ClientOnly>
-        <Copyright v-if="(frontmatter?.aside ?? true) && (frontmatter?.showArticleMetadata ?? true) && !(frontmatter.authorLink)" :key="md5(page.relativePath)" />
-      </ClientOnly>
-    </template> -->
     <template #doc-after>
-      <Gitalk v-if="(theme.commentConfig?.showComment ?? true) && (frontmatter?.showComment ?? true)" :commentConfig="theme.commentConfig" />
-    </template>
-    <template #layout-bottom>
-      <Footer v-if="!hasSidebar && (theme.footerConfig?.showFooter ?? true) && (frontmatter?.showFooter ?? true)" />
+      <Gitalk v-if="frontmatter?.showComment ?? true" />
     </template>
   </Layout>
 </template>
@@ -18,17 +10,7 @@
 import { computed } from 'vue'
 import DefaultTheme from 'vitepress/theme'
 import { useData } from 'vitepress'
-// import md5 from 'blueimp-md5'
 
 const { Layout } = DefaultTheme
-const { page, theme, frontmatter } = useData()
-const hasSidebar = computed(() => {
-  return (
-    frontmatter.value.aside !== false &&
-    frontmatter.value.layout !== 'home'
-  )
-})
+const { frontmatter } = useData()
 </script>
-
-<style scoped>
-</style>

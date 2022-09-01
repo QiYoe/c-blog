@@ -7956,3 +7956,5 @@ WASM 的支持者认为，WASM 的成功将意味着 JavaScript 的设计可以�
 这个转变可能会比较缓慢，需要几年才能完成。WASM 进入所有主流浏览器平台可能至少也需要数年。同时，WASM 项目（[https://github.com/WebAssembly](https://github.com/WebAssembly)）已经有一个早期的polyfill 对其基本宗旨提供了概念证明。
 
 但随着时间的发展，也随着 WASM 学到更多非 JavaScript 技巧，很可能当前一些JavaScript 的东西会被重构为以 WASM 为目标的语言。举例来说，框架、游戏引擎以及其他常用工具中性能敏感的部分都可能从这样的转变中获益。在自己的 Web 应用中使用这些工具的开发者很可能不会注意到使用和集成过程中的差别，只会自动受益于性能和功能的提高。
+
+
