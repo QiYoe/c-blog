@@ -97,7 +97,7 @@ docker rm <the-container-id>
 
 现在，开始更新你的应用程序。
 ```bash
-docker run -dp 3000:3000 getting-started
+docker run -dp 5173:5173 getting-started
 ```
 在你的浏览器上刷新 `http://localhost:5173`，你就会看到更新的帮助文本！
 
