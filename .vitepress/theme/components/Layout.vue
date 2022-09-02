@@ -1,7 +1,7 @@
 <template>
   <Layout>
     <template #doc-after>
-      <Gitalk v-if="frontmatter?.showComment ?? true" />
+      <Waline />
     </template>
   </Layout>
 </template>

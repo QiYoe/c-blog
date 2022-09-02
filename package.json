@@ -28,11 +28,10 @@
   "private": true,
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.3",
+    "@waline/client": "^2.6.3",
     "chalk": "^5.0.1",
     "commitizen": "^4.2.5",
     "cz-conventional-changelog-zh": "^0.0.2",
-    "fast-glob": "^3.2.11",
-    "gitalk": "^1.8.0",
     "gray-matter": "^4.0.3",
     "markdown-it": "^13.0.1",
     "markdown-it-anchor": "^8.6.4",
@@ -56,11 +55,5 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog-zh"
     }
-  },
-  "dependencies": {
-    "-": "^0.0.1",
-    "D": "^1.0.0",
-    "md5": "^2.3.0",
-    "vue-cusdis": "^2.1.1"
   }
 }
