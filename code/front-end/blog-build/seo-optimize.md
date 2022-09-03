@@ -24,7 +24,7 @@ head:
 
 ### keywords
 
-网站head标签添加keywords，对应vitepress中就是在`head`属性下添加`['meta', { name: 'keywords', content: '南上康青山...'}],`
+网站head标签添加keywords，对应vitepress中就是在`head`属性下添加`['meta', { name: 'keywords', content: '青山...'}],`
 
 ### description
 
